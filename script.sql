@@ -1,204 +1,161 @@
--- =========================================
--- DROP TABLE IF EXISTS
--- =========================================
+DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
+DROP TABLE IF EXISTS tb_region_rate       CASCADE;
+DROP TABLE IF EXISTS tb_user_habit_day    CASCADE;
+DROP TABLE IF EXISTS tb_user_habit        CASCADE;
+DROP TABLE IF EXISTS tb_device            CASCADE;
+DROP TABLE IF EXISTS tb_user_property     CASCADE;
+DROP TABLE IF EXISTS tb_property          CASCADE;
+DROP TABLE IF EXISTS tb_address           CASCADE;
+DROP TABLE IF EXISTS tb_habit             CASCADE;
+DROP TABLE IF EXISTS tb_day_of_week       CASCADE;
+DROP TABLE IF EXISTS tb_user              CASCADE;
+DROP TABLE IF EXISTS tb_region            CASCADE;
 
-DROP TABLE IF EXISTS tbl_usuario_habito;
-DROP TABLE IF EXISTS tbl_habito;
-DROP TABLE IF EXISTS tbl_alerta;
-DROP TABLE IF EXISTS tbl_meta_consumo;
-DROP TABLE IF EXISTS tbl_dispositivo;
-DROP TABLE IF EXISTS tbl_usuario_instalacao;
-DROP TABLE IF EXISTS tbl_instalacao;
-DROP TABLE IF EXISTS tbl_usuario;
-DROP TABLE IF EXISTS tbl_tarifa_agua;
-
--- =========================================
--- TABELA USUÁRIO
--- =========================================
-
-CREATE TABLE tbl_usuario (
-      id               SERIAL          PRIMARY KEY
-    , nome             VARCHAR(100)    NOT NULL
-    , email            VARCHAR(255)    NOT NULL UNIQUE
-    , senha            VARCHAR(255)    NOT NULL
-    , telefone         VARCHAR(20)
-    , data_nascimento  DATE            NOT NULL
-    , data_cadastro    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-    , ativo            BOOLEAN         NOT NULL DEFAULT TRUE
+CREATE TABLE tb_region (
+      id                                   SERIAL      PRIMARY KEY
+    , name                                 VARCHAR(20) NOT NULL UNIQUE
+      CONSTRAINT chk_tb_region_name_values CHECK (name IN ('LESTE', 'OESTE', 'SUL', 'NORTE', 'CENTRO'))
 );
 
--- =========================================
--- TABELA INSTALAÇÃO
--- =========================================
-
-CREATE TABLE tbl_instalacao (
-      id                   SERIAL          PRIMARY KEY
-    , nome_identificador   VARCHAR(100)    NOT NULL
-    , tipo_classificacao   VARCHAR(20)     NOT NULL
-    , tipo_imovel          VARCHAR(30)     NOT NULL
-    , percentual_consumo   NUMERIC(5,2)    NOT NULL
-    , cep                  VARCHAR(9)      NOT NULL
-    , cidade               VARCHAR(100)    NOT NULL
-    , estado               CHAR(2)         NOT NULL
-    , data_cadastro        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-
-    , CONSTRAINT chk_tipo_classificacao
-        CHECK (tipo_classificacao IN ('residencial', 'comercial'))
-
-    , CONSTRAINT chk_percentual_consumo
-        CHECK (percentual_consumo BETWEEN 0 AND 100)
+CREATE TABLE tb_day_of_week (
+      id                                        SERIAL      PRIMARY KEY
+    , name                                      VARCHAR(20) NOT NULL UNIQUE
+      CONSTRAINT chk_tb_day_of_week_name_values CHECK (name IN ('SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'))
 );
 
--- =========================================
--- TABELA USUÁRIO x INSTALAÇÃO
--- =========================================
+CREATE TABLE tb_habit (
+      id                                  SERIAL      PRIMARY KEY
+    , name                                VARCHAR(30) NOT NULL UNIQUE
+      CONSTRAINT chk_tb_habit_name_values CHECK (name IN ('BANHO LONGO', 'LAVAR QUINTAL', 'LAVAR ROUPA', 'REGAR PLANTAS', 'LAVAR CARRO', 'LAVAR LOUÇA'))
+    , description         TEXT
+);
 
-CREATE TABLE tbl_usuario_instalacao (
-      id               SERIAL          PRIMARY KEY
-    , id_usuario       INTEGER         NOT NULL
-    , id_instalacao    INTEGER         NOT NULL
-    , data_vinculo     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE tb_address (
+      id                            SERIAL      PRIMARY KEY
+    , region_id                     INTEGER     NOT NULL
+    , cep                           CHAR(8)     NOT NULL
+      CONSTRAINT chk_tb_address_cep CHECK      (cep ~ '^[0-9]{8}$')
+    , city                          VARCHAR(60) NOT NULL
+    , state                         VARCHAR(30) NOT NULL
+    , CONSTRAINT fk_tb_address_region           FOREIGN KEY (region_id)
+        REFERENCES tb_region (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
 
-    , CONSTRAINT fk_usuario_instalacao_usuario
-        FOREIGN KEY (id_usuario)
-        REFERENCES tbl_usuario(id)
+CREATE TABLE tb_user (
+      id                    SERIAL       PRIMARY KEY
+    , name                  VARCHAR(100) NOT NULL
+    , email                 VARCHAR(255) NOT NULL UNIQUE
+    , password              VARCHAR(255) NOT NULL
+    , phone                 VARCHAR(15)
+    , birth_date            DATE         NOT NULL
+    , registration_date     DATE         NOT NULL DEFAULT CURRENT_DATE
+    , is_active             BOOLEAN      NOT NULL DEFAULT TRUE
+    , is_admin              BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE tb_property (
+      id                    SERIAL              PRIMARY KEY
+    , name                  VARCHAR(100)        NOT NULL
+    , type                  VARCHAR(20)         NOT NULL
+      CONSTRAINT chk_tb_property_type           CHECK (type IN ('CASA', 'PRÉDIO'))
+    , classification        VARCHAR(20)         NOT NULL
+      CONSTRAINT chk_tb_property_classification CHECK (classification IN ('RESIDENCIAL', 'COMERCIAL'))
+    , address_id            INTEGER             NOT NULL
+    , registration_date     DATE                NOT NULL DEFAULT CURRENT_DATE
+    , CONSTRAINT fk_tb_property_address         FOREIGN KEY (address_id)
+        REFERENCES tb_address (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE tb_user_property (
+      id                                      SERIAL      PRIMARY KEY
+    , user_id                                 INTEGER     NOT NULL
+    , property_id                             INTEGER     NOT NULL
+    , association_date                        DATE        NOT NULL DEFAULT CURRENT_DATE
+    , CONSTRAINT uq_tb_user_property          UNIQUE     (user_id, property_id)
+    , CONSTRAINT fk_tb_user_property_user     FOREIGN KEY (user_id)
+        REFERENCES tb_user (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT fk_usuario_instalacao_instalacao
-        FOREIGN KEY (id_instalacao)
-        REFERENCES tbl_instalacao(id)
+        ON UPDATE CASCADE
+    , CONSTRAINT fk_tb_user_property_property FOREIGN KEY (property_id)
+        REFERENCES tb_property (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT uq_usuario_instalacao
-        UNIQUE (id_usuario, id_instalacao)
+        ON UPDATE CASCADE
 );
 
--- =========================================
--- TABELA DISPOSITIVO
--- =========================================
-
-CREATE TABLE tbl_dispositivo (
-      id                   SERIAL          PRIMARY KEY
-    , device_id            VARCHAR(80)    NOT NULL UNIQUE
-    , id_instalacao        INTEGER         NOT NULL
-    , ativo                BOOLEAN         NOT NULL DEFAULT TRUE
-    , data_instalacao      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-    , ultima_comunicacao   TIMESTAMP
-
-    , CONSTRAINT fk_dispositivo_instalacao
-        FOREIGN KEY (id_instalacao)
-        REFERENCES tbl_instalacao(id)
+CREATE TABLE tb_device (
+      id                    SERIAL      PRIMARY KEY
+    , device_id             INTEGER     NOT NULL UNIQUE
+    , property_id           INTEGER     NOT NULL
+    , is_active             BOOLEAN     NOT NULL DEFAULT TRUE
+    , installation_date     DATE        NOT NULL DEFAULT CURRENT_DATE
+    , CONSTRAINT fk_tb_device_property  FOREIGN KEY (property_id)
+        REFERENCES tb_property (id)
         ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
--- =========================================
--- TABELA META CONSUMO
--- =========================================
-
-CREATE TABLE tbl_meta_consumo (
-      id                     SERIAL          PRIMARY KEY
-    , id_instalacao          INTEGER         NOT NULL
-    , limite_diario_litros   NUMERIC(10,2)
-    , limite_mensal_litros   NUMERIC(10,2)
-    , data_inicio            DATE            NOT NULL
-    , data_fim               DATE
-
-    , CONSTRAINT fk_meta_consumo_instalacao
-        FOREIGN KEY (id_instalacao)
-        REFERENCES tbl_instalacao(id)
+CREATE TABLE tb_region_rate (
+      id                    SERIAL        PRIMARY KEY
+    , region_id             INTEGER       NOT NULL
+    , initial_range         NUMERIC(10,2) NOT NULL
+      CONSTRAINT chk_tb_region_rate_initial_range
+          CHECK (initial_range >= 0)
+    , final_range           NUMERIC(10,2) NOT NULL
+      CONSTRAINT chk_tb_region_rate_final_range
+          CHECK (final_range > initial_range)
+    , m3_value              NUMERIC(10,2) NOT NULL
+      CONSTRAINT chk_tb_region_rate_m3_value
+          CHECK (m3_value > 0)
+    , initial_validity      DATE NOT NULL
+    , final_validity        DATE
+      CONSTRAINT chk_tb_region_rate_final_validity
+          CHECK (final_validity IS NULL OR final_validity >= initial_validity)
+    , CONSTRAINT fk_tb_region_rate_region
+        FOREIGN KEY (region_id)
+        REFERENCES tb_region (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT chk_limite_diario
-        CHECK (limite_diario_litros IS NULL OR limite_diario_litros > 0)
-
-    , CONSTRAINT chk_limite_mensal
-        CHECK (limite_mensal_litros IS NULL OR limite_mensal_litros > 0)
-
-    , CONSTRAINT chk_periodo_meta
-        CHECK (data_fim IS NULL OR data_fim >= data_inicio)
+        ON UPDATE CASCADE
 );
 
--- =========================================
--- TABELA ALERTA
--- =========================================
-
-CREATE TABLE tbl_alerta (
-      id               SERIAL          PRIMARY KEY
-    , id_instalacao    INTEGER         NOT NULL
-    , tipo             VARCHAR(30)     NOT NULL
-    , mensagem         VARCHAR(500)    NOT NULL
-    , status           VARCHAR(20)     NOT NULL DEFAULT 'ativo'
-    , data_criacao     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-    , data_resolucao   TIMESTAMP
-
-    , CONSTRAINT fk_alerta_instalacao
-        FOREIGN KEY (id_instalacao)
-        REFERENCES tbl_instalacao(id)
+CREATE TABLE tb_user_habit (
+      id                    SERIAL      PRIMARY KEY
+    , user_id               INTEGER     NOT NULL
+    , habit_id              INTEGER     NOT NULL
+    , frequency             INTEGER     NOT NULL
+      CONSTRAINT chk_tb_user_habit_frequency
+          CHECK (frequency > 0)
+    , CONSTRAINT uq_tb_user_habit_user_habit
+        UNIQUE (user_id, habit_id)
+    , CONSTRAINT fk_tb_user_habit_user
+        FOREIGN KEY (user_id)
+        REFERENCES tb_user (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT chk_tipo_alerta
-        CHECK (tipo IN ('vazamento', 'consumo_alto', 'consumo_baixo', 'dispositivo_offline'))
-
-    , CONSTRAINT chk_status_alerta
-        CHECK (status IN ('ativo', 'resolvido'))
-
-    , CONSTRAINT chk_data_resolucao
-        CHECK (data_resolucao IS NULL OR data_resolucao >= data_criacao)
+        ON UPDATE CASCADE
+    , CONSTRAINT fk_tb_user_habit_habit
+        FOREIGN KEY (habit_id)
+        REFERENCES tb_habit (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
--- =========================================
--- TABELA TARIFA ÁGUA
--- =========================================
-
-CREATE TABLE tbl_tarifa_agua (
-      id               SERIAL          PRIMARY KEY
-    , cidade           VARCHAR(100)    NOT NULL
-    , faixa_inicial    NUMERIC(10,2)   NOT NULL
-    , faixa_final      NUMERIC(10,2)   NOT NULL
-    , valor_m3         NUMERIC(10,2)   NOT NULL
-    , vigencia_inicio  DATE            NOT NULL
-    , vigencia_fim     DATE
-
-    , CONSTRAINT chk_faixa_consumo
-        CHECK (faixa_inicial >= 0 AND faixa_final > faixa_inicial)
-
-    , CONSTRAINT chk_valor_m3
-        CHECK (valor_m3 > 0)
-
-    , CONSTRAINT chk_vigencia
-        CHECK (vigencia_fim IS NULL OR vigencia_fim >= vigencia_inicio)
-);
-
--- =========================================
--- TABELA HÁBITO
--- =========================================
-
-CREATE TABLE tbl_habito (
-      id        SERIAL          PRIMARY KEY
-    , codigo    VARCHAR(50)     NOT NULL UNIQUE
-    , descricao TEXT            NOT NULL
-);
-
--- =========================================
--- TABELA USUÁRIO x HÁBITO
--- =========================================
-
-CREATE TABLE tbl_usuario_habito (
-      id             SERIAL          PRIMARY KEY
-    , id_usuario     INTEGER         NOT NULL
-    , id_habito      INTEGER         NOT NULL
-    , data_vinculo   TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
-
-    , CONSTRAINT fk_usuario_habito_usuario
-        FOREIGN KEY (id_usuario)
-        REFERENCES tbl_usuario(id)
+CREATE TABLE tb_user_habit_day (
+      id                    SERIAL      PRIMARY KEY
+    , user_habit_id         INTEGER     NOT NULL
+    , day_of_week_id        INTEGER     NOT NULL
+    , CONSTRAINT uq_tb_user_habit_day
+        UNIQUE (user_habit_id, day_of_week_id)
+    , CONSTRAINT fk_tb_user_habit_day_user_habit
+        FOREIGN KEY (user_habit_id)
+        REFERENCES tb_user_habit (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT fk_usuario_habito_habito
-        FOREIGN KEY (id_habito)
-        REFERENCES tbl_habito(id)
+        ON UPDATE CASCADE
+    , CONSTRAINT fk_tb_user_habit_day_day_of_week
+        FOREIGN KEY (day_of_week_id)
+        REFERENCES tb_day_of_week (id)
         ON DELETE CASCADE
-
-    , CONSTRAINT uq_usuario_habito
-        UNIQUE (id_usuario, id_habito)
+        ON UPDATE CASCADE
 );

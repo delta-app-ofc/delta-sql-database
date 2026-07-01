@@ -52,7 +52,7 @@
     GRANT SELECT ON ALL TABLES   IN SCHEMA public TO sys_bi_analyst;
 
 -- 7. DEVOPS
-    GRANT ALL PRIVILEGES ON DATABASE delta TO sys_devops;
+    GRANT ALL PRIVILEGES ON DATABASE deltadb TO sys_devops;
 
 -- 8. FIRST YEAR
     GRANT USAGE  ON SCHEMA public TO sys_first_year;

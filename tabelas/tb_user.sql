@@ -8,4 +8,5 @@ CREATE TABLE tb_user (
     , registration_date     DATE         NOT NULL DEFAULT CURRENT_DATE
     , is_active             BOOLEAN      NOT NULL DEFAULT TRUE
     , is_admin              BOOLEAN      NOT NULL DEFAULT FALSE
+    , is_manager            BOOLEAN      NOT NULL DEFAULT FALSE
 );

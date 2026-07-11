@@ -50,6 +50,7 @@ CREATE TABLE tb_user (
     , password              VARCHAR(255) NOT NULL
     , phone                 VARCHAR(15)
     , birth_date            DATE         NOT NULL
+      CONSTRAINT chk_tb_user_birth_date CHECK (birth_date <= CURRENT_DATE)
     , registration_date     DATE         NOT NULL DEFAULT CURRENT_DATE
     , is_active             BOOLEAN      NOT NULL DEFAULT TRUE
     , is_admin              BOOLEAN      NOT NULL DEFAULT FALSE
@@ -161,17 +162,25 @@ CREATE TABLE tb_user_habit_day (
 );
 
 CREATE TABLE tb_last_water_bill (
+
       id                    SERIAL        PRIMARY KEY
     , user_id               INTEGER       NOT NULL
-    , month                 VARCHAR(20)   NOT NULL
+
+    , month                 DATE          NOT NULL
++      CONSTRAINT chk_tb_last_water_bill_month
++          CHECK (EXTRACT(DAY FROM month) = 1)
+
     , total_value           NUMERIC(10,2) NOT NULL
       CONSTRAINT chk_tb_last_water_bill_total_value
           CHECK (total_value >= 0)
+
     , m3_value              NUMERIC(10,2) NOT NULL
       CONSTRAINT chk_tb_last_water_bill_m3_value
           CHECK (m3_value >= 0)
+
     , CONSTRAINT uq_tb_last_water_bill_user_month
         UNIQUE (user_id, month)
+
     , CONSTRAINT fk_tb_last_water_bill_user
         FOREIGN KEY (user_id)
         REFERENCES tb_user (id)

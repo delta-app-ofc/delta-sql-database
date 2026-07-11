@@ -15,7 +15,6 @@ BEGIN
             , user_id
             , name
             , email
-            , password
             , phone
             , birth_date
             , registration_date
@@ -31,7 +30,6 @@ BEGIN
             , OLD.id
             , OLD.name
             , OLD.email
-            , OLD.password
             , OLD.phone
             , OLD.birth_date
             , OLD.registration_date
@@ -52,7 +50,6 @@ BEGIN
             , user_id
             , name
             , email
-            , password
             , phone
             , birth_date
             , registration_date
@@ -68,7 +65,6 @@ BEGIN
             , NEW.id
             , NEW.name
             , NEW.email
-            , NEW.password
             , NEW.phone
             , NEW.birth_date
             , NEW.registration_date

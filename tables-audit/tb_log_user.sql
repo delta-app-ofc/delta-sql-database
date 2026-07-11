@@ -6,7 +6,6 @@ CREATE TABLE tb_log_user (
     , user_id                 INTEGER
     , name                    VARCHAR(100)
     , email                   VARCHAR(255)
-    , password                VARCHAR(255)
     , phone                   VARCHAR(15)
     , birth_date              DATE
     , registration_date       DATE

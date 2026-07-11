@@ -1,15 +1,28 @@
-DROP TABLE IF EXISTS tb_log_address         CASCADE;
-DROP TABLE IF EXISTS tb_log_habit           CASCADE;
-DROP TABLE IF EXISTS tb_log_day_of_week     CASCADE;
-DROP TABLE IF EXISTS tb_log_region          CASCADE;
-DROP TABLE IF EXISTS tb_log_device          CASCADE;
-DROP TABLE IF EXISTS tb_log_property        CASCADE;
-DROP TABLE IF EXISTS tb_log_user            CASCADE;
-DROP TABLE IF EXISTS tb_log_user_property   CASCADE;
-DROP TABLE IF EXISTS tb_log_last_water_bill CASCADE;
-DROP TABLE IF EXISTS tb_log_user_habit_day  CASCADE;
-DROP TABLE IF EXISTS tb_log_user_habit      CASCADE;
-DROP TABLE IF EXISTS tb_log_region_rate     CASCADE;
+DROP TABLE IF EXISTS tb_log_address           CASCADE;
+DROP TABLE IF EXISTS tb_log_habit             CASCADE;
+DROP TABLE IF EXISTS tb_log_day_of_week       CASCADE;
+DROP TABLE IF EXISTS tb_log_region            CASCADE;
+DROP TABLE IF EXISTS tb_log_device            CASCADE;
+DROP TABLE IF EXISTS tb_log_property          CASCADE;
+DROP TABLE IF EXISTS tb_log_user              CASCADE;
+DROP TABLE IF EXISTS tb_log_user_property     CASCADE;
+DROP TABLE IF EXISTS tb_log_last_water_bill   CASCADE;
+DROP TABLE IF EXISTS tb_log_user_habit_day    CASCADE;
+DROP TABLE IF EXISTS tb_log_user_habit        CASCADE;
+DROP TABLE IF EXISTS tb_log_region_rate       CASCADE;
+
+DROP TRIGGER IF EXISTS trg_log_region          ON tb_region;
+DROP TRIGGER IF EXISTS trg_log_day_of_week     ON tb_day_of_week;
+DROP TRIGGER IF EXISTS trg_log_habit           ON tb_habit;
+DROP TRIGGER IF EXISTS trg_log_address         ON tb_address;
+DROP TRIGGER IF EXISTS trg_log_user            ON tb_user;
+DROP TRIGGER IF EXISTS trg_log_property        ON tb_property;
+DROP TRIGGER IF EXISTS trg_log_user_property   ON tb_user_property;
+DROP TRIGGER IF EXISTS trg_log_device          ON tb_device;
+DROP TRIGGER IF EXISTS trg_log_region_rate     ON tb_region_rate;
+DROP TRIGGER IF EXISTS trg_log_user_habit      ON tb_user_habit;
+DROP TRIGGER IF EXISTS trg_log_user_habit_day  ON tb_user_habit_day;
+DROP TRIGGER IF EXISTS trg_log_last_water_bill ON tb_last_water_bill;
 
 CREATE TABLE tb_log_region (
       id                  SERIAL       PRIMARY KEY

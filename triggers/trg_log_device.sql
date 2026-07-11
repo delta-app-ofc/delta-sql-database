@@ -1,0 +1,5 @@
+CREATE TRIGGER trg_log_device
+AFTER INSERT OR UPDATE OR DELETE
+ON tb_device
+FOR EACH ROW
+EXECUTE FUNCTION fn_log_device();

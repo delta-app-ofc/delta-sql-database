@@ -24,12 +24,6 @@ DROP TRIGGER IF EXISTS trg_log_user_habit      ON tb_user_habit;
 DROP TRIGGER IF EXISTS trg_log_user_habit_day  ON tb_user_habit_day;
 DROP TRIGGER IF EXISTS trg_log_last_water_bill ON tb_last_water_bill;
 
-DROP FUNCTION IF EXISTS fn_log_day_of_week();
-DROP FUNCTION IF EXISTS fn_log_region();
-DROP FUNCTION IF EXISTS fn_log_habit();
-DROP FUNCTION IF EXISTS fn_log_user();
-DROP FUNCTION IF EXISTS fn_log_address();
-
 
 CREATE TABLE tb_log_region (
 
@@ -149,9 +143,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -255,57 +249,184 @@ CREATE TABLE tb_log_day_of_week (
 );
 
 CREATE OR REPLACE FUNCTION fn_log_day_of_week()
+
 RETURNS TRIGGER
+
 LANGUAGE plpgsql
-AS
-$$
+
+AS $$
+
+DECLARE
+
+    field_name         TEXT;
+    old_value          TEXT;
+    new_value          TEXT;
+
+    previous_log_id    INTEGER;
+
+    log_description    TEXT;
+
 BEGIN
 
-    IF TG_OP = 'DELETE' THEN
+    IF TG_OP <> 'DELETE' THEN
 
-        INSERT INTO tb_log_day_of_week
-        (
-              operation
-            , executed_by
-            , executed_at
-            , day_of_week_id
-            , name
-        )
-        VALUES
-        (
-              TG_OP
-            , CURRENT_USER
-            , CURRENT_TIMESTAMP
-            , OLD.id
-            , OLD.name
-        );
-
-        RETURN OLD;
+        SELECT id
+        INTO previous_log_id
+        FROM tb_log_day_of_week
+        WHERE day_of_week_id = NEW.id
+        ORDER BY id DESC
+        LIMIT 1;
 
     ELSE
 
+        SELECT id
+        INTO previous_log_id
+        FROM tb_log_day_of_week
+        WHERE day_of_week_id = OLD.id
+        ORDER BY id DESC
+        LIMIT 1;
+
+    END IF;
+
+
+    IF TG_OP = 'INSERT' THEN
+
+        log_description :=
+            'Registro inserido na tabela tb_day_of_week.';
+
+
         INSERT INTO tb_log_day_of_week
         (
-              operation
+              day_of_week_id
+            , name
+
+            , operation
             , executed_by
             , executed_at
-            , day_of_week_id
-            , name
+
+            , previous_log_id
+            , log_description
         )
+
         VALUES
         (
-              TG_OP
+              NEW.id
+            , NEW.name
+
+            , TG_OP
             , CURRENT_USER
             , CURRENT_TIMESTAMP
-            , NEW.id
-            , NEW.name
+
+            , previous_log_id
+            , log_description
         );
 
+
         RETURN NEW;
+
+
+    ELSIF TG_OP = 'UPDATE' THEN
+
+        log_description :=
+            'Registro atualizado na tabela tb_day_of_week. Campos alterados:';
+
+
+        FOR field_name, old_value IN
+
+            SELECT *
+            FROM json_each_text(row_to_json(OLD))
+
+        LOOP
+
+            new_value := row_to_json(NEW) ->> field_name;
+
+
+            IF old_value IS DISTINCT FROM new_value THEN
+
+                log_description :=
+                    log_description ||
+                    E'\n- Campo: ' ||
+                    field_name ||
+                    ' | Valor antigo: "' ||
+                    COALESCE(old_value, '<NULL>') ||
+                    '" | Valor novo: "' ||
+                    COALESCE(new_value, '<NULL>') ||
+                    '"';
+
+            END IF;
+
+        END LOOP;
+
+
+        INSERT INTO tb_log_day_of_week
+        (
+              day_of_week_id
+            , name
+
+            , operation
+            , executed_by
+            , executed_at
+
+            , previous_log_id
+            , log_description
+        )
+
+        VALUES
+        (
+              NEW.id
+            , NEW.name
+
+            , TG_OP
+            , CURRENT_USER
+            , CURRENT_TIMESTAMP
+
+            , previous_log_id
+            , log_description
+        );
+
+
+        RETURN NEW;
+
+
+    ELSIF TG_OP = 'DELETE' THEN
+
+        log_description :=
+            'Registro removido da tabela tb_day_of_week.';
+
+
+        INSERT INTO tb_log_day_of_week
+        (
+              day_of_week_id
+            , name
+
+            , operation
+            , executed_by
+            , executed_at
+
+            , previous_log_id
+            , log_description
+        )
+
+        VALUES
+        (
+              OLD.id
+            , OLD.name
+
+            , TG_OP
+            , CURRENT_USER
+            , CURRENT_TIMESTAMP
+
+            , previous_log_id
+            , log_description
+        );
+
+
+        RETURN OLD;
 
     END IF;
 
 END;
+
 $$;
 
 CREATE TRIGGER trg_log_day_of_week
@@ -436,9 +557,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -654,9 +775,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -761,7 +882,6 @@ CREATE TABLE tb_log_user (
 
     , name                  VARCHAR(100)
     , email                 VARCHAR(255)
-    , password              VARCHAR(255)
     , phone                 VARCHAR(15)
     , birth_date            DATE
     , registration_date     DATE
@@ -831,7 +951,6 @@ BEGIN
 
             , name
             , email
-            , password
             , phone
             , birth_date
             , registration_date
@@ -853,7 +972,6 @@ BEGIN
 
             , NEW.name
             , NEW.email
-            , NEW.password
             , NEW.phone
             , NEW.birth_date
             , NEW.registration_date
@@ -896,9 +1014,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -912,7 +1030,6 @@ BEGIN
 
             , name
             , email
-            , password
             , phone
             , birth_date
             , registration_date
@@ -934,7 +1051,6 @@ BEGIN
 
             , NEW.name
             , NEW.email
-            , NEW.password
             , NEW.phone
             , NEW.birth_date
             , NEW.registration_date
@@ -966,7 +1082,6 @@ BEGIN
 
             , name
             , email
-            , password
             , phone
             , birth_date
             , registration_date
@@ -988,7 +1103,6 @@ BEGIN
 
             , OLD.name
             , OLD.email
-            , OLD.password
             , OLD.phone
             , OLD.birth_date
             , OLD.registration_date
@@ -1150,9 +1264,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -1369,9 +1483,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -1566,9 +1680,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -1777,9 +1891,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -1998,9 +2112,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -2212,9 +2326,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;
@@ -2428,9 +2542,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;

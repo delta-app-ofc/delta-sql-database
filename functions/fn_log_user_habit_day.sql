@@ -100,9 +100,9 @@ BEGIN
                     E'\n- Campo: ' ||
                     field_name ||
                     ' | Valor antigo: "' ||
-                    old_value ||
+                    COALESCE(old_value, '<NULL>') ||
                     '" | Valor novo: "' ||
-                    new_value ||
+                    COALESCE(new_value, '<NULL>') ||
                     '"';
 
             END IF;

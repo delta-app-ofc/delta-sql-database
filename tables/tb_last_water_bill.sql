@@ -4,8 +4,8 @@ CREATE TABLE tb_last_water_bill (
     , user_id               INTEGER       NOT NULL
 
     , month                 DATE          NOT NULL
-+      CONSTRAINT chk_tb_last_water_bill_month
-+          CHECK (EXTRACT(DAY FROM month) = 1)
+     CONSTRAINT chk_tb_last_water_bill_month
+         CHECK (EXTRACT(DAY FROM month) = 1)
 
     , total_value           NUMERIC(10,2) NOT NULL
       CONSTRAINT chk_tb_last_water_bill_total_value

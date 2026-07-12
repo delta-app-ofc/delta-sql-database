@@ -1,0 +1,5 @@
+CREATE TRIGGER trg_log_region
+AFTER INSERT OR UPDATE OR DELETE
+ON tb_region
+FOR EACH ROW
+EXECUTE FUNCTION fn_log_region();

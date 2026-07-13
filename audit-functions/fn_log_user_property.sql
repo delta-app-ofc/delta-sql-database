@@ -1,11 +1,7 @@
 CREATE OR REPLACE FUNCTION fn_log_user_property()
-
 RETURNS TRIGGER
-
 LANGUAGE plpgsql
-
 AS $$
-
 DECLARE
 
     field_name         TEXT;

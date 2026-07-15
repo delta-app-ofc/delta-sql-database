@@ -2222,6 +2222,10 @@ CREATE TABLE tb_log_user_habit_day (
     , previous_log_id       INTEGER
     , log_description       TEXT
 
+    , CONSTRAINT fk_tb_log_user_habit_day_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_user_habit_day (id)
+
 );
 
 CREATE OR REPLACE FUNCTION fn_log_user_habit_day()

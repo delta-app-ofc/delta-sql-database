@@ -895,6 +895,9 @@ CREATE TABLE tb_log_user (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    , CONSTRAINT fk_tb_log_user_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_user (id)
 
 );
 
@@ -1151,6 +1154,9 @@ CREATE TABLE tb_log_property (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    , CONSTRAINT fk_tb_log_property_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_property (id)
 
 );
 
@@ -1370,7 +1376,6 @@ AFTER INSERT OR UPDATE OR DELETE
 ON tb_property
 FOR EACH ROW
 EXECUTE FUNCTION fn_log_property();
-
 CREATE TABLE tb_log_user_property (
 
       id                    SERIAL PRIMARY KEY
@@ -1386,6 +1391,10 @@ CREATE TABLE tb_log_user_property (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+
+    , CONSTRAINT fk_tb_log_user_property_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_user_property (id)
 
 );
 
@@ -1581,7 +1590,10 @@ CREATE TABLE tb_log_device (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
-
+    
+    , CONSTRAINT fk_tb_log_device_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_device (id)
 );
 
 CREATE OR REPLACE FUNCTION fn_log_device()
@@ -1782,6 +1794,10 @@ CREATE TABLE tb_log_region_rate (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+
+    , CONSTRAINT fk_tb_log_region_rate_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_region_rate (id)
 
 );
 
@@ -2005,6 +2021,10 @@ CREATE TABLE tb_log_user_habit (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    
+    , CONSTRAINT fk_tb_log_user_habit_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_user_habit (id)
 
 );
 
@@ -2437,6 +2457,9 @@ CREATE TABLE tb_log_last_water_bill (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    , CONSTRAINT fk_tb_log_last_water_bill_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_last_water_bill (id)
 
 );
 

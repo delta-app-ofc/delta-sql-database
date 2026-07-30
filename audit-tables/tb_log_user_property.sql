@@ -14,4 +14,8 @@ CREATE TABLE tb_log_user_property (
     , previous_log_id       INTEGER
     , log_description       TEXT
 
+    , CONSTRAINT fk_tb_log_user_property_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_user_property (id)
+
 );

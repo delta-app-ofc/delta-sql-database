@@ -14,5 +14,8 @@ CREATE TABLE tb_log_last_water_bill (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    , CONSTRAINT fk_tb_log_last_water_bill_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_last_water_bill (id)
 
 );

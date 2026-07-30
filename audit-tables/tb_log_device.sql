@@ -14,5 +14,8 @@ CREATE TABLE tb_log_device (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
-
+    
+    , CONSTRAINT fk_tb_log_device_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_device (id)
 );

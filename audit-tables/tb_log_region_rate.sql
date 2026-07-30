@@ -15,4 +15,8 @@ CREATE TABLE tb_log_region_rate (
     , previous_log_id       INTEGER
     , log_description       TEXT
 
+    , CONSTRAINT fk_tb_log_region_rate_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_region_rate (id)
+
 );

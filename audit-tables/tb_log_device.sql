@@ -3,7 +3,7 @@ CREATE TABLE tb_log_device (
       id                    SERIAL PRIMARY KEY
 
     , device_id_log         INTEGER
-    , device_id             INTEGER
+    , device_id             VARCHAR(100)
     , property_id           INTEGER
     , is_active             BOOLEAN
     , installation_date     DATE

@@ -16,5 +16,8 @@ CREATE TABLE tb_log_property (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
+    , CONSTRAINT fk_tb_log_property_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_property (id)
 
 );

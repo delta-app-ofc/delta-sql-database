@@ -13,6 +13,9 @@ CREATE TABLE tb_region_rate (
       CONSTRAINT chk_tb_region_rate_final_validity
         CHECK (final_validity IS NULL OR final_validity >= initial_validity)
 
+    , CONSTRAINT uq_tb_region_rate_region_validity
+        UNIQUE (region_id, initial_validity)
+
     , CONSTRAINT fk_tb_region_rate_region
         FOREIGN KEY (region_id)
         REFERENCES tb_region (id)

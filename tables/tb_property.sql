@@ -7,6 +7,7 @@ CREATE TABLE tb_property (
       CONSTRAINT chk_tb_property_classification CHECK (classification IN ('RESIDENCIAL', 'COMERCIAL'))
     , address_id            INTEGER             NOT NULL
     , registration_date     DATE                NOT NULL DEFAULT CURRENT_DATE
+    , CONSTRAINT uq_tb_property_name_address    UNIQUE (name, address_id)
     , CONSTRAINT fk_tb_property_address         FOREIGN KEY (address_id)
         REFERENCES tb_address (id)
         ON DELETE RESTRICT

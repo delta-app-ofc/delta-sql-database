@@ -126,6 +126,10 @@ def main() -> None:
     planned = arguments.only or SCRIPTS
     planned = [name for name in planned if name not in arguments.skip]
 
+    unknown = [name for name in planned if name not in SCRIPTS]
+    if unknown:
+        sys.exit(f"Script(s) desconhecido(s): {', '.join(unknown)}")
+
     params = _connection_params()
     print(
         f"Banco: {params['user']}@{params['host']}:"
@@ -150,7 +154,11 @@ def main() -> None:
             path = os.path.join(scripts_dir, name)
 
             if not os.path.isfile(path):
-                print(f"\n[PULADO] {name} (nao encontrado em {scripts_dir})")
+                failures += 1
+                print(f"\n[ERRO] {name} (nao encontrado em {scripts_dir})")
+
+                if not arguments.continue_on_error:
+                    sys.exit(1)
                 continue
 
             print(f"\n=== {name} ===")

@@ -47,6 +47,14 @@ BEGIN
        SET classification_id = v_classification_id
      WHERE id = p_property_id;
 
+    IF NOT FOUND THEN
+
+        RAISE EXCEPTION
+            'Imóvel % não encontrado.',
+            p_property_id;
+
+    END IF;
+
 
 END;
 $$;

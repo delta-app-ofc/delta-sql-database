@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS tb_log_day_of_week       CASCADE;
 DROP TABLE IF EXISTS tb_log_region            CASCADE;
 DROP TABLE IF EXISTS tb_log_device            CASCADE;
 DROP TABLE IF EXISTS tb_log_property          CASCADE;
+DROP TABLE IF EXISTS tb_log_property_classification CASCADE;
 DROP TABLE IF EXISTS tb_log_user              CASCADE;
 DROP TABLE IF EXISTS tb_log_user_property     CASCADE;
 DROP TABLE IF EXISTS tb_log_last_water_bill   CASCADE;
@@ -17,6 +18,7 @@ DROP TRIGGER IF EXISTS trg_log_habit           ON tb_habit;
 DROP TRIGGER IF EXISTS trg_log_address         ON tb_address;
 DROP TRIGGER IF EXISTS trg_log_user            ON tb_user;
 DROP TRIGGER IF EXISTS trg_log_property        ON tb_property;
+DROP TRIGGER IF EXISTS trg_log_property_classification ON tb_property_classification;
 DROP TRIGGER IF EXISTS trg_log_user_property   ON tb_user_property;
 DROP TRIGGER IF EXISTS trg_log_device          ON tb_device;
 DROP TRIGGER IF EXISTS trg_log_region_rate     ON tb_region_rate;
@@ -1144,7 +1146,7 @@ CREATE TABLE tb_log_property (
 
     , name                  VARCHAR(100)
     , type                  VARCHAR(20)
-    , classification        VARCHAR(20)
+    , classification_id     INTEGER
     , address_id            INTEGER
     , registration_date     DATE
 
@@ -1213,7 +1215,7 @@ BEGIN
 
             , name
             , type
-            , classification
+            , classification_id
             , address_id
             , registration_date
 
@@ -1231,7 +1233,7 @@ BEGIN
 
             , NEW.name
             , NEW.type
-            , NEW.classification
+            , NEW.classification_id
             , NEW.address_id
             , NEW.registration_date
 
@@ -1286,7 +1288,7 @@ BEGIN
 
             , name
             , type
-            , classification
+            , classification_id
             , address_id
             , registration_date
 
@@ -1304,7 +1306,7 @@ BEGIN
 
             , NEW.name
             , NEW.type
-            , NEW.classification
+            , NEW.classification_id
             , NEW.address_id
             , NEW.registration_date
 
@@ -1332,7 +1334,7 @@ BEGIN
 
             , name
             , type
-            , classification
+            , classification_id
             , address_id
             , registration_date
 
@@ -1350,7 +1352,7 @@ BEGIN
 
             , OLD.name
             , OLD.type
-            , OLD.classification
+            , OLD.classification_id
             , OLD.address_id
             , OLD.registration_date
 
@@ -1376,6 +1378,220 @@ AFTER INSERT OR UPDATE OR DELETE
 ON tb_property
 FOR EACH ROW
 EXECUTE FUNCTION fn_log_property();
+
+CREATE TABLE tb_log_property_classification (
+
+      id                    SERIAL PRIMARY KEY
+
+    , property_classification_id INTEGER
+    , name                  VARCHAR(50)
+    , group_name            VARCHAR(20)
+
+    , operation             VARCHAR(10) NOT NULL
+    , executed_by           VARCHAR(100) NOT NULL
+    , executed_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+    , previous_log_id       INTEGER
+    , log_description       TEXT
+    , CONSTRAINT fk_tb_log_property_classification_previous_log
+        FOREIGN KEY (previous_log_id)
+        REFERENCES tb_log_property_classification (id)
+
+);
+
+CREATE OR REPLACE FUNCTION fn_log_property_classification()
+
+RETURNS TRIGGER
+
+LANGUAGE plpgsql
+
+AS $$
+
+DECLARE
+
+    field_name         TEXT;
+    old_value          TEXT;
+    new_value          TEXT;
+
+    previous_log_id    INTEGER;
+
+    log_description    TEXT;
+
+BEGIN
+
+    IF TG_OP <> 'DELETE' THEN
+
+        SELECT id
+        INTO previous_log_id
+        FROM tb_log_property_classification
+        WHERE property_classification_id = NEW.id
+        ORDER BY id DESC
+        LIMIT 1;
+
+    ELSE
+
+        SELECT id
+        INTO previous_log_id
+        FROM tb_log_property_classification
+        WHERE property_classification_id = OLD.id
+        ORDER BY id DESC
+        LIMIT 1;
+
+    END IF;
+
+
+    IF TG_OP = 'INSERT' THEN
+
+        log_description :=
+            'Registro inserido na tabela tb_property_classification.';
+
+
+        INSERT INTO tb_log_property_classification
+        (
+              property_classification_id
+            , name
+            , group_name
+
+            , operation
+            , executed_by
+            , executed_at
+
+            , previous_log_id
+            , log_description
+        )
+
+        VALUES
+        (
+              NEW.id
+            , NEW.name
+            , NEW.group_name
+
+            , TG_OP
+            , CURRENT_USER
+            , CURRENT_TIMESTAMP
+
+            , previous_log_id
+            , log_description
+        );
+
+
+        RETURN NEW;
+
+
+    ELSIF TG_OP = 'UPDATE' THEN
+
+        log_description :=
+            'Registro atualizado na tabela tb_property_classification. Campos alterados:';
+
+
+        FOR field_name, old_value IN
+
+            SELECT *
+            FROM json_each_text(row_to_json(OLD))
+
+        LOOP
+
+            new_value := row_to_json(NEW) ->> field_name;
+
+
+            IF old_value IS DISTINCT FROM new_value THEN
+
+                log_description :=
+                    log_description ||
+                    E'\n- Campo: ' ||
+                    field_name ||
+                    ' | Valor antigo: "' ||
+                    COALESCE(old_value, '<NULL>') ||
+                    '" | Valor novo: "' ||
+                    COALESCE(new_value, '<NULL>') ||
+                    '"';
+
+            END IF;
+
+        END LOOP;
+
+
+        INSERT INTO tb_log_property_classification
+        (
+              property_classification_id
+            , name
+            , group_name
+
+            , operation
+            , executed_by
+            , executed_at
+
+            , previous_log_id
+            , log_description
+        )
+
+        VALUES
+        (
+              NEW.id
+            , NEW.name
+            , NEW.group_name
+
+            , TG_OP
+            , CURRENT_USER
+            , CURRENT_TIMESTAMP
+
+            , previous_log_id
+            , log_description
+        );
+
+
+        RETURN NEW;
+
+
+    ELSIF TG_OP = 'DELETE' THEN
+
+        log_description :=
+            'Registro removido da tabela tb_property_classification.';
+
+
+        INSERT INTO tb_log_property_classification
+        (
+              property_classification_id
+            , name
+            , group_name
+
+            , operation
+            , executed_by
+            , executed_at
+
+            , previous_log_id
+            , log_description
+        )
+
+        VALUES
+        (
+              OLD.id
+            , OLD.name
+            , OLD.group_name
+
+            , TG_OP
+            , CURRENT_USER
+            , CURRENT_TIMESTAMP
+
+            , previous_log_id
+            , log_description
+        );
+
+
+        RETURN OLD;
+
+    END IF;
+
+END;
+
+$$;
+
+CREATE TRIGGER trg_log_property_classification
+AFTER INSERT OR UPDATE OR DELETE
+ON tb_property_classification
+FOR EACH ROW
+EXECUTE FUNCTION fn_log_property_classification();
+
 CREATE TABLE tb_log_user_property (
 
       id                    SERIAL PRIMARY KEY

@@ -3,11 +3,14 @@ CREATE TABLE tb_property (
     , name                  VARCHAR(100)        NOT NULL
     , type                  VARCHAR(20)         NOT NULL
       CONSTRAINT chk_tb_property_type           CHECK (type IN ('CASA', 'PRÉDIO'))
-    , classification        VARCHAR(20)         NOT NULL
-      CONSTRAINT chk_tb_property_classification CHECK (classification IN ('RESIDENCIAL', 'COMERCIAL'))
+    , classification_id     INTEGER             NOT NULL
     , address_id            INTEGER             NOT NULL
     , registration_date     DATE                NOT NULL DEFAULT CURRENT_DATE
     , CONSTRAINT uq_tb_property_name_address    UNIQUE (name, address_id)
+    , CONSTRAINT fk_tb_property_classification  FOREIGN KEY (classification_id)
+        REFERENCES tb_property_classification (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
     , CONSTRAINT fk_tb_property_address         FOREIGN KEY (address_id)
         REFERENCES tb_address (id)
         ON DELETE RESTRICT

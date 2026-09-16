@@ -6,7 +6,7 @@ CREATE TABLE tb_log_property (
 
     , name                  VARCHAR(100)
     , type                  VARCHAR(20)
-    , classification        VARCHAR(20)
+    , classification_id     INTEGER
     , address_id            INTEGER
     , registration_date     DATE
 

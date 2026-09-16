@@ -37,16 +37,18 @@ $$;
 CREATE OR REPLACE FUNCTION fn_get_property_classification(
     p_property_id INTEGER
 )
-RETURNS VARCHAR(20)
+RETURNS VARCHAR(50)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_classification VARCHAR(20);
+    v_classification VARCHAR(50);
 BEGIN
 
-    SELECT p.classification
+    SELECT pc.name
       INTO v_classification
       FROM tb_property p
+      JOIN tb_property_classification pc
+        ON pc.id = p.classification_id
      WHERE p.id = p_property_id;
 
     IF NOT FOUND THEN
@@ -56,6 +58,34 @@ BEGIN
     END IF;
 
     RETURN v_classification;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_property_classification_group(
+    p_property_id INTEGER
+)
+RETURNS VARCHAR(20)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_group_name VARCHAR(20);
+BEGIN
+
+    SELECT pc.group_name
+      INTO v_group_name
+      FROM tb_property p
+      JOIN tb_property_classification pc
+        ON pc.id = p.classification_id
+     WHERE p.id = p_property_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'Imóvel com id % não encontrado.',
+            p_property_id;
+    END IF;
+
+    RETURN v_group_name;
 
 END;
 $$;
@@ -356,13 +386,14 @@ CREATE OR REPLACE PROCEDURE sp_register_property(
     p_user_id INTEGER,
     p_name VARCHAR(100),
     p_type VARCHAR(20),
-    p_classification VARCHAR(20),
+    p_classification VARCHAR(50),
     p_address_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     v_property_id INTEGER;
+    v_classification_id INTEGER;
 BEGIN
 
 
@@ -394,19 +425,35 @@ BEGIN
 
 
 
+    -- Resolve o nome da classificação pro id correspondente
+    SELECT id
+      INTO v_classification_id
+      FROM tb_property_classification
+     WHERE name = p_classification;
+
+    IF NOT FOUND THEN
+
+        RAISE EXCEPTION
+            'Classificação % não encontrada.',
+            p_classification;
+
+    END IF;
+
+
+
     -- Insere a propriedade
     INSERT INTO tb_property
     (
         name,
         type,
-        classification,
+        classification_id,
         address_id
     )
     VALUES
     (
         p_name,
         p_type,
-        p_classification,
+        v_classification_id,
         p_address_id
     )
     RETURNING id INTO v_property_id;
@@ -424,6 +471,59 @@ BEGIN
         p_user_id,
         v_property_id
     );
+
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_update_property_classification(
+    p_property_id INTEGER,
+    p_classification VARCHAR(50)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_classification_id INTEGER;
+BEGIN
+
+
+    -- Verifica se o imóvel existe
+    IF NOT EXISTS
+    (
+        SELECT 1
+          FROM tb_property
+         WHERE id = p_property_id
+    )
+    THEN
+
+        RAISE EXCEPTION
+            'Imóvel % não encontrado.',
+            p_property_id;
+
+    END IF;
+
+
+
+    -- Resolve o nome da classificação pro id correspondente
+    SELECT id
+      INTO v_classification_id
+      FROM tb_property_classification
+     WHERE name = p_classification;
+
+    IF NOT FOUND THEN
+
+        RAISE EXCEPTION
+            'Classificação % não encontrada.',
+            p_classification;
+
+    END IF;
+
+
+
+    -- Atualiza a classificação (o trigger trg_log_property audita a mudança)
+    UPDATE tb_property
+       SET classification_id = v_classification_id
+     WHERE id = p_property_id;
 
 
 END;

@@ -1,15 +1,15 @@
-CREATE OR REPLACE FUNCTION fn_get_property_classification(
+CREATE OR REPLACE FUNCTION fn_get_property_classification_group(
     p_property_id INTEGER
 )
-RETURNS VARCHAR(50)
+RETURNS VARCHAR(20)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_classification VARCHAR(50);
+    v_group_name VARCHAR(20);
 BEGIN
 
-    SELECT pc.name
-      INTO v_classification
+    SELECT pc.group_name
+      INTO v_group_name
       FROM tb_property p
       JOIN tb_property_classification pc
         ON pc.id = p.classification_id
@@ -21,7 +21,7 @@ BEGIN
             p_property_id;
     END IF;
 
-    RETURN v_classification;
+    RETURN v_group_name;
 
 END;
 $$;

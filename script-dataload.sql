@@ -1,11 +1,14 @@
 BEGIN;
 
+-- Ordem fixa (ids 1-5): cada região representa uma área com tarifa Sabesp
+-- realmente diferente (fonte: ARSESP, tabelas vigentes desde 01/01/2026),
+-- não mais as 5 zonas da Grande SP, que cobram a mesma tarifa entre si.
 INSERT INTO tb_region (name) VALUES
-    ('LESTE'),
-    ('OESTE'),
-    ('SUL'),
-    ('NORTE'),
-    ('CENTRO');
+    ('GRANDE_SP'),
+    ('LINS'),
+    ('PRESIDENTE_PRUDENTE'),
+    ('ADAMANTINA_PIRAPOZINHO'),
+    ('BRAGANCA_PAULISTA');
 
 -- Ordem fixa (ids 1-8), igual à convenção já usada pra tb_region acima:
 -- o restante deste dataload referencia essas linhas pelo id literal.
@@ -858,17 +861,57 @@ INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VAL
 ('ESP32149', 149, TRUE, '2022-01-30'),
 ('ESP32150', 150, FALSE, '2022-01-31');
 
-INSERT INTO tb_region_rate (region_id, m3_value, initial_validity, final_validity) VALUES
-(1, 5.98, '2023-01-01', '2024-12-31'),
-(2, 4.94, '2023-01-01', '2024-12-31'),
-(3, 5.46, '2023-01-01', '2024-12-31'),
-(4, 5.2, '2023-01-01', '2024-12-31'),
-(5, 4.68, '2023-01-01', '2024-12-31'),
-(1, 6.9, '2025-01-01', NULL),
-(2, 5.7, '2025-01-01', NULL),
-(3, 6.3, '2025-01-01', NULL),
-(4, 6.0, '2025-01-01', NULL),
-(5, 5.4, '2025-01-01', NULL);
+-- Tarifa de água por m³, faixa 21-50 m³, vigente desde 01/01/2026.
+-- Fonte: ARSESP, Nota Técnica 1º Reajuste Tarifário da Sabesp (URAE-1
+-- Sudeste), Anexo I. Ver tariffs/README.md (delta-business-rules) para a
+-- metodologia completa (médias de sub-faixa, categorias sem tarifa
+-- "Especial" publicada usando o valor da categoria "Normal" equivalente).
+INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_validity, final_validity) VALUES
+-- 1 = GRANDE_SP (Tabela 1)
+(1, 1, 15.95, '2026-01-01', NULL),
+(1, 2, 9.45,  '2026-01-01', NULL),
+(1, 3, 7.39,  '2026-01-01', NULL),
+(1, 4, 15.95, '2026-01-01', NULL),
+(1, 5, 30.57, '2026-01-01', NULL),
+(1, 6, 30.57, '2026-01-01', NULL),
+(1, 7, 15.34, '2026-01-01', NULL),
+(1, 8, 22.99, '2026-01-01', NULL),
+-- 2 = LINS (Tabela 10)
+(2, 1, 6.95,  '2026-01-01', NULL),
+(2, 2, 4.53,  '2026-01-01', NULL),
+(2, 3, 4.26,  '2026-01-01', NULL),
+(2, 4, 5.55,  '2026-01-01', NULL),
+(2, 5, 12.54, '2026-01-01', NULL),
+(2, 6, 12.54, '2026-01-01', NULL),
+(2, 7, 6.33,  '2026-01-01', NULL),
+(2, 8, 9.42,  '2026-01-01', NULL),
+-- 3 = PRESIDENTE_PRUDENTE (Tabela 5 + Tabela 8)
+(3, 1, 8.74,  '2026-01-01', NULL),
+(3, 2, 5.21,  '2026-01-01', NULL),
+(3, 3, 7.39,  '2026-01-01', NULL),
+(3, 4, 8.74,  '2026-01-01', NULL),
+(3, 5, 15.68, '2026-01-01', NULL),
+(3, 6, 15.68, '2026-01-01', NULL),
+(3, 7, 7.90,  '2026-01-01', NULL),
+(3, 8, 11.82, '2026-01-01', NULL),
+-- 4 = ADAMANTINA_PIRAPOZINHO (Tabela 5 + Tabela 7)
+(4, 1, 8.74,  '2026-01-01', NULL),
+(4, 2, 5.21,  '2026-01-01', NULL),
+(4, 3, 7.39,  '2026-01-01', NULL),
+(4, 4, 8.74,  '2026-01-01', NULL),
+(4, 5, 15.68, '2026-01-01', NULL),
+(4, 6, 15.68, '2026-01-01', NULL),
+(4, 7, 7.90,  '2026-01-01', NULL),
+(4, 8, 11.82, '2026-01-01', NULL),
+-- 5 = BRAGANCA_PAULISTA (Tabela 2)
+(5, 1, 8.74,  '2026-01-01', NULL),
+(5, 2, 5.21,  '2026-01-01', NULL),
+(5, 3, 7.39,  '2026-01-01', NULL),
+(5, 4, 8.74,  '2026-01-01', NULL),
+(5, 5, 15.68, '2026-01-01', NULL),
+(5, 6, 15.68, '2026-01-01', NULL),
+(5, 7, 7.90,  '2026-01-01', NULL),
+(5, 8, 11.82, '2026-01-01', NULL);
 
 INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (1, 1, 1),

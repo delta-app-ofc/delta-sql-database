@@ -4,6 +4,7 @@ CREATE TABLE tb_log_region_rate (
 
     , region_rate_id        INTEGER
     , region_id             INTEGER
+    , classification_id     INTEGER
     , m3_value              NUMERIC(10,2)
     , initial_validity      DATE
     , final_validity        DATE

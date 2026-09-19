@@ -7,7 +7,6 @@ AS $$
 DECLARE
     v_property_id INTEGER;
     v_region_id INTEGER;
-    v_classification_id INTEGER;
 BEGIN
 
     -- Verifica se o usuário existe e está ativo
@@ -42,9 +41,9 @@ BEGIN
     END IF;
 
 
-    -- Busca a região e a categoria da propriedade
-    SELECT a.region_id, p.classification_id
-      INTO v_region_id, v_classification_id
+    -- Busca a região da propriedade
+    SELECT region_id
+      INTO v_region_id
       FROM tb_address a
       JOIN tb_property p
         ON p.address_id = a.id
@@ -56,13 +55,12 @@ BEGIN
     END IF;
 
 
-    -- Verifica se existe tarifa cadastrada para a região e categoria
+    -- Verifica se existe tarifa cadastrada para a região
     IF NOT EXISTS
     (
         SELECT 1
           FROM tb_region_rate
          WHERE region_id = v_region_id
-           AND classification_id = v_classification_id
            AND initial_validity <= CURRENT_DATE
            AND (
                 final_validity IS NULL

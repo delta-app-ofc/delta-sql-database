@@ -2,13 +2,14 @@ CREATE OR REPLACE PROCEDURE sp_register_property(
     p_user_id INTEGER,
     p_name VARCHAR(100),
     p_type VARCHAR(20),
-    p_classification VARCHAR(20),
+    p_classification VARCHAR(50),
     p_address_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
     v_property_id INTEGER;
+    v_classification_id INTEGER;
 BEGIN
 
 
@@ -40,19 +41,35 @@ BEGIN
 
 
 
+    -- Resolve o nome da classificação pro id correspondente
+    SELECT id
+      INTO v_classification_id
+      FROM tb_property_classification
+     WHERE name = p_classification;
+
+    IF NOT FOUND THEN
+
+        RAISE EXCEPTION
+            'Classificação % não encontrada.',
+            p_classification;
+
+    END IF;
+
+
+
     -- Insere a propriedade
     INSERT INTO tb_property
     (
         name,
         type,
-        classification,
+        classification_id,
         address_id
     )
     VALUES
     (
         p_name,
         p_type,
-        p_classification,
+        v_classification_id,
         p_address_id
     )
     RETURNING id INTO v_property_id;

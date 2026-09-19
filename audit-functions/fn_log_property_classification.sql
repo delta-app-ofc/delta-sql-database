@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_log_property()
+CREATE OR REPLACE FUNCTION fn_log_property_classification()
 
 RETURNS TRIGGER
 
@@ -22,8 +22,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = NEW.id
+        FROM tb_log_property_classification
+        WHERE property_classification_id = NEW.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -31,8 +31,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = OLD.id
+        FROM tb_log_property_classification
+        WHERE property_classification_id = OLD.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -42,18 +42,14 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
 
         log_description :=
-            'Registro inserido na tabela tb_property.';
+            'Registro inserido na tabela tb_property_classification.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_classification
         (
-              property_id
-
+              property_classification_id
             , name
-            , type
-            , classification_id
-            , address_id
-            , registration_date
+            , group_name
 
             , operation
             , executed_by
@@ -66,12 +62,8 @@ BEGIN
         VALUES
         (
               NEW.id
-
             , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.registration_date
+            , NEW.group_name
 
             , TG_OP
             , CURRENT_USER
@@ -88,7 +80,7 @@ BEGIN
     ELSIF TG_OP = 'UPDATE' THEN
 
         log_description :=
-            'Registro atualizado na tabela tb_property. Campos alterados:';
+            'Registro atualizado na tabela tb_property_classification. Campos alterados:';
 
 
         FOR field_name, old_value IN
@@ -118,15 +110,11 @@ BEGIN
         END LOOP;
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_classification
         (
-              property_id
-
+              property_classification_id
             , name
-            , type
-            , classification_id
-            , address_id
-            , registration_date
+            , group_name
 
             , operation
             , executed_by
@@ -139,12 +127,8 @@ BEGIN
         VALUES
         (
               NEW.id
-
             , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.registration_date
+            , NEW.group_name
 
             , TG_OP
             , CURRENT_USER
@@ -161,18 +145,14 @@ BEGIN
     ELSIF TG_OP = 'DELETE' THEN
 
         log_description :=
-            'Registro removido da tabela tb_property.';
+            'Registro removido da tabela tb_property_classification.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_classification
         (
-              property_id
-
+              property_classification_id
             , name
-            , type
-            , classification_id
-            , address_id
-            , registration_date
+            , group_name
 
             , operation
             , executed_by
@@ -185,12 +165,8 @@ BEGIN
         VALUES
         (
               OLD.id
-
             , OLD.name
-            , OLD.type
-            , OLD.classification_id
-            , OLD.address_id
-            , OLD.registration_date
+            , OLD.group_name
 
             , TG_OP
             , CURRENT_USER

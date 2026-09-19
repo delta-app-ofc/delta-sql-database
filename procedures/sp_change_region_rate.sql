@@ -1,6 +1,5 @@
 CREATE OR REPLACE PROCEDURE sp_change_region_rate(
     p_region_id INTEGER,
-    p_classification_id INTEGER,
     p_new_rate NUMERIC(10,2),
     p_initial_validity DATE
 )
@@ -22,20 +21,6 @@ BEGIN
     END IF;
 
 
-    -- Verifica se a categoria existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_property_classification
-         WHERE id = p_classification_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Categoria com id % não encontrada.',
-            p_classification_id;
-    END IF;
-
-
     -- Valida o valor da tarifa
     IF p_new_rate <= 0 THEN
         RAISE EXCEPTION
@@ -47,7 +32,6 @@ BEGIN
     UPDATE tb_region_rate
        SET final_validity = p_initial_validity - INTERVAL '1 day'
      WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
        AND final_validity IS NULL;
 
 
@@ -55,7 +39,6 @@ BEGIN
     INSERT INTO tb_region_rate
     (
         region_id,
-        classification_id,
         m3_value,
         initial_validity,
         final_validity
@@ -63,7 +46,6 @@ BEGIN
     VALUES
     (
         p_region_id,
-        p_classification_id,
         p_new_rate,
         p_initial_validity,
         NULL

@@ -1,6 +1,5 @@
 CREATE OR REPLACE FUNCTION fn_get_current_region_rate(
     p_region_id INTEGER,
-    p_classification_id INTEGER,
     p_date DATE
 )
 RETURNS NUMERIC(10,2)
@@ -14,21 +13,18 @@ BEGIN
       INTO v_m3_value
       FROM tb_region_rate
      WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
        AND initial_validity <= p_date
        AND (
             final_validity IS NULL
             OR final_validity >= p_date
        )
-     ORDER BY initial_validity DESC
      LIMIT 1;
 
 
     IF NOT FOUND THEN
         RAISE EXCEPTION
-            'Não existe tarifa válida para a região %, categoria % na data %.',
+            'Não existe tarifa válida para a região % na data %.',
             p_region_id,
-            p_classification_id,
             p_date;
     END IF;
 
@@ -97,11 +93,11 @@ $$;
 CREATE OR REPLACE FUNCTION fn_get_property_region(
     p_property_id INTEGER
 )
-RETURNS VARCHAR(30)
+RETURNS VARCHAR(20)
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_region_name VARCHAR(30);
+    v_region_name VARCHAR(20);
 BEGIN
 
     SELECT r.name
@@ -133,7 +129,6 @@ AS $$
 DECLARE
     v_property_id INTEGER;
     v_region_id INTEGER;
-    v_classification_id INTEGER;
 BEGIN
 
     -- Verifica se o usuário existe e está ativo
@@ -168,9 +163,9 @@ BEGIN
     END IF;
 
 
-    -- Busca a região e a categoria da propriedade
-    SELECT a.region_id, p.classification_id
-      INTO v_region_id, v_classification_id
+    -- Busca a região da propriedade
+    SELECT region_id
+      INTO v_region_id
       FROM tb_address a
       JOIN tb_property p
         ON p.address_id = a.id
@@ -182,13 +177,12 @@ BEGIN
     END IF;
 
 
-    -- Verifica se existe tarifa cadastrada para a região e categoria
+    -- Verifica se existe tarifa cadastrada para a região
     IF NOT EXISTS
     (
         SELECT 1
           FROM tb_region_rate
          WHERE region_id = v_region_id
-           AND classification_id = v_classification_id
            AND initial_validity <= CURRENT_DATE
            AND (
                 final_validity IS NULL
@@ -230,7 +224,6 @@ $$;
 
 CREATE OR REPLACE PROCEDURE sp_change_region_rate(
     p_region_id INTEGER,
-    p_classification_id INTEGER,
     p_new_rate NUMERIC(10,2),
     p_initial_validity DATE
 )
@@ -252,20 +245,6 @@ BEGIN
     END IF;
 
 
-    -- Verifica se a categoria existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_property_classification
-         WHERE id = p_classification_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Categoria com id % não encontrada.',
-            p_classification_id;
-    END IF;
-
-
     -- Valida o valor da tarifa
     IF p_new_rate <= 0 THEN
         RAISE EXCEPTION
@@ -277,7 +256,6 @@ BEGIN
     UPDATE tb_region_rate
        SET final_validity = p_initial_validity - INTERVAL '1 day'
      WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
        AND final_validity IS NULL;
 
 
@@ -285,7 +263,6 @@ BEGIN
     INSERT INTO tb_region_rate
     (
         region_id,
-        classification_id,
         m3_value,
         initial_validity,
         final_validity
@@ -293,7 +270,6 @@ BEGIN
     VALUES
     (
         p_region_id,
-        p_classification_id,
         p_new_rate,
         p_initial_validity,
         NULL
@@ -305,7 +281,6 @@ $$;
 
 CREATE OR REPLACE PROCEDURE sp_change_region_rate(
     p_region_id INTEGER,
-    p_classification_id INTEGER,
     p_new_rate NUMERIC(10,2),
     p_initial_validity DATE
 )
@@ -327,20 +302,6 @@ BEGIN
     END IF;
 
 
-    -- Verifica se a categoria existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_property_classification
-         WHERE id = p_classification_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Categoria com id % não encontrada.',
-            p_classification_id;
-    END IF;
-
-
     -- Valida o valor da tarifa
     IF p_new_rate <= 0 THEN
         RAISE EXCEPTION
@@ -352,7 +313,6 @@ BEGIN
     UPDATE tb_region_rate
        SET final_validity = p_initial_validity - INTERVAL '1 day'
      WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
        AND final_validity IS NULL;
 
 
@@ -360,7 +320,6 @@ BEGIN
     INSERT INTO tb_region_rate
     (
         region_id,
-        classification_id,
         m3_value,
         initial_validity,
         final_validity
@@ -368,7 +327,6 @@ BEGIN
     VALUES
     (
         p_region_id,
-        p_classification_id,
         p_new_rate,
         p_initial_validity,
         NULL

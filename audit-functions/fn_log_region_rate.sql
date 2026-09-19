@@ -49,7 +49,6 @@ BEGIN
         (
               region_rate_id
             , region_id
-            , classification_id
             , m3_value
             , initial_validity
             , final_validity
@@ -66,7 +65,6 @@ BEGIN
         (
               NEW.id
             , NEW.region_id
-            , NEW.classification_id
             , NEW.m3_value
             , NEW.initial_validity
             , NEW.final_validity
@@ -120,7 +118,6 @@ BEGIN
         (
               region_rate_id
             , region_id
-            , classification_id
             , m3_value
             , initial_validity
             , final_validity
@@ -137,7 +134,6 @@ BEGIN
         (
               NEW.id
             , NEW.region_id
-            , NEW.classification_id
             , NEW.m3_value
             , NEW.initial_validity
             , NEW.final_validity
@@ -164,7 +160,6 @@ BEGIN
         (
               region_rate_id
             , region_id
-            , classification_id
             , m3_value
             , initial_validity
             , final_validity
@@ -181,7 +176,6 @@ BEGIN
         (
               OLD.id
             , OLD.region_id
-            , OLD.classification_id
             , OLD.m3_value
             , OLD.initial_validity
             , OLD.final_validity

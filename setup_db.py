@@ -4,7 +4,7 @@ Roda os scripts SQL do delta-database.
 
 Ordem padrao:
     script-schema.sql -> script-optimization.sql -> script-audit.sql
-    -> script-roles.sql -> script-dataload.sql
+    -> script-roles.sql -> script-dataload.sql -> script-catalogo-dados.sql
 """
 
 import argparse
@@ -21,6 +21,7 @@ SCRIPTS = [
     "script-audit.sql",
     "script-roles.sql",
     "script-dataload.sql",
+    "script-catalogo-dados.sql",
 ]
 
 

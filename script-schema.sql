@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS tb_data_catalog      CASCADE;
 DROP TABLE IF EXISTS tb_log_rpa           CASCADE;
 DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
 DROP TABLE IF EXISTS tb_region_rate       CASCADE;
@@ -239,4 +240,18 @@ CREATE TABLE tb_log_rpa (
       CONSTRAINT chk_tb_log_rpa_validation_error_count  CHECK (validation_error_count >= 0)
 
     , error_message            TEXT
+);
+
+CREATE TABLE tb_data_catalog (
+      id                    SERIAL      PRIMARY KEY
+    , table_name            VARCHAR(60) NOT NULL
+    , column_name           VARCHAR(60) NOT NULL
+    , data_type             VARCHAR(60) NOT NULL
+    , description           TEXT        NOT NULL
+    , business_rule         TEXT
+    , access_level          VARCHAR(20) NOT NULL
+      CONSTRAINT chk_tb_data_catalog_access_level
+        CHECK (access_level IN ('PUBLICO', 'INTERNO', 'RESTRITO', 'SENSIVEL'))
+    , CONSTRAINT uq_tb_data_catalog_table_column
+        UNIQUE (table_name, column_name)
 );

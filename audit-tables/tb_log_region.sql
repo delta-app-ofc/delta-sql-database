@@ -3,7 +3,7 @@ CREATE TABLE tb_log_region (
       id                      SERIAL       PRIMARY KEY
 
     , region_id               INTEGER
-    , name                    VARCHAR(20)
+    , name                    VARCHAR(30)
 
     , operation               VARCHAR(10)  NOT NULL
     , executed_by             VARCHAR(100) NOT NULL

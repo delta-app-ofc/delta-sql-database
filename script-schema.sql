@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS tb_data_catalog      CASCADE;
 DROP TABLE IF EXISTS tb_log_rpa           CASCADE;
 DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
 DROP TABLE IF EXISTS tb_region_rate       CASCADE;
@@ -15,8 +16,8 @@ DROP TABLE IF EXISTS tb_region            CASCADE;
 
 CREATE TABLE tb_region (
       id                                   SERIAL      PRIMARY KEY
-    , name                                 VARCHAR(20) NOT NULL UNIQUE
-      CONSTRAINT chk_tb_region_name_values CHECK (name IN ('LESTE', 'OESTE', 'SUL', 'NORTE', 'CENTRO'))
+    , name                                 VARCHAR(30) NOT NULL UNIQUE
+      CONSTRAINT chk_tb_region_name_values CHECK (name IN ('GRANDE_SP', 'LINS', 'PRESIDENTE_PRUDENTE', 'ADAMANTINA_PIRAPOZINHO', 'BRAGANCA_PAULISTA'))
 );
 
 CREATE TABLE tb_day_of_week (
@@ -119,8 +120,10 @@ CREATE TABLE tb_device (
 CREATE TABLE tb_region_rate (
 
       id                                          SERIAL        PRIMARY KEY
-      
+
     , region_id                                   INTEGER       NOT NULL
+
+    , classification_id                           INTEGER       NOT NULL
 
     , m3_value                                    NUMERIC(10,2) NOT NULL
       CONSTRAINT chk_tb_region_rate_m3_value CHECK (m3_value > 0)
@@ -131,13 +134,19 @@ CREATE TABLE tb_region_rate (
       CONSTRAINT chk_tb_region_rate_final_validity
         CHECK (final_validity IS NULL OR final_validity >= initial_validity)
 
-    , CONSTRAINT uq_tb_region_rate_region_validity
-        UNIQUE (region_id, initial_validity)
+    , CONSTRAINT uq_tb_region_rate_region_classification_validity
+        UNIQUE (region_id, classification_id, initial_validity)
 
     , CONSTRAINT fk_tb_region_rate_region
         FOREIGN KEY (region_id)
         REFERENCES tb_region (id)
         ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT fk_tb_region_rate_classification
+        FOREIGN KEY (classification_id)
+        REFERENCES tb_property_classification (id)
+        ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
 
@@ -231,4 +240,18 @@ CREATE TABLE tb_log_rpa (
       CONSTRAINT chk_tb_log_rpa_validation_error_count  CHECK (validation_error_count >= 0)
 
     , error_message            TEXT
+);
+
+CREATE TABLE tb_data_catalog (
+      id                    SERIAL      PRIMARY KEY
+    , table_name            VARCHAR(60) NOT NULL
+    , column_name           VARCHAR(60) NOT NULL
+    , data_type             VARCHAR(60) NOT NULL
+    , description           TEXT        NOT NULL
+    , business_rule         TEXT
+    , access_level          VARCHAR(20) NOT NULL
+      CONSTRAINT chk_tb_data_catalog_access_level
+        CHECK (access_level IN ('PUBLICO', 'INTERNO', 'RESTRITO', 'SENSIVEL'))
+    , CONSTRAINT uq_tb_data_catalog_table_column
+        UNIQUE (table_name, column_name)
 );

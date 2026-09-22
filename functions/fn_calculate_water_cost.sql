@@ -23,10 +23,6 @@ BEGIN
         RAISE EXCEPTION 'O consumo deve ser informado e não pode ser negativo';
     END IF;
 
-    IF p_reference_date IS NULL THEN
-        RAISE EXCEPTION 'A data de referência é obrigatória';
-    END IF;
-
     PERFORM 1
     FROM tb_property tp
     WHERE tp.id = p_property_id;

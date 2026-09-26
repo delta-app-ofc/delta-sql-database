@@ -1,0 +1,22 @@
+services:
+  # Postgres descartavel:
+  test-db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  tools:
+    build: .
+    env_file:
+      - .env
+    environment:
+      TEST_DB_HOST: test-db
+      TEST_DB_PORT: 5432
+      TEST_DB_NAME: postgres
+      TEST_DB_USER: postgres
+      TEST_DB_PASSWORD: postgres
+      TEST_DB_SSLMODE: disable
+    volumes:
+      - .:/app
+    depends_on:
+      - test-db

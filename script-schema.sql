@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS tb_data_catalog      CASCADE;
+DROP TABLE IF EXISTS tb_backup_restore_log CASCADE;
 DROP TABLE IF EXISTS tb_log_rpa           CASCADE;
 DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
 DROP TABLE IF EXISTS tb_region_rate       CASCADE;
@@ -254,4 +255,26 @@ CREATE TABLE tb_data_catalog (
         CHECK (access_level IN ('PUBLICO', 'INTERNO', 'RESTRITO', 'SENSIVEL'))
     , CONSTRAINT uq_tb_data_catalog_table_column
         UNIQUE (table_name, column_name)
+);
+
+CREATE TABLE tb_backup_restore_log (
+
+      id                       SERIAL      PRIMARY KEY
+
+    , started_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+    , finished_at              TIMESTAMP
+
+    , status                   VARCHAR(10) NOT NULL DEFAULT 'RUNNING'
+      CONSTRAINT chk_tb_backup_restore_log_status
+          CHECK (status IN ('RUNNING', 'SUCCESS', 'ERROR'))
+
+    , table_name               VARCHAR(60) NOT NULL
+
+    , expected_row_count       INTEGER
+      CONSTRAINT chk_tb_backup_restore_log_expected_row_count  CHECK (expected_row_count >= 0)
+
+    , restored_row_count       INTEGER
+      CONSTRAINT chk_tb_backup_restore_log_restored_row_count  CHECK (restored_row_count >= 0)
+
+    , note                     TEXT
 );

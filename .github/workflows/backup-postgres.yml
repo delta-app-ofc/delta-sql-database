@@ -114,6 +114,4 @@ jobs:
           path: backups/
 
       - name: Rodar teste de restauracao
-        run: |
-          DUMP=$(ls backups/*.dump | head -n 1)
-          python backup_db.py restore-test --dump "$DUMP" --yes
+        run: python backup_db.py restore-test --yes

@@ -1,15 +1,14 @@
-CREATE TABLE tb_log_property (
+CREATE TABLE tb_log_organization (
 
       id                    SERIAL PRIMARY KEY
 
-    , property_id           INTEGER
-
-    , name                  VARCHAR(100)
-    , type                  VARCHAR(20)
-    , classification_id     INTEGER
-    , address_id            INTEGER
     , organization_id       INTEGER
-    , built_area_m2         NUMERIC(10,2)
+
+    , corporate_name        VARCHAR(150)
+    , trade_name            VARCHAR(150)
+    , cnpj                  CHAR(14)
+    , business_segment      VARCHAR(20)
+    , declared_unit_count   INTEGER
     , registration_date     DATE
 
     , operation             VARCHAR(10) NOT NULL
@@ -18,8 +17,8 @@ CREATE TABLE tb_log_property (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
-    , CONSTRAINT fk_tb_log_property_previous_log
+    , CONSTRAINT fk_tb_log_organization_previous_log
         FOREIGN KEY (previous_log_id)
-        REFERENCES tb_log_property (id)
+        REFERENCES tb_log_organization (id)
 
 );

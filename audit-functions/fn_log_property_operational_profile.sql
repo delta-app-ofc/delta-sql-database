@@ -1,4 +1,7 @@
-CREATE OR REPLACE FUNCTION fn_log_property()
+-- Diferente dos outros fn_log_*: a chave da tabela auditada aqui e
+-- property_id (nao "id" - tb_property_operational_profile e uma extensao
+-- 1:1 de tb_property, property_id e PK e FK ao mesmo tempo).
+CREATE OR REPLACE FUNCTION fn_log_property_operational_profile()
 
 RETURNS TRIGGER
 
@@ -22,8 +25,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = NEW.id
+        FROM tb_log_property_operational_profile
+        WHERE property_operational_profile_id = NEW.property_id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -31,8 +34,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = OLD.id
+        FROM tb_log_property_operational_profile
+        WHERE property_operational_profile_id = OLD.property_id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -42,20 +45,15 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
 
         log_description :=
-            'Registro inserido na tabela tb_property.';
+            'Registro inserido na tabela tb_property_operational_profile.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_operational_profile
         (
-              property_id
+              property_operational_profile_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , shift_count
+            , main_water_source
 
             , operation
             , executed_by
@@ -67,15 +65,10 @@ BEGIN
 
         VALUES
         (
-              NEW.id
+              NEW.property_id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
-            , NEW.registration_date
+            , NEW.shift_count
+            , NEW.main_water_source
 
             , TG_OP
             , CURRENT_USER
@@ -92,7 +85,7 @@ BEGIN
     ELSIF TG_OP = 'UPDATE' THEN
 
         log_description :=
-            'Registro atualizado na tabela tb_property. Campos alterados:';
+            'Registro atualizado na tabela tb_property_operational_profile. Campos alterados:';
 
 
         FOR field_name, old_value IN
@@ -122,17 +115,12 @@ BEGIN
         END LOOP;
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_operational_profile
         (
-              property_id
+              property_operational_profile_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , shift_count
+            , main_water_source
 
             , operation
             , executed_by
@@ -144,15 +132,10 @@ BEGIN
 
         VALUES
         (
-              NEW.id
+              NEW.property_id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
-            , NEW.registration_date
+            , NEW.shift_count
+            , NEW.main_water_source
 
             , TG_OP
             , CURRENT_USER
@@ -169,20 +152,15 @@ BEGIN
     ELSIF TG_OP = 'DELETE' THEN
 
         log_description :=
-            'Registro removido da tabela tb_property.';
+            'Registro removido da tabela tb_property_operational_profile.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_operational_profile
         (
-              property_id
+              property_operational_profile_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , shift_count
+            , main_water_source
 
             , operation
             , executed_by
@@ -194,15 +172,10 @@ BEGIN
 
         VALUES
         (
-              OLD.id
+              OLD.property_id
 
-            , OLD.name
-            , OLD.type
-            , OLD.classification_id
-            , OLD.address_id
-            , OLD.organization_id
-            , OLD.built_area_m2
-            , OLD.registration_date
+            , OLD.shift_count
+            , OLD.main_water_source
 
             , TG_OP
             , CURRENT_USER

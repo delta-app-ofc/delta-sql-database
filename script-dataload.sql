@@ -38,6 +38,15 @@ INSERT INTO tb_habit (name, description) VALUES
     ('REGAR PLANTAS', 'IRRIGAÇÃO DE JARDINS E PLANTAS COM MANGUEIRA OU REGADOR'),
     ('LAVAR CARRO',   'LAVAGEM DE VEÍCULOS NA GARAGEM OU QUINTAL COM MANGUEIRA'),
     ('LAVAR LOUÇA',   'LAVAGEM DE LOUÇA COM A TORNEIRA ABERTA POR LONGOS PERÍODOS');
+
+-- Ordem fixa (ids 1-4): usados no cadastro de instalação industrial (etapa
+-- "Utilização da água" do protótipo web).
+INSERT INTO tb_water_usage_type (name, description) VALUES
+    ('LIMPEZA',             'USO DA ÁGUA PARA LIMPEZA DE ÁREAS INTERNAS E EXTERNAS DA INSTALAÇÃO'),
+    ('CONSUMO_HUMANO',      'USO DA ÁGUA PARA CONSUMO HUMANO (BEBER, COZINHA, BANHEIROS)'),
+    ('PROCESSO_PRODUTIVO',  'USO DA ÁGUA COMO INSUMO DIRETO NO PROCESSO PRODUTIVO DA INSTALAÇÃO'),
+    ('IRRIGACAO',           'USO DA ÁGUA PARA IRRIGAÇÃO DE ÁREAS VERDES DA INSTALAÇÃO');
+
 INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (1, '01000000', 'SÃO PAULO', 'SP'),
 (1, '01000001', 'SÃO PAULO', 'SP'),
@@ -189,6 +198,16 @@ INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (5, '05000027', 'SÃO PAULO', 'SP'),
 (5, '05000028', 'SÃO PAULO', 'SP'),
 (5, '05000029', 'SÃO PAULO', 'SP');
+
+-- Endereços novos (ids 151-156), usados pelas instalações industriais/comerciais
+-- cadastradas mais abaixo (tb_organization/tb_property com organization_id).
+INSERT INTO tb_address (region_id, cep, city, state) VALUES
+(1, '01100001', 'SÃO PAULO', 'SP'),
+(1, '01100002', 'SÃO PAULO', 'SP'),
+(1, '01100003', 'SÃO PAULO', 'SP'),
+(1, '01100004', 'CAMPINAS', 'SP'),
+(1, '01100005', 'CAMPINAS', 'SP'),
+(1, '01100006', 'SANTOS', 'SP');
 
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager) VALUES
 ('BRUNO SANTOS 1', 'BRUNO.SANTOS1@HOTMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91001-1001', '1985-01-02', '2022-01-02', TRUE, FALSE, FALSE),
@@ -404,6 +423,13 @@ VALUES (
     TRUE,
     FALSE
 );
+-- Organizações (ids 1-3), usadas pelas instalações industriais/comerciais
+-- cadastradas no bloco novo ao final do INSERT de tb_property abaixo.
+INSERT INTO tb_organization (corporate_name, trade_name, cnpj, business_segment, declared_unit_count, registration_date) VALUES
+('SWIFT DISTRIBUIDORA DE ALIMENTOS LTDA', 'SWIFT DISTRIBUIDORA', '12345678000190', 'VAREJO', 10, '2026-01-15'),
+('INDUSTRIA METALURGICA VALE LTDA', 'METALVALE', '23456789000101', 'INDUSTRIA', 3, '2026-02-10'),
+('CONDOMINIO RESIDENCIAL JARDIM DAS FLORES', 'JARDIM DAS FLORES', '34567890000112', 'CONDOMINIO', 1, '2026-03-05');
+
 INSERT INTO tb_property (name, type, classification_id, address_id, registration_date) VALUES
 ('RESIDENCIA DA FAMILIA SANTOS 1', 'CASA', 1, 1, '2022-01-02'),
 ('EDIFICIO JARDIM DAS ACACIAS 2', 'PRÉDIO', 1, 2, '2022-01-03'),
@@ -555,6 +581,46 @@ INSERT INTO tb_property (name, type, classification_id, address_id, registration
 ('EDIFICIO NEXUS TECNOLOGIA 148', 'PRÉDIO', 5, 148, '2022-05-29'),
 ('RESIDENCIA DA FAMILIA LIMA 149', 'CASA', 1, 149, '2022-05-30'),
 ('EDIFICIO AURORA 150', 'PRÉDIO', 1, 150, '2022-05-31');
+
+-- Instalações industriais/comerciais (ids 151-153) cadastradas pela tela rápida
+-- ("Cadastrar instalação" do protótipo web) — sem perfil operacional, igual ao
+-- que aconteceria de verdade nesse fluxo.
+INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
+('LOJA SWIFT - VILA LEOPOLDINA', 'PRÉDIO', 5, 151, 1, 850.00, '2026-01-16'),
+('LOJA SWIFT - VILA ROMANA', 'PRÉDIO', 5, 152, 1, 1200.00, '2026-01-17'),
+('LOJA SWIFT - PERDIZES', 'PRÉDIO', 5, 153, 1, 950.00, '2026-01-18');
+
+-- Instalações industriais (ids 154-155) cadastradas pelo cadastro completo do
+-- gestor (etapas "Operação"/"Turnos"/"Utilização da água" do protótipo web) -
+-- a linha-base fica em tb_property como qualquer outra instalação (assim
+-- tb_device/tb_user_property continuam funcionando pra elas sem mudança);
+-- só os campos extras do perfil operacional ganham linha em
+-- tb_property_operational_profile (extensão 1:1, não herança).
+INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
+('FABRICA METALVALE - CAMPINAS', 'PRÉDIO', 5, 154, 2, 3200.00, '2026-02-11'),
+('CENTRO DE DISTRIBUICAO METALVALE - SANTOS', 'PRÉDIO', 5, 155, 2, 1800.00, '2026-02-12');
+
+INSERT INTO tb_property_operational_profile (property_id, shift_count, main_water_source) VALUES
+(154, 2, 'CONCESSIONARIA'),
+(155, 3, 'POCO_ARTESIANO');
+
+INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
+(154, '06:00', '14:00'),
+(154, '14:00', '22:00'),
+(155, '00:00', '08:00'),
+(155, '08:00', '16:00'),
+(155, '16:00', '23:59:59');
+
+INSERT INTO tb_property_water_usage (property_id, water_usage_type_id) VALUES
+(151, 1), (151, 2),
+(154, 1), (154, 2), (154, 3),
+(155, 1), (155, 2), (155, 3);
+
+-- Dias de operação (SEGUNDA a SEXTA = ids 1-5 em tb_day_of_week).
+INSERT INTO tb_property_operation_day (property_id, day_of_week_id) VALUES
+(151, 1), (151, 2), (151, 3), (151, 4), (151, 5),
+(154, 1), (154, 2), (154, 3), (154, 4), (154, 5),
+(155, 1), (155, 2), (155, 3), (155, 4), (155, 5), (155, 6);
 
 INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (1, 1, '2022-01-02'),
@@ -708,6 +774,11 @@ INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (149, 149, '2022-01-30'),
 (150, 150, '2022-01-01');
 
+
+-- Usuários gestores (is_manager = TRUE) vinculados às organizações novas.
+INSERT INTO tb_user_organization (user_id, organization_id, association_date) VALUES
+(2, 1, '2026-01-15'),
+(15, 2, '2026-02-10');
 
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP321', 1, TRUE, '2022-01-02'),
@@ -912,6 +983,13 @@ INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_vali
 (5, 6, 15.68, '2026-01-01', NULL),
 (5, 7, 7.90,  '2026-01-01', NULL),
 (5, 8, 11.82, '2026-01-01', NULL);
+
+-- Duas correções pontuais no id=5 (GRANDE_SP / COMERCIAL_NORMAL_INDUSTRIAL),
+-- só pra gerar uma cadeia real de auditoria com 3 níveis
+-- (INSERT -> UPDATE -> UPDATE) e testar dw.vw_audit_history_chain (CTE
+-- recursiva) contra dado de verdade, não hipotético.
+UPDATE tb_region_rate SET m3_value = 30.62 WHERE id = 5;
+UPDATE tb_region_rate SET m3_value = 30.57 WHERE id = 5;
 
 INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (1, 1, 1),
@@ -1919,19 +1997,41 @@ INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (199, '2025-01-01', 142.50, 19.00),
 (200, '2025-02-01', 45.00, 6.00);
 
+-- Cenarios de referencia (organization_id NULL = disponivel pra qualquer
+-- organizacao), valores pesquisados em fontes reais de mercado brasileiro
+-- (nao copiados do prototipo, que usava numeros ficticios) - ver "Quanto
+-- custa instalar reuso de agua cinza"/"...captacao de agua da chuva",
+-- Monitor do Mercado, 2026: reuso de agua cinza comercial R$60mil-R$250mil
+-- (payback 6-12 anos); captacao de chuva comercial R$35mil-R$120mil
+-- (payback 3-7 anos); aeradores/registros economizadores com payback de
+-- poucos meses num estudo de caso residencial, aqui escalado pra uma rede de
+-- unidades comerciais.
+INSERT INTO tb_investment_scenario (organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months, description) VALUES
+(NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'TROCA DE TORNEIRAS E REGISTROS POR MODELOS DE FECHAMENTO AUTOMATICO E BAIXO FLUXO EM TODAS AS UNIDADES DA REDE.'),
+(NULL, 'REUSO DE AGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'ESTACAO DE TRATAMENTO E REAPROVEITAMENTO DE AGUA CINZA PARA LIMPEZA E DESCARGA SANITARIA.'),
+(NULL, 'CAPTACAO DE AGUA DE CHUVA', 70000.00, 18.00, 14000.00, 60.0, 'CAPTACAO E RESERVACAO DE AGUA DE CHUVA PARA USO NAO POTAVEL (LIMPEZA EXTERNA, IRRIGACAO).');
+
 SELECT 'tb_region'          AS tabela, COUNT(*) AS registros FROM tb_region
 UNION ALL SELECT 'tb_day_of_week',      COUNT(*) FROM tb_day_of_week
 UNION ALL SELECT 'tb_habit',            COUNT(*) FROM tb_habit
+UNION ALL SELECT 'tb_water_usage_type', COUNT(*) FROM tb_water_usage_type
 UNION ALL SELECT 'tb_address',          COUNT(*) FROM tb_address
 UNION ALL SELECT 'tb_user',             COUNT(*) FROM tb_user
 UNION ALL SELECT 'tb_property_classification', COUNT(*) FROM tb_property_classification
+UNION ALL SELECT 'tb_organization',     COUNT(*) FROM tb_organization
 UNION ALL SELECT 'tb_property',         COUNT(*) FROM tb_property
+UNION ALL SELECT 'tb_property_operational_profile', COUNT(*) FROM tb_property_operational_profile
+UNION ALL SELECT 'tb_property_shift',   COUNT(*) FROM tb_property_shift
+UNION ALL SELECT 'tb_property_water_usage', COUNT(*) FROM tb_property_water_usage
+UNION ALL SELECT 'tb_property_operation_day', COUNT(*) FROM tb_property_operation_day
 UNION ALL SELECT 'tb_user_property',    COUNT(*) FROM tb_user_property
+UNION ALL SELECT 'tb_user_organization', COUNT(*) FROM tb_user_organization
 UNION ALL SELECT 'tb_device',           COUNT(*) FROM tb_device
 UNION ALL SELECT 'tb_region_rate',      COUNT(*) FROM tb_region_rate
 UNION ALL SELECT 'tb_user_habit',       COUNT(*) FROM tb_user_habit
 UNION ALL SELECT 'tb_user_habit_day',   COUNT(*) FROM tb_user_habit_day
 UNION ALL SELECT 'tb_last_water_bill',  COUNT(*) FROM tb_last_water_bill
+UNION ALL SELECT 'tb_investment_scenario', COUNT(*) FROM tb_investment_scenario
 ORDER BY tabela;
 
 COMMIT;

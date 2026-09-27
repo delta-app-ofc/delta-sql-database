@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_log_property()
+CREATE OR REPLACE FUNCTION fn_log_property_shift()
 
 RETURNS TRIGGER
 
@@ -22,8 +22,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = NEW.id
+        FROM tb_log_property_shift
+        WHERE property_shift_id = NEW.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -31,8 +31,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = OLD.id
+        FROM tb_log_property_shift
+        WHERE property_shift_id = OLD.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -42,20 +42,16 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
 
         log_description :=
-            'Registro inserido na tabela tb_property.';
+            'Registro inserido na tabela tb_property_shift.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_shift
         (
-              property_id
+              property_shift_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , property_id
+            , start_time
+            , end_time
 
             , operation
             , executed_by
@@ -69,13 +65,9 @@ BEGIN
         (
               NEW.id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
-            , NEW.registration_date
+            , NEW.property_id
+            , NEW.start_time
+            , NEW.end_time
 
             , TG_OP
             , CURRENT_USER
@@ -92,7 +84,7 @@ BEGIN
     ELSIF TG_OP = 'UPDATE' THEN
 
         log_description :=
-            'Registro atualizado na tabela tb_property. Campos alterados:';
+            'Registro atualizado na tabela tb_property_shift. Campos alterados:';
 
 
         FOR field_name, old_value IN
@@ -122,17 +114,13 @@ BEGIN
         END LOOP;
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_shift
         (
-              property_id
+              property_shift_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , property_id
+            , start_time
+            , end_time
 
             , operation
             , executed_by
@@ -146,13 +134,9 @@ BEGIN
         (
               NEW.id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
-            , NEW.registration_date
+            , NEW.property_id
+            , NEW.start_time
+            , NEW.end_time
 
             , TG_OP
             , CURRENT_USER
@@ -169,20 +153,16 @@ BEGIN
     ELSIF TG_OP = 'DELETE' THEN
 
         log_description :=
-            'Registro removido da tabela tb_property.';
+            'Registro removido da tabela tb_property_shift.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_property_shift
         (
-              property_id
+              property_shift_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
-            , registration_date
+            , property_id
+            , start_time
+            , end_time
 
             , operation
             , executed_by
@@ -196,13 +176,9 @@ BEGIN
         (
               OLD.id
 
-            , OLD.name
-            , OLD.type
-            , OLD.classification_id
-            , OLD.address_id
-            , OLD.organization_id
-            , OLD.built_area_m2
-            , OLD.registration_date
+            , OLD.property_id
+            , OLD.start_time
+            , OLD.end_time
 
             , TG_OP
             , CURRENT_USER

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION fn_log_property()
+CREATE OR REPLACE FUNCTION fn_log_organization()
 
 RETURNS TRIGGER
 
@@ -22,8 +22,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = NEW.id
+        FROM tb_log_organization
+        WHERE organization_id = NEW.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -31,8 +31,8 @@ BEGIN
 
         SELECT id
         INTO previous_log_id
-        FROM tb_log_property
-        WHERE property_id = OLD.id
+        FROM tb_log_organization
+        WHERE organization_id = OLD.id
         ORDER BY id DESC
         LIMIT 1;
 
@@ -42,19 +42,18 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
 
         log_description :=
-            'Registro inserido na tabela tb_property.';
+            'Registro inserido na tabela tb_organization.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_organization
         (
-              property_id
+              organization_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
+            , corporate_name
+            , trade_name
+            , cnpj
+            , business_segment
+            , declared_unit_count
             , registration_date
 
             , operation
@@ -69,12 +68,11 @@ BEGIN
         (
               NEW.id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
+            , NEW.corporate_name
+            , NEW.trade_name
+            , NEW.cnpj
+            , NEW.business_segment
+            , NEW.declared_unit_count
             , NEW.registration_date
 
             , TG_OP
@@ -92,7 +90,7 @@ BEGIN
     ELSIF TG_OP = 'UPDATE' THEN
 
         log_description :=
-            'Registro atualizado na tabela tb_property. Campos alterados:';
+            'Registro atualizado na tabela tb_organization. Campos alterados:';
 
 
         FOR field_name, old_value IN
@@ -122,16 +120,15 @@ BEGIN
         END LOOP;
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_organization
         (
-              property_id
+              organization_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
+            , corporate_name
+            , trade_name
+            , cnpj
+            , business_segment
+            , declared_unit_count
             , registration_date
 
             , operation
@@ -146,12 +143,11 @@ BEGIN
         (
               NEW.id
 
-            , NEW.name
-            , NEW.type
-            , NEW.classification_id
-            , NEW.address_id
-            , NEW.organization_id
-            , NEW.built_area_m2
+            , NEW.corporate_name
+            , NEW.trade_name
+            , NEW.cnpj
+            , NEW.business_segment
+            , NEW.declared_unit_count
             , NEW.registration_date
 
             , TG_OP
@@ -169,19 +165,18 @@ BEGIN
     ELSIF TG_OP = 'DELETE' THEN
 
         log_description :=
-            'Registro removido da tabela tb_property.';
+            'Registro removido da tabela tb_organization.';
 
 
-        INSERT INTO tb_log_property
+        INSERT INTO tb_log_organization
         (
-              property_id
+              organization_id
 
-            , name
-            , type
-            , classification_id
-            , address_id
-            , organization_id
-            , built_area_m2
+            , corporate_name
+            , trade_name
+            , cnpj
+            , business_segment
+            , declared_unit_count
             , registration_date
 
             , operation
@@ -196,12 +191,11 @@ BEGIN
         (
               OLD.id
 
-            , OLD.name
-            , OLD.type
-            , OLD.classification_id
-            , OLD.address_id
-            , OLD.organization_id
-            , OLD.built_area_m2
+            , OLD.corporate_name
+            , OLD.trade_name
+            , OLD.cnpj
+            , OLD.business_segment
+            , OLD.declared_unit_count
             , OLD.registration_date
 
             , TG_OP

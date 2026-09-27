@@ -1,12 +1,3 @@
--- Estrutura avancada: CTE RECURSIVA. Reconstroi o historico completo de
--- mudancas de cada linha de tb_region_rate subindo a cadeia de
--- tb_log_region_rate.previous_log_id (trilha de auditoria que ja existe,
--- ver audit-tables/tb_log_region_rate.sql) - sem precisar de uma hierarquia
--- de gestores inventada. Le de tb_log_region_rate (schema public), nao do
--- gold: e uma view de auditoria/governanca, nao uma view dimensional.
---
--- Exemplo de consulta (historico de UMA tarifa especifica):
---   SELECT * FROM dw.vw_audit_history_chain WHERE region_rate_id = 5 ORDER BY level;
 CREATE OR REPLACE VIEW dw.vw_audit_history_chain AS
 WITH RECURSIVE chain AS (
     SELECT

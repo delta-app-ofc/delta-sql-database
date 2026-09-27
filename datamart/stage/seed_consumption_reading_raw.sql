@@ -1,9 +1,3 @@
--- Carga sintetica de stage.consumption_reading_raw: 60 dias de leituras a
--- cada 15 min, para as 5 instalacoes industriais/comerciais do dataload
--- (ids 151-155, ver script-dataload.sql), com vazao base diferente por
--- instalacao e uma variacao aleatoria pra nao ficar tudo igual. So pra
--- sustentar o EXPLAIN ANALYZE/indice da camada de BI - ver comentario em
--- stage/consumption_reading_raw.sql sobre o dado ser sintetico.
 BEGIN;
 
 INSERT INTO stage.consumption_reading_raw (property_id, read_at, volume_liters, flow_lmin)

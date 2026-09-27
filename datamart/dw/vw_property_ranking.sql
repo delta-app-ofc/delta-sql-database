@@ -1,6 +1,3 @@
--- Grao: instalacao (industrial), agregada no periodo todo disponivel.
--- Window functions: RANK/DENSE_RANK/NTILE/PERCENT_RANK por L/m² - espelha a
--- tela "Ranking" do prototipo.
 CREATE OR REPLACE VIEW dw.vw_property_ranking AS
 WITH agg_consumption AS (
     SELECT

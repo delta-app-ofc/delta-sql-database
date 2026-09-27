@@ -1,6 +1,3 @@
--- Grao: 1 instalacao (residencial ou industrial). Star schema puro: dados
--- de organizacao ficam denormalizados aqui em vez de virar um braco
--- snowflake separado (dim_organization).
 CREATE TABLE gold.dim_property (
       property_key            SERIAL      PRIMARY KEY
     , property_id             INTEGER     NOT NULL UNIQUE

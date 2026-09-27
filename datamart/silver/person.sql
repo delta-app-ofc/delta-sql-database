@@ -1,6 +1,3 @@
--- Unifica tb_user pros dois perfis de uso (residencial e gestor industrial),
--- sem papel/hierarquia entre eles - so marca se a pessoa tem vinculo com
--- alguma organizacao (tb_user_organization) ou nao.
 CREATE TABLE silver.person (
       user_id               INTEGER     PRIMARY KEY
     , name                  VARCHAR(100) NOT NULL

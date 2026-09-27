@@ -5,7 +5,7 @@ Roda os scripts SQL do delta-database.
 Ordem padrao:
     script-schema.sql -> script-optimization.sql -> script-audit.sql
     -> script-roles.sql -> script-dataload.sql -> script-catalogo-dados.sql
-    -> script-datamart.sql -> script-datamart-dataload.sql
+    -> script-datamart.sql -> script-indexes.sql -> script-datamart-dataload.sql
     -> script-catalogo-datamart.sql
 """
 
@@ -25,6 +25,7 @@ SCRIPTS = [
     "script-dataload.sql",
     "script-catalogo-dados.sql",
     "script-datamart.sql",
+    "script-indexes.sql",
     "script-datamart-dataload.sql",
     "script-catalogo-datamart.sql",
 ]

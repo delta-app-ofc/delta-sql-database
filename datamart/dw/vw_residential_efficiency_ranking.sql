@@ -1,6 +1,3 @@
--- Grao: pessoa x mes (residencial). Window functions: RANK/PERCENT_RANK por
--- consumo (m3) - mesma tecnica de dw.vw_property_ranking, aplicada ao
--- perfil residencial, usando so dado real (sem sintetico).
 CREATE OR REPLACE VIEW dw.vw_residential_efficiency_ranking AS
 WITH staging_bill AS (
     SELECT

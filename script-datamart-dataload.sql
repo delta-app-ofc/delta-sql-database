@@ -1,11 +1,3 @@
--- Carga inicial da camada de BI: semeia o stage sintetico (pendencia real
--- documentada no TASK.md - extracao real do Mongo ainda nao existe, ver
--- datamart/stage/consumption_reading_raw.sql) e roda a cadeia
--- stage -> silver -> gold. Rodar depois de script-datamart.sql. Conteudo
--- igual a datamart/stage/seed_consumption_reading_raw.sql, inline aqui
--- porque a execucao via psycopg2 (setup_db.py) nao suporta o meta-comando
--- \i do psql.
-
 BEGIN;
 
 INSERT INTO stage.consumption_reading_raw (property_id, read_at, volume_liters, flow_lmin)

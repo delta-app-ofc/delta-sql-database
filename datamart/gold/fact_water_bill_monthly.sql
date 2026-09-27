@@ -1,5 +1,3 @@
--- Grao: pessoa x mes (residencial). date_key aponta pro primeiro dia do mes
--- de referencia da fatura.
 CREATE TABLE gold.fact_water_bill_monthly (
       fact_key              BIGSERIAL     PRIMARY KEY
     , person_key            INTEGER       NOT NULL

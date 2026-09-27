@@ -1,21 +1,13 @@
--- Carga do SILVER, idempotente: pode ser chamada de novo a qualquer momento
--- (ex.: agendada via GitHub Actions - ver TASK.md) sem duplicar linha nem
--- perder dado. Le de stage (industrial, sintetico por ora) e direto das
--- tabelas cadastrais do proprio Postgres (residencial, dado real).
 CREATE OR REPLACE PROCEDURE silver.sp_load()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- 1) leituras industriais: so insere o que ainda nao existe (grao fino,
-    -- nao muda depois de gravado).
     INSERT INTO silver.consumption_reading (property_id, read_at, volume_liters, flow_lmin)
     SELECT r.property_id, r.read_at, r.volume_liters, r.flow_lmin
     FROM stage.consumption_reading_raw r
     ON CONFLICT (property_id, read_at) DO NOTHING;
 
-    -- 2) rollup diario (CTE de agregacao - a "transformacao" de verdade
-    -- desta camada): soma litros e vazao media por instalacao x dia.
     WITH daily AS (
         SELECT
               property_id
@@ -32,9 +24,6 @@ BEGIN
         SET total_liters  = EXCLUDED.total_liters
           , avg_flow_lmin = EXCLUDED.avg_flow_lmin;
 
-    -- 3) instalacoes (residencial + industrial): dado cadastral do proprio
-    -- Postgres, ja limpo - refresh completo porque e "estado atual", nao
-    -- historico.
     TRUNCATE TABLE silver.property;
 
     INSERT INTO silver.property
@@ -65,7 +54,6 @@ BEGIN
     LEFT JOIN tb_organization o        ON o.id = p.organization_id
     LEFT JOIN tb_property_operational_profile op ON op.property_id = p.id;
 
-    -- 4) pessoas (residencial + gestor): dado cadastral, refresh completo.
     TRUNCATE TABLE silver.person;
 
     INSERT INTO silver.person (user_id, name, profile_type)
@@ -76,8 +64,6 @@ BEGIN
     FROM tb_user u
     LEFT JOIN (SELECT DISTINCT user_id FROM tb_user_organization) uo ON uo.user_id = u.id;
 
-    -- 5) faturas residenciais: dado real, append-safe (fatura ja lancada nao
-    -- muda, mas usa upsert por seguranca em reprocessamento).
     INSERT INTO silver.water_bill (user_id, user_name, bill_month, total_value, m3_value)
     SELECT b.user_id, u.name, b.month, b.total_value, b.m3_value
     FROM tb_last_water_bill b

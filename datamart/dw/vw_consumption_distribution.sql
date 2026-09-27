@@ -1,7 +1,3 @@
--- Grao: 1 linha (estatistica agregada sobre o consumo diario de todas as
--- instalacoes industriais). Window/agregacao: NTILE + PERCENTILE_CONT pra
--- min/Q1/mediana/Q3/max - substitui o histograma/boxplot hoje calculado em
--- JS no prototipo (renderBoxplot()).
 CREATE OR REPLACE VIEW dw.vw_consumption_distribution AS
 WITH staging_daily_totals AS (
     SELECT

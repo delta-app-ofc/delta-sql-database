@@ -1,5 +1,3 @@
--- Grao: 1 dia. Gerada via generate_series (gold.sp_load()), nao depende de
--- tabela de calendario externa.
 CREATE TABLE gold.dim_date (
       date_key              INTEGER     PRIMARY KEY
     , full_date             DATE        NOT NULL UNIQUE

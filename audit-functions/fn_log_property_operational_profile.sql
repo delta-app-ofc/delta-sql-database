@@ -1,6 +1,3 @@
--- Diferente dos outros fn_log_*: a chave da tabela auditada aqui e
--- property_id (nao "id" - tb_property_operational_profile e uma extensao
--- 1:1 de tb_property, property_id e PK e FK ao mesmo tempo).
 CREATE OR REPLACE FUNCTION fn_log_property_operational_profile()
 
 RETURNS TRIGGER

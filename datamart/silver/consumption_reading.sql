@@ -1,7 +1,3 @@
--- Copia tratada de stage.consumption_reading_raw: mesmo grao (leitura),
--- mas com unicidade garantida (property_id, read_at) - a fonte sintetica de
--- hoje nao duplica, mas uma extracao real do Mongo poderia reenviar a mesma
--- janela mais de uma vez, e e aqui que isso e resolvido.
 CREATE TABLE silver.consumption_reading (
       id                    BIGSERIAL     PRIMARY KEY
     , property_id           INTEGER       NOT NULL

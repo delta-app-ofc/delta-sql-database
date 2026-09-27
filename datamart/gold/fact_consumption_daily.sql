@@ -1,6 +1,3 @@
--- Grao: instalacao x dia (industrial). Custo resolvido via
--- fn_get_current_region_rate (reaproveita a funcao existente, nao duplica a
--- logica de tarifa vigente).
 CREATE TABLE gold.fact_consumption_daily (
       fact_key              BIGSERIAL     PRIMARY KEY
     , property_key          INTEGER       NOT NULL

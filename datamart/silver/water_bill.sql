@@ -1,5 +1,3 @@
--- Copia tratada de tb_last_water_bill + tb_user - dado real, sem sintetico,
--- cobre o perfil residencial na camada de BI.
 CREATE TABLE silver.water_bill (
       id                    BIGSERIAL     PRIMARY KEY
     , user_id               INTEGER       NOT NULL

@@ -19,7 +19,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_habit', 'name', 'VARCHAR(30)', 'Nome do hábito de consumo de água.', 'Valores fixos (CHECK), ex. BANHO LONGO, LAVAR CARRO. Único.', 'PUBLICO'),
 ('tb_habit', 'description', 'TEXT', 'Descrição opcional do hábito.', 'Sem restrição de formato.', 'PUBLICO'),
 
--- tb_water_usage_type
 ('tb_water_usage_type', 'id', 'SERIAL', 'Identificador do tipo de uso da água.', 'Chave primária.', 'PUBLICO'),
 ('tb_water_usage_type', 'name', 'VARCHAR(30)', 'Nome do tipo de uso da água na instalação industrial.', 'Valores fixos (CHECK): LIMPEZA, CONSUMO_HUMANO, PROCESSO_PRODUTIVO, IRRIGACAO. Único.', 'PUBLICO'),
 ('tb_water_usage_type', 'description', 'TEXT', 'Descrição opcional do tipo de uso.', 'Sem restrição de formato.', 'PUBLICO'),
@@ -48,7 +47,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_property_classification', 'name', 'VARCHAR(50)', 'Nome específico da categoria (8 valores: RESIDENCIAL_NORMAL, RESIDENCIAL_SOCIAL, RESIDENCIAL_FAVELA, RESIDENCIAL_ESPECIAL, COMERCIAL_NORMAL_INDUSTRIAL, COMERCIAL_ESPECIAL, COMERCIAL_ENTIDADE_ASSISTENCIA_SOCIAL, PUBLICA_COM_CONTRATO).', 'Único.', 'PUBLICO'),
 ('tb_property_classification', 'group_name', 'VARCHAR(20)', 'Grupo amplo da categoria, usado pelo motor de detecção de vazamento (ex. regra de madrugada não vale pra COMERCIAL).', 'Valores fixos (CHECK): RESIDENCIAL, COMERCIAL.', 'PUBLICO'),
 
--- tb_organization
 ('tb_organization', 'id', 'SERIAL', 'Identificador da organização (empresa gestora de imóveis industriais/comerciais).', 'Chave primária.', 'INTERNO'),
 ('tb_organization', 'corporate_name', 'VARCHAR(150)', 'Razão social da organização.', 'Obrigatório.', 'RESTRITO'),
 ('tb_organization', 'trade_name', 'VARCHAR(150)', 'Nome fantasia da organização.', 'Obrigatório.', 'INTERNO'),
@@ -67,23 +65,19 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_property', 'built_area_m2', 'NUMERIC(10,2)', 'Área construída do imóvel, em m².', 'Opcional. CHECK: se preenchida, deve ser maior que zero. Usada para normalizar consumo (L/m²) no ranking de eficiência entre instalações.', 'INTERNO'),
 ('tb_property', 'registration_date', 'DATE', 'Data de cadastro do imóvel.', 'Padrão CURRENT_DATE.', 'INTERNO'),
 
--- tb_property_operational_profile (extensão 1:1 de tb_property via FK — não usa herança nativa do Postgres, ver decisão no TASK.md)
 ('tb_property_operational_profile', 'property_id', 'INTEGER', 'Imóvel ao qual o perfil operacional pertence.', 'Chave primária e FK obrigatória para tb_property ao mesmo tempo (extensão 1:1). Só imóveis com cadastro industrial completo ganham linha aqui.', 'INTERNO'),
 ('tb_property_operational_profile', 'shift_count', 'SMALLINT', 'Quantidade de turnos de operação da instalação industrial.', 'Opcional. CHECK: se preenchida, deve ser maior que zero.', 'INTERNO'),
 ('tb_property_operational_profile', 'main_water_source', 'VARCHAR(20)', 'Fonte principal de água da instalação industrial.', 'Valores fixos (CHECK): CONCESSIONARIA, POCO_ARTESIANO, CISTERNA, REUSO.', 'INTERNO'),
 
--- tb_property_shift
 ('tb_property_shift', 'id', 'SERIAL', 'Identificador do turno.', 'Chave primária.', 'INTERNO'),
 ('tb_property_shift', 'property_id', 'INTEGER', 'Imóvel ao qual o turno pertence.', 'FK obrigatória para tb_property.', 'INTERNO'),
 ('tb_property_shift', 'start_time', 'TIME', 'Horário de início do turno.', 'Obrigatório.', 'INTERNO'),
 ('tb_property_shift', 'end_time', 'TIME', 'Horário de fim do turno.', 'Obrigatório. CHECK: deve ser posterior ao horário de início.', 'INTERNO'),
 
--- tb_property_water_usage
 ('tb_property_water_usage', 'id', 'SERIAL', 'Identificador do vínculo imóvel-uso da água.', 'Chave primária.', 'INTERNO'),
 ('tb_property_water_usage', 'property_id', 'INTEGER', 'Imóvel vinculado ao tipo de uso.', 'FK obrigatória para tb_property. Único em conjunto com water_usage_type_id.', 'INTERNO'),
 ('tb_property_water_usage', 'water_usage_type_id', 'INTEGER', 'Tipo de uso da água vinculado ao imóvel.', 'FK obrigatória para tb_water_usage_type.', 'INTERNO'),
 
--- tb_property_operation_day
 ('tb_property_operation_day', 'id', 'SERIAL', 'Identificador do vínculo imóvel-dia de operação.', 'Chave primária.', 'INTERNO'),
 ('tb_property_operation_day', 'property_id', 'INTEGER', 'Imóvel vinculado ao dia de operação.', 'FK obrigatória para tb_property. Único em conjunto com day_of_week_id.', 'INTERNO'),
 ('tb_property_operation_day', 'day_of_week_id', 'INTEGER', 'Dia da semana em que o imóvel opera.', 'FK obrigatória para tb_day_of_week.', 'INTERNO'),
@@ -94,7 +88,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_user_property', 'property_id', 'INTEGER', 'Imóvel vinculado ao usuário.', 'FK obrigatória para tb_property.', 'INTERNO'),
 ('tb_user_property', 'association_date', 'DATE', 'Data em que o vínculo foi criado.', 'Padrão CURRENT_DATE.', 'INTERNO'),
 
--- tb_user_organization
 ('tb_user_organization', 'id', 'SERIAL', 'Identificador do vínculo usuário-organização.', 'Chave primária.', 'INTERNO'),
 ('tb_user_organization', 'user_id', 'INTEGER', 'Usuário vinculado à organização.', 'FK obrigatória para tb_user. Único em conjunto com organization_id. Sem diferenciação de papel/hierarquia entre usuários vinculados.', 'INTERNO'),
 ('tb_user_organization', 'organization_id', 'INTEGER', 'Organização vinculada ao usuário.', 'FK obrigatória para tb_organization.', 'INTERNO'),
@@ -133,7 +126,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_last_water_bill', 'total_value', 'NUMERIC(10,2)', 'Valor total pago na conta.', 'CHECK: deve ser maior ou igual a zero. Dado financeiro ligado diretamente a uma pessoa.', 'RESTRITO'),
 ('tb_last_water_bill', 'm3_value', 'NUMERIC(10,2)', 'Consumo em m³ registrado na conta.', 'CHECK: deve ser maior ou igual a zero.', 'RESTRITO'),
 
--- tb_investment_scenario
 ('tb_investment_scenario', 'id', 'SERIAL', 'Identificador do cenário de investimento em eficiência hídrica.', 'Chave primária.', 'PUBLICO'),
 ('tb_investment_scenario', 'organization_id', 'INTEGER', 'Organização à qual o cenário pertence.', 'FK opcional para tb_organization. NULL = cenário de referência global, disponível para qualquer organização.', 'INTERNO'),
 ('tb_investment_scenario', 'name', 'VARCHAR(100)', 'Nome do cenário de investimento.', 'Obrigatório.', 'PUBLICO'),

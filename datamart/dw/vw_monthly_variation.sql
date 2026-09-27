@@ -1,5 +1,3 @@
--- Grao: instalacao x mes (industrial). Window function: LAG() pra variacao
--- % mes a mes - espelha o "varMes" hoje estatico no prototipo.
 CREATE OR REPLACE VIEW dw.vw_monthly_variation AS
 WITH staging_monthly AS (
     SELECT

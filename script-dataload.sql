@@ -199,8 +199,6 @@ INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (5, '05000028', 'SÃO PAULO', 'SP'),
 (5, '05000029', 'SÃO PAULO', 'SP');
 
--- Endereços novos (ids 151-156), usados pelas instalações industriais/comerciais
--- cadastradas mais abaixo (tb_organization/tb_property com organization_id).
 INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (1, '01100001', 'SÃO PAULO', 'SP'),
 (1, '01100002', 'SÃO PAULO', 'SP'),
@@ -423,8 +421,6 @@ VALUES (
     TRUE,
     FALSE
 );
--- Organizações (ids 1-3), usadas pelas instalações industriais/comerciais
--- cadastradas no bloco novo ao final do INSERT de tb_property abaixo.
 INSERT INTO tb_organization (corporate_name, trade_name, cnpj, business_segment, declared_unit_count, registration_date) VALUES
 ('SWIFT DISTRIBUIDORA DE ALIMENTOS LTDA', 'SWIFT DISTRIBUIDORA', '12345678000190', 'VAREJO', 10, '2026-01-15'),
 ('INDUSTRIA METALURGICA VALE LTDA', 'METALVALE', '23456789000101', 'INDUSTRIA', 3, '2026-02-10'),
@@ -582,20 +578,11 @@ INSERT INTO tb_property (name, type, classification_id, address_id, registration
 ('RESIDENCIA DA FAMILIA LIMA 149', 'CASA', 1, 149, '2022-05-30'),
 ('EDIFICIO AURORA 150', 'PRÉDIO', 1, 150, '2022-05-31');
 
--- Instalações industriais/comerciais (ids 151-153) cadastradas pela tela rápida
--- ("Cadastrar instalação" do protótipo web) — sem perfil operacional, igual ao
--- que aconteceria de verdade nesse fluxo.
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('LOJA SWIFT - VILA LEOPOLDINA', 'PRÉDIO', 5, 151, 1, 850.00, '2026-01-16'),
 ('LOJA SWIFT - VILA ROMANA', 'PRÉDIO', 5, 152, 1, 1200.00, '2026-01-17'),
 ('LOJA SWIFT - PERDIZES', 'PRÉDIO', 5, 153, 1, 950.00, '2026-01-18');
 
--- Instalações industriais (ids 154-155) cadastradas pelo cadastro completo do
--- gestor (etapas "Operação"/"Turnos"/"Utilização da água" do protótipo web) -
--- a linha-base fica em tb_property como qualquer outra instalação (assim
--- tb_device/tb_user_property continuam funcionando pra elas sem mudança);
--- só os campos extras do perfil operacional ganham linha em
--- tb_property_operational_profile (extensão 1:1, não herança).
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('FABRICA METALVALE - CAMPINAS', 'PRÉDIO', 5, 154, 2, 3200.00, '2026-02-11'),
 ('CENTRO DE DISTRIBUICAO METALVALE - SANTOS', 'PRÉDIO', 5, 155, 2, 1800.00, '2026-02-12');
@@ -616,7 +603,6 @@ INSERT INTO tb_property_water_usage (property_id, water_usage_type_id) VALUES
 (154, 1), (154, 2), (154, 3),
 (155, 1), (155, 2), (155, 3);
 
--- Dias de operação (SEGUNDA a SEXTA = ids 1-5 em tb_day_of_week).
 INSERT INTO tb_property_operation_day (property_id, day_of_week_id) VALUES
 (151, 1), (151, 2), (151, 3), (151, 4), (151, 5),
 (154, 1), (154, 2), (154, 3), (154, 4), (154, 5),
@@ -775,7 +761,6 @@ INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (150, 150, '2022-01-01');
 
 
--- Usuários gestores (is_manager = TRUE) vinculados às organizações novas.
 INSERT INTO tb_user_organization (user_id, organization_id, association_date) VALUES
 (2, 1, '2026-01-15'),
 (15, 2, '2026-02-10');
@@ -984,10 +969,6 @@ INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_vali
 (5, 7, 7.90,  '2026-01-01', NULL),
 (5, 8, 11.82, '2026-01-01', NULL);
 
--- Duas correções pontuais no id=5 (GRANDE_SP / COMERCIAL_NORMAL_INDUSTRIAL),
--- só pra gerar uma cadeia real de auditoria com 3 níveis
--- (INSERT -> UPDATE -> UPDATE) e testar dw.vw_audit_history_chain (CTE
--- recursiva) contra dado de verdade, não hipotético.
 UPDATE tb_region_rate SET m3_value = 30.62 WHERE id = 5;
 UPDATE tb_region_rate SET m3_value = 30.57 WHERE id = 5;
 
@@ -1997,15 +1978,6 @@ INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (199, '2025-01-01', 142.50, 19.00),
 (200, '2025-02-01', 45.00, 6.00);
 
--- Cenarios de referencia (organization_id NULL = disponivel pra qualquer
--- organizacao), valores pesquisados em fontes reais de mercado brasileiro
--- (nao copiados do prototipo, que usava numeros ficticios) - ver "Quanto
--- custa instalar reuso de agua cinza"/"...captacao de agua da chuva",
--- Monitor do Mercado, 2026: reuso de agua cinza comercial R$60mil-R$250mil
--- (payback 6-12 anos); captacao de chuva comercial R$35mil-R$120mil
--- (payback 3-7 anos); aeradores/registros economizadores com payback de
--- poucos meses num estudo de caso residencial, aqui escalado pra uma rede de
--- unidades comerciais.
 INSERT INTO tb_investment_scenario (organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months, description) VALUES
 (NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'TROCA DE TORNEIRAS E REGISTROS POR MODELOS DE FECHAMENTO AUTOMATICO E BAIXO FLUXO EM TODAS AS UNIDADES DA REDE.'),
 (NULL, 'REUSO DE AGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'ESTACAO DE TRATAMENTO E REAPROVEITAMENTO DE AGUA CINZA PARA LIMPEZA E DESCARGA SANITARIA.'),

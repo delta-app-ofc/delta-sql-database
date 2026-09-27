@@ -1,14 +1,8 @@
--- Carga do GOLD, idempotente: monta o modelo dimensional (chave substituta)
--- a partir do SILVER. Chamada depois de silver.sp_load() (ver TASK.md /
--- workflow de agendamento).
 CREATE OR REPLACE PROCEDURE gold.sp_load()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- 1) dim_date: faixa fixa e larga o suficiente pra cobrir qualquer dado
-    -- (sintetico de hoje ou real no futuro), gerada uma vez via
-    -- generate_series - nao depende de tabela de calendario externa.
     INSERT INTO gold.dim_date (date_key, full_date, day_of_week, day_name, week_of_year, month_number, quarter_number, year_number, is_weekend)
     SELECT
           TO_CHAR(d, 'YYYYMMDD')::INTEGER
@@ -23,8 +17,6 @@ BEGIN
     FROM generate_series('2024-01-01'::DATE, '2028-12-31'::DATE, INTERVAL '1 day') AS d
     ON CONFLICT (date_key) DO NOTHING;
 
-    -- 2) dim_property: upsert a partir do silver (star schema puro, sem
-    -- braco snowflake pra organizacao).
     INSERT INTO gold.dim_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
     SELECT property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile
     FROM silver.property
@@ -38,7 +30,6 @@ BEGIN
           , organization_name        = EXCLUDED.organization_name
           , has_operational_profile  = EXCLUDED.has_operational_profile;
 
-    -- 3) dim_person: upsert a partir do silver.
     INSERT INTO gold.dim_person (user_id, name, profile_type)
     SELECT user_id, name, profile_type
     FROM silver.person
@@ -46,9 +37,6 @@ BEGIN
         SET name         = EXCLUDED.name
           , profile_type = EXCLUDED.profile_type;
 
-    -- 4) fact_consumption_daily: CTE em etapas - resolve a chave substituta,
-    -- resolve o custo chamando fn_get_current_region_rate (reaproveita a
-    -- funcao existente em vez de recalcular tarifa).
     WITH staging_daily AS (
         SELECT
               cd.property_id
@@ -80,7 +68,6 @@ BEGIN
           , avg_flow_lmin = EXCLUDED.avg_flow_lmin
           , cost_value    = EXCLUDED.cost_value;
 
-    -- 5) fact_water_bill_monthly.
     INSERT INTO gold.fact_water_bill_monthly (person_key, date_key, total_value, m3_value)
     SELECT
           dp.person_key
@@ -93,9 +80,6 @@ BEGIN
         SET total_value = EXCLUDED.total_value
           , m3_value    = EXCLUDED.m3_value;
 
-    -- 6) fact_investment_scenario: dado de referencia, ja limpo, sem join
-    -- necessario - le direto de tb_investment_scenario (nao precisa passar
-    -- por silver, nao ha tratamento nenhum a fazer aqui).
     INSERT INTO gold.fact_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
     SELECT id, name, investment_value, reduction_pct, annual_savings_value, payback_months
     FROM tb_investment_scenario

@@ -1,6 +1,3 @@
--- Grao: instalacao x dia (industrial). Window functions: SUM() OVER pra
--- total acumulado no periodo e AVG() OVER pra media movel de 7 dias -
--- espelha o card de consumo acumulado do prototipo.
 CREATE OR REPLACE VIEW dw.vw_consumption_daily AS
 WITH staging_consumption AS (
     SELECT

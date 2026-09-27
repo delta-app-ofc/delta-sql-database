@@ -1,7 +1,3 @@
--- Copia tratada de tb_property, ja com o join de tb_address/tb_organization/
--- tb_property_operational_profile resolvido (dado cadastral do proprio
--- Postgres, ja limpo - nao passa por stage). Ainda na chave natural
--- (property_id) - o GOLD e quem monta a chave substituta do star schema.
 CREATE TABLE silver.property (
       property_id           INTEGER       PRIMARY KEY
     , name                  VARCHAR(100)  NOT NULL

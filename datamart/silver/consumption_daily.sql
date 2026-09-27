@@ -1,4 +1,3 @@
--- Rollup diario de silver.consumption_reading - grao instalacao x dia.
 CREATE TABLE silver.consumption_daily (
       id                    BIGSERIAL     PRIMARY KEY
     , property_id           INTEGER       NOT NULL

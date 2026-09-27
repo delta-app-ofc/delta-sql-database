@@ -1,0 +1,23 @@
+-- Grao: 1 cenario de investimento (CAPEX). Window function: RANK() por
+-- payback - espelha o "Simulador de Investimento" do prototipo, agora com
+-- valores pesquisados em vez de ficticios (ver tb_investment_scenario).
+CREATE OR REPLACE VIEW dw.vw_capex_comparison AS
+WITH staging_scenario AS (
+    SELECT
+          scenario_id
+        , name
+        , investment_value
+        , reduction_pct
+        , annual_savings_value
+        , payback_months
+    FROM gold.fact_investment_scenario
+)
+SELECT
+      scenario_id
+    , name
+    , investment_value
+    , reduction_pct
+    , annual_savings_value
+    , payback_months
+    , RANK() OVER (ORDER BY payback_months ASC NULLS LAST) AS rank_by_payback
+FROM staging_scenario;

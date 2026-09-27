@@ -1,0 +1,12 @@
+-- Copia tratada de tb_last_water_bill + tb_user - dado real, sem sintetico,
+-- cobre o perfil residencial na camada de BI.
+CREATE TABLE silver.water_bill (
+      id                    BIGSERIAL     PRIMARY KEY
+    , user_id               INTEGER       NOT NULL
+    , user_name             VARCHAR(100)  NOT NULL
+    , bill_month            DATE          NOT NULL
+    , total_value           NUMERIC(10,2) NOT NULL
+    , m3_value              NUMERIC(10,2) NOT NULL
+    , CONSTRAINT uq_silver_water_bill_user_month
+        UNIQUE (user_id, bill_month)
+);

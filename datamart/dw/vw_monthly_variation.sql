@@ -5,9 +5,9 @@ WITH staging_monthly AS (
         , dp.name AS property_name
         , DATE_TRUNC('month', dd.full_date)::DATE AS reference_month
         , SUM(f.total_liters) AS total_liters
-    FROM gold.fact_consumption_daily f
-    JOIN gold.dim_property dp ON dp.property_key = f.property_key
-    JOIN gold.dim_date dd     ON dd.date_key = f.date_key
+    FROM gold.ft_consumption_daily f
+    JOIN gold.dm_property dp ON dp.property_key = f.property_key
+    JOIN gold.dm_date dd     ON dd.date_key = f.date_key
     GROUP BY dp.property_id, dp.name, DATE_TRUNC('month', dd.full_date)
 ),
 final_variation AS (

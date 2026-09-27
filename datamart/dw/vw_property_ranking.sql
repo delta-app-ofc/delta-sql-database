@@ -6,8 +6,8 @@ WITH agg_consumption AS (
         , dp.built_area_m2
         , SUM(f.total_liters) AS total_liters
         , SUM(f.cost_value)   AS total_cost
-    FROM gold.fact_consumption_daily f
-    JOIN gold.dim_property dp ON dp.property_key = f.property_key
+    FROM gold.ft_consumption_daily f
+    JOIN gold.dm_property dp ON dp.property_key = f.property_key
     WHERE dp.built_area_m2 IS NOT NULL
     GROUP BY dp.property_id, dp.name, dp.built_area_m2
 ),

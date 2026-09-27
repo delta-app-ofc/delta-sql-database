@@ -1,4 +1,4 @@
-CREATE TABLE gold.fact_investment_scenario (
+CREATE TABLE gold.ft_investment_scenario (
       scenario_key          SERIAL        PRIMARY KEY
     , scenario_id           INTEGER       NOT NULL UNIQUE
     , name                  VARCHAR(100)  NOT NULL

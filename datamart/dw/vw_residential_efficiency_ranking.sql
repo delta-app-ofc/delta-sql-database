@@ -6,9 +6,9 @@ WITH staging_bill AS (
         , dd.full_date AS reference_month
         , f.m3_value
         , f.total_value
-    FROM gold.fact_water_bill_monthly f
-    JOIN gold.dim_person dpe ON dpe.person_key = f.person_key
-    JOIN gold.dim_date dd    ON dd.date_key = f.date_key
+    FROM gold.ft_water_bill_monthly f
+    JOIN gold.dm_person dpe ON dpe.person_key = f.person_key
+    JOIN gold.dm_date dd    ON dd.date_key = f.date_key
 )
 SELECT
       user_id

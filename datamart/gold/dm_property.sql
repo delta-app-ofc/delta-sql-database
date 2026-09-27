@@ -1,4 +1,4 @@
-CREATE TABLE gold.dim_property (
+CREATE TABLE gold.dm_property (
       property_key            SERIAL      PRIMARY KEY
     , property_id             INTEGER     NOT NULL UNIQUE
     , name                    VARCHAR(100) NOT NULL

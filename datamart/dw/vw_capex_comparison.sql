@@ -7,7 +7,7 @@ WITH staging_scenario AS (
         , reduction_pct
         , annual_savings_value
         , payback_months
-    FROM gold.fact_investment_scenario
+    FROM gold.ft_investment_scenario
 )
 SELECT
       scenario_id

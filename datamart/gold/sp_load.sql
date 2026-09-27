@@ -3,7 +3,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO gold.dim_date (date_key, full_date, day_of_week, day_name, week_of_year, month_number, quarter_number, year_number, is_weekend)
+    INSERT INTO gold.dm_date (date_key, full_date, day_of_week, day_name, week_of_year, month_number, quarter_number, year_number, is_weekend)
     SELECT
           TO_CHAR(d, 'YYYYMMDD')::INTEGER
         , d
@@ -17,7 +17,7 @@ BEGIN
     FROM generate_series('2024-01-01'::DATE, '2028-12-31'::DATE, INTERVAL '1 day') AS d
     ON CONFLICT (date_key) DO NOTHING;
 
-    INSERT INTO gold.dim_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
+    INSERT INTO gold.dm_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
     SELECT property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile
     FROM silver.property
     ON CONFLICT (property_id) DO UPDATE
@@ -30,7 +30,7 @@ BEGIN
           , organization_name        = EXCLUDED.organization_name
           , has_operational_profile  = EXCLUDED.has_operational_profile;
 
-    INSERT INTO gold.dim_person (user_id, name, profile_type)
+    INSERT INTO gold.dm_person (user_id, name, profile_type)
     SELECT user_id, name, profile_type
     FROM silver.person
     ON CONFLICT (user_id) DO UPDATE
@@ -54,7 +54,7 @@ BEGIN
             , ROUND(sd.total_liters / 1000.0 * fn_get_current_region_rate(sd.region_id, sd.classification_id, sd.consumption_day), 2) AS cost_value
         FROM staging_daily sd
     )
-    INSERT INTO gold.fact_consumption_daily (property_key, date_key, total_liters, avg_flow_lmin, cost_value)
+    INSERT INTO gold.ft_consumption_daily (property_key, date_key, total_liters, avg_flow_lmin, cost_value)
     SELECT
           dp.property_key
         , TO_CHAR(wc.consumption_day, 'YYYYMMDD')::INTEGER
@@ -62,25 +62,25 @@ BEGIN
         , wc.avg_flow_lmin
         , wc.cost_value
     FROM with_cost wc
-    JOIN gold.dim_property dp ON dp.property_id = wc.property_id
+    JOIN gold.dm_property dp ON dp.property_id = wc.property_id
     ON CONFLICT (property_key, date_key) DO UPDATE
         SET total_liters  = EXCLUDED.total_liters
           , avg_flow_lmin = EXCLUDED.avg_flow_lmin
           , cost_value    = EXCLUDED.cost_value;
 
-    INSERT INTO gold.fact_water_bill_monthly (person_key, date_key, total_value, m3_value)
+    INSERT INTO gold.ft_water_bill_monthly (person_key, date_key, total_value, m3_value)
     SELECT
           dp.person_key
         , TO_CHAR(wb.bill_month, 'YYYYMMDD')::INTEGER
         , wb.total_value
         , wb.m3_value
     FROM silver.water_bill wb
-    JOIN gold.dim_person dp ON dp.user_id = wb.user_id
+    JOIN gold.dm_person dp ON dp.user_id = wb.user_id
     ON CONFLICT (person_key, date_key) DO UPDATE
         SET total_value = EXCLUDED.total_value
           , m3_value    = EXCLUDED.m3_value;
 
-    INSERT INTO gold.fact_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
+    INSERT INTO gold.ft_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
     SELECT id, name, investment_value, reduction_pct, annual_savings_value, payback_months
     FROM tb_investment_scenario
     ON CONFLICT (scenario_id) DO UPDATE

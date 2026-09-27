@@ -150,7 +150,7 @@ $$;
 
 CREATE SCHEMA IF NOT EXISTS gold;
 
-CREATE TABLE gold.dim_date (
+CREATE TABLE gold.dm_date (
       date_key              INTEGER     PRIMARY KEY
     , full_date             DATE        NOT NULL UNIQUE
     , day_of_week           SMALLINT    NOT NULL
@@ -162,7 +162,7 @@ CREATE TABLE gold.dim_date (
     , is_weekend            BOOLEAN     NOT NULL
 );
 
-CREATE TABLE gold.dim_property (
+CREATE TABLE gold.dm_property (
       property_key            SERIAL      PRIMARY KEY
     , property_id             INTEGER     NOT NULL UNIQUE
     , name                    VARCHAR(100) NOT NULL
@@ -175,43 +175,43 @@ CREATE TABLE gold.dim_property (
     , has_operational_profile BOOLEAN     NOT NULL
 );
 
-CREATE TABLE gold.dim_person (
+CREATE TABLE gold.dm_person (
       person_key            SERIAL      PRIMARY KEY
     , user_id               INTEGER     NOT NULL UNIQUE
     , name                  VARCHAR(100) NOT NULL
     , profile_type          VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE gold.fact_consumption_daily (
+CREATE TABLE gold.ft_consumption_daily (
       fact_key              BIGSERIAL     PRIMARY KEY
     , property_key          INTEGER       NOT NULL
     , date_key              INTEGER       NOT NULL
     , total_liters          NUMERIC(12,3) NOT NULL
     , avg_flow_lmin         NUMERIC(10,3) NOT NULL
     , cost_value            NUMERIC(12,2) NOT NULL
-    , CONSTRAINT uq_gold_fact_consumption_daily_property_date
+    , CONSTRAINT uq_gold_ft_consumption_daily_property_date
         UNIQUE (property_key, date_key)
-    , CONSTRAINT fk_gold_fact_consumption_daily_property
-        FOREIGN KEY (property_key) REFERENCES gold.dim_property (property_key)
-    , CONSTRAINT fk_gold_fact_consumption_daily_date
-        FOREIGN KEY (date_key) REFERENCES gold.dim_date (date_key)
+    , CONSTRAINT fk_gold_ft_consumption_daily_property
+        FOREIGN KEY (property_key) REFERENCES gold.dm_property (property_key)
+    , CONSTRAINT fk_gold_ft_consumption_daily_date
+        FOREIGN KEY (date_key) REFERENCES gold.dm_date (date_key)
 );
 
-CREATE TABLE gold.fact_water_bill_monthly (
+CREATE TABLE gold.ft_water_bill_monthly (
       fact_key              BIGSERIAL     PRIMARY KEY
     , person_key            INTEGER       NOT NULL
     , date_key              INTEGER       NOT NULL
     , total_value           NUMERIC(10,2) NOT NULL
     , m3_value              NUMERIC(10,2) NOT NULL
-    , CONSTRAINT uq_gold_fact_water_bill_monthly_person_date
+    , CONSTRAINT uq_gold_ft_water_bill_monthly_person_date
         UNIQUE (person_key, date_key)
-    , CONSTRAINT fk_gold_fact_water_bill_monthly_person
-        FOREIGN KEY (person_key) REFERENCES gold.dim_person (person_key)
-    , CONSTRAINT fk_gold_fact_water_bill_monthly_date
-        FOREIGN KEY (date_key) REFERENCES gold.dim_date (date_key)
+    , CONSTRAINT fk_gold_ft_water_bill_monthly_person
+        FOREIGN KEY (person_key) REFERENCES gold.dm_person (person_key)
+    , CONSTRAINT fk_gold_ft_water_bill_monthly_date
+        FOREIGN KEY (date_key) REFERENCES gold.dm_date (date_key)
 );
 
-CREATE TABLE gold.fact_investment_scenario (
+CREATE TABLE gold.ft_investment_scenario (
       scenario_key          SERIAL        PRIMARY KEY
     , scenario_id           INTEGER       NOT NULL UNIQUE
     , name                  VARCHAR(100)  NOT NULL
@@ -226,7 +226,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO gold.dim_date (date_key, full_date, day_of_week, day_name, week_of_year, month_number, quarter_number, year_number, is_weekend)
+    INSERT INTO gold.dm_date (date_key, full_date, day_of_week, day_name, week_of_year, month_number, quarter_number, year_number, is_weekend)
     SELECT
           TO_CHAR(d, 'YYYYMMDD')::INTEGER
         , d
@@ -240,7 +240,7 @@ BEGIN
     FROM generate_series('2024-01-01'::DATE, '2028-12-31'::DATE, INTERVAL '1 day') AS d
     ON CONFLICT (date_key) DO NOTHING;
 
-    INSERT INTO gold.dim_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
+    INSERT INTO gold.dm_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
     SELECT property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile
     FROM silver.property
     ON CONFLICT (property_id) DO UPDATE
@@ -253,7 +253,7 @@ BEGIN
           , organization_name        = EXCLUDED.organization_name
           , has_operational_profile  = EXCLUDED.has_operational_profile;
 
-    INSERT INTO gold.dim_person (user_id, name, profile_type)
+    INSERT INTO gold.dm_person (user_id, name, profile_type)
     SELECT user_id, name, profile_type
     FROM silver.person
     ON CONFLICT (user_id) DO UPDATE
@@ -277,7 +277,7 @@ BEGIN
             , ROUND(sd.total_liters / 1000.0 * fn_get_current_region_rate(sd.region_id, sd.classification_id, sd.consumption_day), 2) AS cost_value
         FROM staging_daily sd
     )
-    INSERT INTO gold.fact_consumption_daily (property_key, date_key, total_liters, avg_flow_lmin, cost_value)
+    INSERT INTO gold.ft_consumption_daily (property_key, date_key, total_liters, avg_flow_lmin, cost_value)
     SELECT
           dp.property_key
         , TO_CHAR(wc.consumption_day, 'YYYYMMDD')::INTEGER
@@ -285,25 +285,25 @@ BEGIN
         , wc.avg_flow_lmin
         , wc.cost_value
     FROM with_cost wc
-    JOIN gold.dim_property dp ON dp.property_id = wc.property_id
+    JOIN gold.dm_property dp ON dp.property_id = wc.property_id
     ON CONFLICT (property_key, date_key) DO UPDATE
         SET total_liters  = EXCLUDED.total_liters
           , avg_flow_lmin = EXCLUDED.avg_flow_lmin
           , cost_value    = EXCLUDED.cost_value;
 
-    INSERT INTO gold.fact_water_bill_monthly (person_key, date_key, total_value, m3_value)
+    INSERT INTO gold.ft_water_bill_monthly (person_key, date_key, total_value, m3_value)
     SELECT
           dp.person_key
         , TO_CHAR(wb.bill_month, 'YYYYMMDD')::INTEGER
         , wb.total_value
         , wb.m3_value
     FROM silver.water_bill wb
-    JOIN gold.dim_person dp ON dp.user_id = wb.user_id
+    JOIN gold.dm_person dp ON dp.user_id = wb.user_id
     ON CONFLICT (person_key, date_key) DO UPDATE
         SET total_value = EXCLUDED.total_value
           , m3_value    = EXCLUDED.m3_value;
 
-    INSERT INTO gold.fact_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
+    INSERT INTO gold.ft_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
     SELECT id, name, investment_value, reduction_pct, annual_savings_value, payback_months
     FROM tb_investment_scenario
     ON CONFLICT (scenario_id) DO UPDATE
@@ -327,9 +327,9 @@ WITH staging_consumption AS (
         , dd.full_date
         , f.total_liters
         , f.cost_value
-    FROM gold.fact_consumption_daily f
-    JOIN gold.dim_property dp ON dp.property_key = f.property_key
-    JOIN gold.dim_date dd     ON dd.date_key = f.date_key
+    FROM gold.ft_consumption_daily f
+    JOIN gold.dm_property dp ON dp.property_key = f.property_key
+    JOIN gold.dm_date dd     ON dd.date_key = f.date_key
 )
 SELECT
       property_id
@@ -355,8 +355,8 @@ WITH agg_consumption AS (
         , dp.built_area_m2
         , SUM(f.total_liters) AS total_liters
         , SUM(f.cost_value)   AS total_cost
-    FROM gold.fact_consumption_daily f
-    JOIN gold.dim_property dp ON dp.property_key = f.property_key
+    FROM gold.ft_consumption_daily f
+    JOIN gold.dm_property dp ON dp.property_key = f.property_key
     WHERE dp.built_area_m2 IS NOT NULL
     GROUP BY dp.property_id, dp.name, dp.built_area_m2
 ),
@@ -388,9 +388,9 @@ WITH staging_monthly AS (
         , dp.name AS property_name
         , DATE_TRUNC('month', dd.full_date)::DATE AS reference_month
         , SUM(f.total_liters) AS total_liters
-    FROM gold.fact_consumption_daily f
-    JOIN gold.dim_property dp ON dp.property_key = f.property_key
-    JOIN gold.dim_date dd     ON dd.date_key = f.date_key
+    FROM gold.ft_consumption_daily f
+    JOIN gold.dm_property dp ON dp.property_key = f.property_key
+    JOIN gold.dm_date dd     ON dd.date_key = f.date_key
     GROUP BY dp.property_id, dp.name, DATE_TRUNC('month', dd.full_date)
 ),
 final_variation AS (
@@ -419,7 +419,7 @@ WITH staging_daily_totals AS (
     SELECT
           f.property_key
         , f.total_liters
-    FROM gold.fact_consumption_daily f
+    FROM gold.ft_consumption_daily f
 ),
 agg_stats AS (
     SELECT
@@ -451,7 +451,7 @@ WITH staging_scenario AS (
         , reduction_pct
         , annual_savings_value
         , payback_months
-    FROM gold.fact_investment_scenario
+    FROM gold.ft_investment_scenario
 )
 SELECT
       scenario_id
@@ -471,9 +471,9 @@ WITH staging_bill AS (
         , dd.full_date AS reference_month
         , f.m3_value
         , f.total_value
-    FROM gold.fact_water_bill_monthly f
-    JOIN gold.dim_person dpe ON dpe.person_key = f.person_key
-    JOIN gold.dim_date dd    ON dd.date_key = f.date_key
+    FROM gold.ft_water_bill_monthly f
+    JOIN gold.dm_person dpe ON dpe.person_key = f.person_key
+    JOIN gold.dm_date dd    ON dd.date_key = f.date_key
 )
 SELECT
       user_id

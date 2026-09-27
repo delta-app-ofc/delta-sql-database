@@ -3,7 +3,7 @@ WITH staging_daily_totals AS (
     SELECT
           f.property_key
         , f.total_liters
-    FROM gold.fact_consumption_daily f
+    FROM gold.ft_consumption_daily f
 ),
 agg_stats AS (
     SELECT

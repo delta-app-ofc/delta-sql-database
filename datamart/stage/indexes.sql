@@ -1,2 +1,2 @@
-CREATE INDEX idx_consumption_reading_raw_property_date
-    ON stage.consumption_reading_raw (property_id, read_at DESC);
+CREATE INDEX idx_stage_consumption_summary_device_window
+    ON stage.consumption_summary (device_id, window_started_at DESC);

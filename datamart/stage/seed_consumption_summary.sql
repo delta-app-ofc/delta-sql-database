@@ -28,6 +28,3 @@ FROM (
 ) AS p;
 
 COMMIT;
-
-CALL silver.sp_load();
-CALL gold.sp_load();

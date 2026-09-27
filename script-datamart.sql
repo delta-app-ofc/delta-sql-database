@@ -1,41 +1,25 @@
 CREATE SCHEMA IF NOT EXISTS stage;
 
-CREATE TABLE stage.consumption_reading_raw (
+CREATE TABLE stage.consumption_summary (
       id                    BIGSERIAL     PRIMARY KEY
-    , property_id           INTEGER       NOT NULL
-    , read_at               TIMESTAMP     NOT NULL
-    , volume_liters         NUMERIC(10,3) NOT NULL
-      CONSTRAINT chk_stage_consumption_reading_raw_volume_liters
-        CHECK (volume_liters >= 0)
-    , flow_lmin             NUMERIC(10,3) NOT NULL
-      CONSTRAINT chk_stage_consumption_reading_raw_flow_lmin
-        CHECK (flow_lmin >= 0)
+    , mongo_id              CHAR(24)      UNIQUE
+    , device_id             VARCHAR(100)  NOT NULL
+    , user_id               VARCHAR(100)
+    , window_started_at     TIMESTAMP     NOT NULL
+    , window_finished_at    TIMESTAMP     NOT NULL
+    , consumption_liters    NUMERIC(10,3) NOT NULL
+      CONSTRAINT chk_stage_consumption_summary_consumption_liters
+        CHECK (consumption_liters >= 0)
+    , lpm_average           NUMERIC(10,3)
+      CONSTRAINT chk_stage_consumption_summary_lpm_average
+        CHECK (lpm_average IS NULL OR lpm_average >= 0)
+    , anomaly_detected      BOOLEAN
     , loaded_at             TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE SCHEMA IF NOT EXISTS silver;
 
-CREATE TABLE silver.consumption_reading (
-      id                    BIGSERIAL     PRIMARY KEY
-    , property_id           INTEGER       NOT NULL
-    , read_at               TIMESTAMP     NOT NULL
-    , volume_liters         NUMERIC(10,3) NOT NULL
-    , flow_lmin             NUMERIC(10,3) NOT NULL
-    , CONSTRAINT uq_silver_consumption_reading_property_read_at
-        UNIQUE (property_id, read_at)
-);
-
-CREATE TABLE silver.consumption_daily (
-      id                    BIGSERIAL     PRIMARY KEY
-    , property_id           INTEGER       NOT NULL
-    , consumption_day       DATE          NOT NULL
-    , total_liters          NUMERIC(12,3) NOT NULL
-    , avg_flow_lmin         NUMERIC(10,3) NOT NULL
-    , CONSTRAINT uq_silver_consumption_daily_property_day
-        UNIQUE (property_id, consumption_day)
-);
-
-CREATE TABLE silver.property (
+CREATE TABLE silver.dm_property (
       property_id           INTEGER       PRIMARY KEY
     , name                  VARCHAR(100)  NOT NULL
     , property_type         VARCHAR(20)   NOT NULL
@@ -52,54 +36,53 @@ CREATE TABLE silver.property (
     , main_water_source     VARCHAR(20)
 );
 
-CREATE TABLE silver.person (
+CREATE TABLE silver.dm_person (
       user_id               INTEGER     PRIMARY KEY
     , name                  VARCHAR(100) NOT NULL
     , profile_type          VARCHAR(20) NOT NULL
-      CONSTRAINT chk_silver_person_profile_type
+      CONSTRAINT chk_silver_dm_person_profile_type
         CHECK (profile_type IN ('RESIDENCIAL', 'GESTOR'))
 );
 
-CREATE TABLE silver.water_bill (
+CREATE TABLE silver.ft_consumption_reading (
+      id                    BIGSERIAL     PRIMARY KEY
+    , property_id           INTEGER       NOT NULL
+    , read_at               TIMESTAMP     NOT NULL
+    , volume_liters         NUMERIC(10,3) NOT NULL
+    , flow_lmin             NUMERIC(10,3) NOT NULL
+    , CONSTRAINT uq_silver_ft_consumption_reading_property_read_at
+        UNIQUE (property_id, read_at)
+);
+
+CREATE TABLE silver.ft_consumption_daily (
+      id                    BIGSERIAL     PRIMARY KEY
+    , property_id           INTEGER       NOT NULL
+    , consumption_day       DATE          NOT NULL
+    , total_liters          NUMERIC(12,3) NOT NULL
+    , avg_flow_lmin         NUMERIC(10,3) NOT NULL
+    , CONSTRAINT uq_silver_ft_consumption_daily_property_day
+        UNIQUE (property_id, consumption_day)
+);
+
+CREATE TABLE silver.ft_water_bill (
       id                    BIGSERIAL     PRIMARY KEY
     , user_id               INTEGER       NOT NULL
     , user_name             VARCHAR(100)  NOT NULL
     , bill_month            DATE          NOT NULL
     , total_value           NUMERIC(10,2) NOT NULL
     , m3_value              NUMERIC(10,2) NOT NULL
-    , CONSTRAINT uq_silver_water_bill_user_month
+    , CONSTRAINT uq_silver_ft_water_bill_user_month
         UNIQUE (user_id, bill_month)
 );
 
-CREATE OR REPLACE PROCEDURE silver.sp_load()
+CREATE OR REPLACE PROCEDURE silver.sp_load_dm_property()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO silver.consumption_reading (property_id, read_at, volume_liters, flow_lmin)
-    SELECT r.property_id, r.read_at, r.volume_liters, r.flow_lmin
-    FROM stage.consumption_reading_raw r
-    ON CONFLICT (property_id, read_at) DO NOTHING;
+    TRUNCATE TABLE silver.dm_property;
 
-    WITH daily AS (
-        SELECT
-              property_id
-            , DATE(read_at)                AS consumption_day
-            , SUM(volume_liters)            AS total_liters
-            , AVG(flow_lmin)                AS avg_flow_lmin
-        FROM silver.consumption_reading
-        GROUP BY property_id, DATE(read_at)
-    )
-    INSERT INTO silver.consumption_daily (property_id, consumption_day, total_liters, avg_flow_lmin)
-    SELECT property_id, consumption_day, total_liters, avg_flow_lmin
-    FROM daily
-    ON CONFLICT (property_id, consumption_day) DO UPDATE
-        SET total_liters  = EXCLUDED.total_liters
-          , avg_flow_lmin = EXCLUDED.avg_flow_lmin;
-
-    TRUNCATE TABLE silver.property;
-
-    INSERT INTO silver.property
+    INSERT INTO silver.dm_property
     (
           property_id, name, property_type, classification_id, classification_group
         , region_id, city, state, built_area_m2
@@ -127,9 +110,17 @@ BEGIN
     LEFT JOIN tb_organization o        ON o.id = p.organization_id
     LEFT JOIN tb_property_operational_profile op ON op.property_id = p.id;
 
-    TRUNCATE TABLE silver.person;
+END;
+$$;
 
-    INSERT INTO silver.person (user_id, name, profile_type)
+CREATE OR REPLACE PROCEDURE silver.sp_load_dm_person()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    TRUNCATE TABLE silver.dm_person;
+
+    INSERT INTO silver.dm_person (user_id, name, profile_type)
     SELECT
           u.id
         , u.name
@@ -137,13 +128,77 @@ BEGIN
     FROM tb_user u
     LEFT JOIN (SELECT DISTINCT user_id FROM tb_user_organization) uo ON uo.user_id = u.id;
 
-    INSERT INTO silver.water_bill (user_id, user_name, bill_month, total_value, m3_value)
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE silver.sp_load_ft_consumption_reading()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    INSERT INTO silver.ft_consumption_reading (property_id, read_at, volume_liters, flow_lmin)
+    SELECT
+          d.property_id
+        , s.window_started_at
+        , s.consumption_liters
+        , s.lpm_average
+    FROM stage.consumption_summary s
+    JOIN tb_device d ON d.device_id = s.device_id
+    ON CONFLICT (property_id, read_at) DO NOTHING;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE silver.sp_load_ft_consumption_daily()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    WITH daily AS (
+        SELECT
+              property_id
+            , DATE(read_at)       AS consumption_day
+            , SUM(volume_liters)  AS total_liters
+            , AVG(flow_lmin)      AS avg_flow_lmin
+        FROM silver.ft_consumption_reading
+        GROUP BY property_id, DATE(read_at)
+    )
+    INSERT INTO silver.ft_consumption_daily (property_id, consumption_day, total_liters, avg_flow_lmin)
+    SELECT property_id, consumption_day, total_liters, avg_flow_lmin
+    FROM daily
+    ON CONFLICT (property_id, consumption_day) DO UPDATE
+        SET total_liters  = EXCLUDED.total_liters
+          , avg_flow_lmin = EXCLUDED.avg_flow_lmin;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE silver.sp_load_ft_water_bill()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    INSERT INTO silver.ft_water_bill (user_id, user_name, bill_month, total_value, m3_value)
     SELECT b.user_id, u.name, b.month, b.total_value, b.m3_value
     FROM tb_last_water_bill b
     JOIN tb_user u ON u.id = b.user_id
     ON CONFLICT (user_id, bill_month) DO UPDATE
         SET total_value = EXCLUDED.total_value
           , m3_value     = EXCLUDED.m3_value;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE silver.sp_load()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    CALL silver.sp_load_ft_consumption_reading();
+    CALL silver.sp_load_ft_consumption_daily();
+    CALL silver.sp_load_dm_property();
+    CALL silver.sp_load_dm_person();
+    CALL silver.sp_load_ft_water_bill();
 
 END;
 $$;
@@ -221,7 +276,7 @@ CREATE TABLE gold.ft_investment_scenario (
     , payback_months        NUMERIC(6,1)
 );
 
-CREATE OR REPLACE PROCEDURE gold.sp_load()
+CREATE OR REPLACE PROCEDURE gold.sp_load_dm_date()
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -240,9 +295,20 @@ BEGIN
     FROM generate_series('2024-01-01'::DATE, '2028-12-31'::DATE, INTERVAL '1 day') AS d
     ON CONFLICT (date_key) DO NOTHING;
 
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load_dm_property()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    DELETE FROM gold.dm_property
+    WHERE property_id NOT IN (SELECT property_id FROM silver.dm_property);
+
     INSERT INTO gold.dm_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
     SELECT property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile
-    FROM silver.property
+    FROM silver.dm_property
     ON CONFLICT (property_id) DO UPDATE
         SET name                     = EXCLUDED.name
           , property_type            = EXCLUDED.property_type
@@ -253,12 +319,31 @@ BEGIN
           , organization_name        = EXCLUDED.organization_name
           , has_operational_profile  = EXCLUDED.has_operational_profile;
 
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load_dm_person()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    DELETE FROM gold.dm_person
+    WHERE user_id NOT IN (SELECT user_id FROM silver.dm_person);
+
     INSERT INTO gold.dm_person (user_id, name, profile_type)
     SELECT user_id, name, profile_type
-    FROM silver.person
+    FROM silver.dm_person
     ON CONFLICT (user_id) DO UPDATE
         SET name         = EXCLUDED.name
           , profile_type = EXCLUDED.profile_type;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load_ft_consumption_daily()
+LANGUAGE plpgsql
+AS $$
+BEGIN
 
     WITH staging_daily AS (
         SELECT
@@ -268,8 +353,8 @@ BEGIN
             , cd.avg_flow_lmin
             , sp.region_id
             , sp.classification_id
-        FROM silver.consumption_daily cd
-        JOIN silver.property sp ON sp.property_id = cd.property_id
+        FROM silver.ft_consumption_daily cd
+        JOIN silver.dm_property sp ON sp.property_id = cd.property_id
     ),
     with_cost AS (
         SELECT
@@ -291,17 +376,33 @@ BEGIN
           , avg_flow_lmin = EXCLUDED.avg_flow_lmin
           , cost_value    = EXCLUDED.cost_value;
 
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load_ft_water_bill_monthly()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
     INSERT INTO gold.ft_water_bill_monthly (person_key, date_key, total_value, m3_value)
     SELECT
           dp.person_key
         , TO_CHAR(wb.bill_month, 'YYYYMMDD')::INTEGER
         , wb.total_value
         , wb.m3_value
-    FROM silver.water_bill wb
+    FROM silver.ft_water_bill wb
     JOIN gold.dm_person dp ON dp.user_id = wb.user_id
     ON CONFLICT (person_key, date_key) DO UPDATE
         SET total_value = EXCLUDED.total_value
           , m3_value    = EXCLUDED.m3_value;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load_ft_investment_scenario()
+LANGUAGE plpgsql
+AS $$
+BEGIN
 
     INSERT INTO gold.ft_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
     SELECT id, name, investment_value, reduction_pct, annual_savings_value, payback_months
@@ -312,6 +413,21 @@ BEGIN
           , reduction_pct        = EXCLUDED.reduction_pct
           , annual_savings_value = EXCLUDED.annual_savings_value
           , payback_months       = EXCLUDED.payback_months;
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE gold.sp_load()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    CALL gold.sp_load_dm_date();
+    CALL gold.sp_load_dm_property();
+    CALL gold.sp_load_dm_person();
+    CALL gold.sp_load_ft_consumption_daily();
+    CALL gold.sp_load_ft_water_bill_monthly();
+    CALL gold.sp_load_ft_investment_scenario();
 
 END;
 $$;

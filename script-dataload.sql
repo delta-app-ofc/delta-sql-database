@@ -917,6 +917,13 @@ INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VAL
 ('ESP32149', 149, TRUE, '2022-01-30'),
 ('ESP32150', 150, FALSE, '2022-01-31');
 
+INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
+('ESP32151', 151, TRUE, '2026-01-16'),
+('ESP32152', 152, TRUE, '2026-01-17'),
+('ESP32153', 153, TRUE, '2026-01-18'),
+('ESP32154', 154, TRUE, '2026-02-11'),
+('ESP32155', 155, TRUE, '2026-02-12');
+
 -- Tarifa de água por m³, faixa 21-50 m³, vigente desde 01/01/2026.
 -- Fonte: ARSESP, Nota Técnica 1º Reajuste Tarifário da Sabesp (URAE-1
 -- Sudeste), Anexo I. Ver tariffs/README.md (delta-business-rules) para a

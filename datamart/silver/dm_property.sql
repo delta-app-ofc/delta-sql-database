@@ -1,4 +1,4 @@
-CREATE TABLE silver.property (
+CREATE TABLE silver.dm_property (
       property_id           INTEGER       PRIMARY KEY
     , name                  VARCHAR(100)  NOT NULL
     , property_type         VARCHAR(20)   NOT NULL

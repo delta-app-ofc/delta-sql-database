@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW dw.vw_property_ranking AS
+CREATE OR REPLACE VIEW dw.vw_ft_property_ranking AS
 WITH agg_consumption AS (
     SELECT
           dp.property_id

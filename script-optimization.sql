@@ -37,7 +37,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE FUNCTION fn_get_property_classification(
     p_property_id INTEGER
 )
@@ -123,7 +122,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE FUNCTION fn_user_can_estimate(
     p_user_id INTEGER
 )
@@ -205,6 +203,7 @@ BEGIN
 END;
 $$;
 
+
 CREATE OR REPLACE FUNCTION fn_user_is_active(
     p_user_id INTEGER
 )
@@ -227,7 +226,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE PROCEDURE sp_change_region_rate(
     p_region_id INTEGER,
     p_classification_id INTEGER,
@@ -302,7 +300,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE PROCEDURE sp_disable_user(
     p_user_id INTEGER
 )
@@ -348,13 +345,13 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE PROCEDURE sp_register_property(
-    p_user_id INTEGER,
-    p_name VARCHAR(100),
-    p_type VARCHAR(20),
-    p_classification VARCHAR(50),
-    p_address_id INTEGER
+    IN p_user_id INTEGER,
+    IN p_name VARCHAR(100),
+    IN p_type VARCHAR(20),
+    IN p_classification VARCHAR(50),
+    IN p_address_id INTEGER,
+    OUT v_property_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$
@@ -503,3 +500,4 @@ BEGIN
 
 END;
 $$;
+

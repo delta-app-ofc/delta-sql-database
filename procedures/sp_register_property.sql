@@ -1,9 +1,10 @@
 CREATE OR REPLACE PROCEDURE sp_register_property(
-    p_user_id INTEGER,
-    p_name VARCHAR(100),
-    p_type VARCHAR(20),
-    p_classification VARCHAR(50),
-    p_address_id INTEGER
+    IN p_user_id INTEGER,
+    IN p_name VARCHAR(100),
+    IN p_type VARCHAR(20),
+    IN p_classification VARCHAR(50),
+    IN p_address_id INTEGER,
+    OUT v_property_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$

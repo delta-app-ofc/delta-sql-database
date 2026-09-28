@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW dw.vw_consumption_distribution AS
+CREATE OR REPLACE VIEW dw.vw_ft_consumption_distribution AS
 WITH staging_daily_totals AS (
     SELECT
           f.property_key

@@ -43,11 +43,12 @@ CREATE TABLE silver.dm_person (
 CREATE TABLE silver.ft_consumption_reading (
       id                    BIGSERIAL     PRIMARY KEY
     , property_id           INTEGER       NOT NULL
+    , device_id             VARCHAR(100)  NOT NULL
     , read_at               TIMESTAMP     NOT NULL
     , volume_liters         NUMERIC(10,3) NOT NULL
     , flow_lmin             NUMERIC(10,3) NOT NULL
-    , CONSTRAINT uq_silver_ft_consumption_reading_property_read_at
-        UNIQUE (property_id, read_at)
+    , CONSTRAINT uq_silver_ft_consumption_reading_device_read_at
+        UNIQUE (device_id, read_at)
 );
 
 CREATE TABLE silver.ft_consumption_daily (
@@ -127,15 +128,16 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO silver.ft_consumption_reading (property_id, read_at, volume_liters, flow_lmin)
+    INSERT INTO silver.ft_consumption_reading (property_id, device_id, read_at, volume_liters, flow_lmin)
     SELECT
           d.property_id
+        , s.device_id
         , s.window_started_at
         , s.consumption_liters
         , s.lpm_average
     FROM stage.consumption_summary s
     JOIN tb_device d ON d.device_id = s.device_id
-    ON CONFLICT (property_id, read_at) DO NOTHING;
+    ON CONFLICT (device_id, read_at) DO NOTHING;
 
 END;
 $$;
@@ -423,7 +425,7 @@ $$;
 
 CREATE SCHEMA IF NOT EXISTS dw;
 
-CREATE OR REPLACE VIEW dw.vw_consumption_daily AS
+CREATE OR REPLACE VIEW dw.vw_ft_consumption_daily AS
 WITH staging_consumption AS (
     SELECT
           f.property_key
@@ -452,7 +454,7 @@ SELECT
       ) AS moving_avg_7d_liters
 FROM staging_consumption;
 
-CREATE OR REPLACE VIEW dw.vw_property_ranking AS
+CREATE OR REPLACE VIEW dw.vw_ft_property_ranking AS
 WITH agg_consumption AS (
     SELECT
           dp.property_id
@@ -486,7 +488,7 @@ SELECT
     , PERCENT_RANK() OVER (ORDER BY liters_per_m2)      AS consumption_percent_rank
 FROM final_ranking;
 
-CREATE OR REPLACE VIEW dw.vw_monthly_variation AS
+CREATE OR REPLACE VIEW dw.vw_ft_monthly_variation AS
 WITH staging_monthly AS (
     SELECT
           dp.property_id
@@ -519,7 +521,7 @@ SELECT
       ) AS variation_pct
 FROM final_variation;
 
-CREATE OR REPLACE VIEW dw.vw_consumption_distribution AS
+CREATE OR REPLACE VIEW dw.vw_ft_consumption_distribution AS
 WITH staging_daily_totals AS (
     SELECT
           f.property_key
@@ -547,7 +549,7 @@ SELECT
 FROM staging_daily_totals s
 CROSS JOIN agg_stats a;
 
-CREATE OR REPLACE VIEW dw.vw_capex_comparison AS
+CREATE OR REPLACE VIEW dw.vw_ft_capex_comparison AS
 WITH staging_scenario AS (
     SELECT
           scenario_id
@@ -568,7 +570,7 @@ SELECT
     , RANK() OVER (ORDER BY payback_months ASC NULLS LAST) AS rank_by_payback
 FROM staging_scenario;
 
-CREATE OR REPLACE VIEW dw.vw_residential_efficiency_ranking AS
+CREATE OR REPLACE VIEW dw.vw_ft_residential_efficiency_ranking AS
 WITH staging_bill AS (
     SELECT
           dpe.user_id

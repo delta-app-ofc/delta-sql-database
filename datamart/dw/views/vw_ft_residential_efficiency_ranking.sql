@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW dw.vw_residential_efficiency_ranking AS
+CREATE OR REPLACE VIEW dw.vw_ft_residential_efficiency_ranking AS
 WITH staging_bill AS (
     SELECT
           dpe.user_id

@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW dw.vw_monthly_variation AS
+CREATE OR REPLACE VIEW dw.vw_ft_monthly_variation AS
 WITH staging_monthly AS (
     SELECT
           dp.property_id

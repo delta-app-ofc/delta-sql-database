@@ -49,6 +49,9 @@ def _mongo_client() -> MongoClient:
     return MongoClient(uri)
 
 
+BATCH_SIZE = 1000
+
+
 def _get_watermark(connection) -> datetime | None:
     with connection.cursor() as cursor:
         cursor.execute("SELECT MAX(window_started_at) FROM stage.consumption_summary;")
@@ -57,29 +60,31 @@ def _get_watermark(connection) -> datetime | None:
     return watermark
 
 
-def _extract_documents(mongo_client: MongoClient, mongo_db_name: str, watermark: datetime | None):
+def _extract_cursor(mongo_client: MongoClient, mongo_db_name: str, watermark: datetime | None):
     collection = mongo_client[mongo_db_name]["consumption_summary"]
-    query = {"window_started_at": {"$gt": watermark}} if watermark is not None else {}
-    return list(collection.find(query))
+    # >= (nao >) porque pode haver mais de um documento com o mesmo window_started_at do
+    # watermark atual - o ON CONFLICT (mongo_id) DO NOTHING em _load_stage_batch descarta os
+    # que ja foram carregados, sem perder os que ainda nao foram.
+    query = {"window_started_at": {"$gte": watermark}} if watermark is not None else {}
+    return collection.find(query).batch_size(BATCH_SIZE)
 
 
-def _load_stage(connection, documents: list) -> int:
-    if not documents:
+def _document_to_row(doc: dict) -> tuple:
+    return (
+        str(doc["_id"]),
+        doc["device_id"],
+        str(doc.get("user_id")) if doc.get("user_id") is not None else None,
+        doc["window_started_at"],
+        doc["window_finished_at"],
+        doc["consumption_liters"],
+        doc.get("lpm_average"),
+        doc.get("anomaly_detected"),
+    )
+
+
+def _load_stage_batch(connection, rows: list) -> int:
+    if not rows:
         return 0
-
-    rows = [
-        (
-            str(doc["_id"]),
-            doc["device_id"],
-            str(doc.get("user_id")) if doc.get("user_id") is not None else None,
-            doc["window_started_at"],
-            doc["window_finished_at"],
-            doc["consumption_liters"],
-            doc.get("lpm_average"),
-            doc.get("anomaly_detected"),
-        )
-        for doc in documents
-    ]
 
     with connection.cursor() as cursor:
         cursor.executemany(
@@ -128,13 +133,26 @@ def main() -> None:
         if watermark is None:
             print("stage.consumption_summary vazio - buscando todo o historico do Mongo.")
         else:
-            print(f"Buscando documentos com window_started_at > {watermark.isoformat()}")
+            print(f"Buscando documentos com window_started_at >= {watermark.isoformat()}")
 
-        documents = _extract_documents(mongo_client, mongo_db_name, watermark)
-        print(f"Documentos encontrados no Mongo: {len(documents)}")
+        cursor_docs = _extract_cursor(mongo_client, mongo_db_name, watermark)
 
-        inserted = _load_stage(pg_connection, documents)
-        print(f"Linhas inseridas em stage.consumption_summary: {inserted}")
+        total_found = 0
+        total_inserted = 0
+        batch: list = []
+
+        for doc in cursor_docs:
+            total_found += 1
+            batch.append(_document_to_row(doc))
+
+            if len(batch) >= BATCH_SIZE:
+                total_inserted += _load_stage_batch(pg_connection, batch)
+                batch = []
+
+        total_inserted += _load_stage_batch(pg_connection, batch)
+
+        print(f"Documentos encontrados no Mongo: {total_found}")
+        print(f"Linhas inseridas em stage.consumption_summary: {total_inserted}")
 
         _run_load_chain(pg_connection)
         print("silver.sp_load() e gold.sp_load() executados com sucesso.")

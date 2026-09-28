@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW dw.vw_capex_comparison AS
+CREATE OR REPLACE VIEW dw.vw_ft_capex_comparison AS
 WITH staging_scenario AS (
     SELECT
           scenario_id

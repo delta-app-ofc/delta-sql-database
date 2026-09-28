@@ -37,7 +37,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE FUNCTION fn_get_dau(
     p_date DATE
 )
@@ -148,7 +147,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE FUNCTION fn_user_can_estimate(
     p_user_id INTEGER
 )
@@ -230,6 +228,7 @@ BEGIN
 END;
 $$;
 
+
 CREATE OR REPLACE FUNCTION fn_user_is_active(
     p_user_id INTEGER
 )
@@ -252,7 +251,6 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE PROCEDURE sp_change_region_rate(
     p_region_id INTEGER,
     p_classification_id INTEGER,
@@ -327,82 +325,6 @@ BEGIN
 
 END;
 $$;
-
-CREATE OR REPLACE PROCEDURE sp_change_region_rate(
-    p_region_id INTEGER,
-    p_classification_id INTEGER,
-    p_new_rate NUMERIC(10,2),
-    p_initial_validity DATE
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-
-    -- Verifica se a região existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_region
-         WHERE id = p_region_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Região com id % não encontrada.',
-            p_region_id;
-    END IF;
-
-
-    -- Verifica se a categoria existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_property_classification
-         WHERE id = p_classification_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Categoria com id % não encontrada.',
-            p_classification_id;
-    END IF;
-
-
-    -- Valida o valor da tarifa
-    IF p_new_rate <= 0 THEN
-        RAISE EXCEPTION
-            'O valor da tarifa deve ser maior que zero.';
-    END IF;
-
-
-    -- Fecha a tarifa atualmente vigente
-    UPDATE tb_region_rate
-       SET final_validity = p_initial_validity - INTERVAL '1 day'
-     WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
-       AND final_validity IS NULL;
-
-
-    -- Insere a nova tarifa
-    INSERT INTO tb_region_rate
-    (
-        region_id,
-        classification_id,
-        m3_value,
-        initial_validity,
-        final_validity
-    )
-    VALUES
-    (
-        p_region_id,
-        p_classification_id,
-        p_new_rate,
-        p_initial_validity,
-        NULL
-    );
-
-
-END;
-$$;
-
 CREATE OR REPLACE PROCEDURE sp_disable_user(
     p_user_id INTEGER
 )
@@ -448,18 +370,17 @@ BEGIN
 
 END;
 $$;
-
 CREATE OR REPLACE PROCEDURE sp_register_property(
-    p_user_id INTEGER,
-    p_name VARCHAR(100),
-    p_type VARCHAR(20),
-    p_classification VARCHAR(50),
-    p_address_id INTEGER
+    IN p_user_id INTEGER,
+    IN p_name VARCHAR(100),
+    IN p_type VARCHAR(20),
+    IN p_classification VARCHAR(50),
+    IN p_address_id INTEGER,
+    OUT v_property_id INTEGER
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_property_id INTEGER;
     v_classification_id INTEGER;
 BEGIN
 
@@ -622,3 +543,4 @@ BEGIN
 
 END;
 $$;
+

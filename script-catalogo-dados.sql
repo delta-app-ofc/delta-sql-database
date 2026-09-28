@@ -99,6 +99,16 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_log_rpa', 'updated_count', 'INTEGER', 'Quantidade de registros atualizados na execução.', 'CHECK: não pode ser negativo. Padrão 0.', 'INTERNO'),
 ('tb_log_rpa', 'deleted_count', 'INTEGER', 'Quantidade de registros excluídos na execução.', 'CHECK: não pode ser negativo. Padrão 0.', 'INTERNO'),
 ('tb_log_rpa', 'validation_error_count', 'INTEGER', 'Quantidade de erros de validação na execução.', 'CHECK: não pode ser negativo. Padrão 0.', 'INTERNO'),
-('tb_log_rpa', 'error_message', 'TEXT', 'Mensagem de erro, quando a execução falha.', 'NULL quando não há erro.', 'INTERNO');
+('tb_log_rpa', 'error_message', 'TEXT', 'Mensagem de erro, quando a execução falha.', 'NULL quando não há erro.', 'INTERNO'),
+
+-- tb_backup_restore_log
+('tb_backup_restore_log', 'id', 'SERIAL', 'Identificador do registro de teste de backup/restauração.', 'Chave primária.', 'INTERNO'),
+('tb_backup_restore_log', 'started_at', 'TIMESTAMP', 'Início do teste de restauração.', 'Padrão CURRENT_TIMESTAMP.', 'INTERNO'),
+('tb_backup_restore_log', 'finished_at', 'TIMESTAMP', 'Fim do teste de restauração.', 'NULL enquanto o teste está em andamento.', 'INTERNO'),
+('tb_backup_restore_log', 'status', 'VARCHAR(10)', 'Status da verificação daquela tabela.', 'Valores fixos (CHECK): RUNNING, SUCCESS, ERROR. Padrão RUNNING.', 'INTERNO'),
+('tb_backup_restore_log', 'table_name', 'VARCHAR(60)', 'Tabela verificada nesse teste de restauração.', 'Obrigatório — uma linha por tabela conferida.', 'INTERNO'),
+('tb_backup_restore_log', 'expected_row_count', 'INTEGER', 'Quantidade de linhas esperada, conforme o manifesto gerado no backup.', 'CHECK: não pode ser negativo.', 'INTERNO'),
+('tb_backup_restore_log', 'restored_row_count', 'INTEGER', 'Quantidade de linhas realmente restauradas no banco descartável.', 'CHECK: não pode ser negativo. NULL se a tabela nem foi restaurada.', 'INTERNO'),
+('tb_backup_restore_log', 'note', 'TEXT', 'Observação livre sobre a execução (ex. origem do teste).', 'Opcional.', 'INTERNO');
 
 COMMIT;

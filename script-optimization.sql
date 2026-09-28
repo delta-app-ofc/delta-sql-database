@@ -578,3 +578,363 @@ BEGIN
 
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION fn_user_access_kind(
+    p_user_id INTEGER
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    -- Usuário com propriedade residencial própria (comportamento antigo, não mexe)
+    IF EXISTS
+    (
+        SELECT 1
+          FROM tb_user_property
+         WHERE user_id = p_user_id
+    )
+    THEN
+        RETURN 'residential';
+    END IF;
+
+
+    -- Sem propriedade residencial: verifica vínculo com organização
+    IF EXISTS
+    (
+        SELECT 1
+          FROM tb_user_organization
+         WHERE user_id = p_user_id
+    )
+    THEN
+        RETURN 'organizational';
+    END IF;
+
+
+    RETURN 'none';
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_user_organization_properties(
+    p_user_id INTEGER
+)
+RETURNS TABLE (
+    property_id INTEGER,
+    name        VARCHAR,
+    city        VARCHAR,
+    state       VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    -- Propriedades de todas as organizações do usuário (M:N, sem papel/hierarquia)
+    RETURN QUERY
+    SELECT
+          p.id
+        , p.name
+        , a.city
+        , a.state
+      FROM tb_user_organization uo
+      JOIN tb_property p
+        ON p.organization_id = uo.organization_id
+      JOIN tb_address a
+        ON a.id = p.address_id
+     WHERE uo.user_id = p_user_id;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_organization_can_estimate(
+    p_property_ids INTEGER[]
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    -- Uma linha em gold.ft_consumption_daily já implica tarifa válida calculada pelo ETL
+    RETURN EXISTS
+    (
+        SELECT 1
+          FROM gold.ft_consumption_daily f
+          JOIN gold.dm_property dp
+            ON dp.property_key = f.property_key
+         WHERE dp.property_id = ANY(p_property_ids)
+    );
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_organization_consumption_history(
+    p_property_ids INTEGER[],
+    p_days         INTEGER,
+    p_today        DATE
+)
+RETURNS TABLE (
+    full_date    DATE,
+    total_liters NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    -- Soma o consumo das propriedades informadas por dia, nos últimos p_days dias
+    RETURN QUERY
+    SELECT
+          v.full_date
+        , SUM(v.total_liters) AS total_liters
+      FROM dw.vw_consumption_daily v
+     WHERE v.property_id = ANY(p_property_ids)
+       AND v.full_date BETWEEN (p_today - (p_days - 1)) AND p_today
+     GROUP BY v.full_date
+     ORDER BY v.full_date;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_organization_last_billed_period(
+    p_property_ids INTEGER[],
+    p_today        DATE
+)
+RETURNS TABLE (
+    reference_month DATE,
+    total_liters    NUMERIC,
+    total_cost      NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_last_closed_month DATE := DATE_TRUNC('month', p_today) - INTERVAL '1 month';
+BEGIN
+
+    -- Último mês calendário fechado
+    RETURN QUERY
+    SELECT
+          v_last_closed_month
+        , SUM(v.total_liters)
+        , SUM(v.cost_value)
+      FROM dw.vw_consumption_daily v
+     WHERE v.property_id = ANY(p_property_ids)
+       AND DATE_TRUNC('month', v.full_date) = v_last_closed_month
+    HAVING SUM(v.total_liters) IS NOT NULL;
+
+    IF FOUND THEN
+        RETURN;
+    END IF;
+
+
+    -- Fallback: dado real ainda escasso, soma todo o histórico disponível,
+    -- rotulado com o mês da leitura mais recente
+    RETURN QUERY
+    SELECT
+          DATE_TRUNC('month', MAX(v.full_date))::DATE
+        , SUM(v.total_liters)
+        , SUM(v.cost_value)
+      FROM dw.vw_consumption_daily v
+     WHERE v.property_id = ANY(p_property_ids)
+    HAVING SUM(v.total_liters) IS NOT NULL;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_organization_effective_rate(
+    p_property_ids  INTEGER[],
+    p_today         DATE,
+    p_window_days   INTEGER DEFAULT 30
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_total_liters NUMERIC;
+    v_total_cost   NUMERIC;
+BEGIN
+
+    -- Tarifa efetiva na janela: não existe um único region_id/classification_id
+    -- válido pro conjunto (propriedades de uma organização podem estar em
+    -- regiões/categorias diferentes), por isso é calculada, não consultada
+    SELECT
+          SUM(v.total_liters)
+        , SUM(v.cost_value)
+      INTO v_total_liters, v_total_cost
+      FROM dw.vw_consumption_daily v
+     WHERE v.property_id = ANY(p_property_ids)
+       AND v.full_date BETWEEN (p_today - (p_window_days - 1)) AND p_today;
+
+    IF v_total_liters IS NULL OR v_total_liters = 0 THEN
+        RETURN NULL;
+    END IF;
+
+    RETURN v_total_cost / (v_total_liters / 1000);
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_organization_forecast_context(
+    p_user_id          INTEGER,
+    p_property_name    TEXT    DEFAULT NULL,
+    p_today            DATE    DEFAULT CURRENT_DATE,
+    p_history_days     INTEGER DEFAULT 45,
+    p_rate_window_days INTEGER DEFAULT 30
+)
+RETURNS TABLE (
+    access_kind           TEXT,
+    match_status          TEXT,
+    resolved_property_ids INTEGER[],
+    candidate_properties  JSON,
+    can_estimate          BOOLEAN,
+    history               JSON,
+    last_bill_month       DATE,
+    last_bill_total_value NUMERIC,
+    last_bill_m3_value    NUMERIC,
+    effective_rate        NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_access_kind           TEXT;
+    v_match_status          TEXT;
+    v_resolved_property_ids INTEGER[];
+    v_candidate_properties  JSON;
+    v_can_estimate          BOOLEAN := FALSE;
+    v_history               JSON;
+    v_last_bill_month       DATE;
+    v_last_bill_total_value NUMERIC;
+    v_last_bill_m3_value    NUMERIC;
+    v_effective_rate        NUMERIC;
+    v_match_count           INTEGER;
+BEGIN
+
+    v_access_kind := fn_user_access_kind(p_user_id);
+
+
+    -- Só se aplica a usuário vinculado a organização (sem imóvel residencial próprio)
+    IF v_access_kind <> 'organizational' THEN
+
+        RETURN QUERY
+        SELECT
+              v_access_kind
+            , 'not_applicable'::TEXT
+            , NULL::INTEGER[]
+            , NULL::JSON
+            , FALSE
+            , NULL::JSON
+            , NULL::DATE
+            , NULL::NUMERIC
+            , NULL::NUMERIC
+            , NULL::NUMERIC;
+
+        RETURN;
+
+    END IF;
+
+
+    -- Resolve a lista de propriedades: sem filtro agrega todas, com filtro
+    -- desambigua por substring case-insensitive no nome
+    IF p_property_name IS NULL THEN
+
+        v_match_status := 'resolved';
+
+        SELECT array_agg(op.property_id)
+          INTO v_resolved_property_ids
+          FROM fn_user_organization_properties(p_user_id) op;
+
+    ELSE
+
+        SELECT COUNT(*)
+          INTO v_match_count
+          FROM fn_user_organization_properties(p_user_id) op
+         WHERE op.name ILIKE '%' || p_property_name || '%';
+
+        IF v_match_count = 1 THEN
+
+            v_match_status := 'resolved';
+
+            SELECT array_agg(op.property_id)
+              INTO v_resolved_property_ids
+              FROM fn_user_organization_properties(p_user_id) op
+             WHERE op.name ILIKE '%' || p_property_name || '%';
+
+        ELSIF v_match_count > 1 THEN
+
+            v_match_status := 'ambiguous';
+
+            SELECT json_agg(json_build_object(
+                       'property_id', op.property_id,
+                       'name', op.name,
+                       'city', op.city,
+                       'state', op.state
+                   ))
+              INTO v_candidate_properties
+              FROM fn_user_organization_properties(p_user_id) op
+             WHERE op.name ILIKE '%' || p_property_name || '%';
+
+        ELSE
+
+            v_match_status := 'not_found';
+
+            SELECT json_agg(json_build_object(
+                       'property_id', op.property_id,
+                       'name', op.name,
+                       'city', op.city,
+                       'state', op.state
+                   ))
+              INTO v_candidate_properties
+              FROM fn_user_organization_properties(p_user_id) op;
+
+        END IF;
+
+    END IF;
+
+
+    -- Só compõe o contexto de previsão quando a propriedade foi resolvida sem ambiguidade
+    IF v_match_status = 'resolved' THEN
+
+        v_can_estimate := fn_organization_can_estimate(v_resolved_property_ids);
+
+        SELECT json_agg(json_build_object(
+                   'full_date', h.full_date,
+                   'total_liters', h.total_liters
+               ) ORDER BY h.full_date)
+          INTO v_history
+          FROM fn_organization_consumption_history(
+                   v_resolved_property_ids, p_history_days, p_today
+               ) h;
+
+        -- last_bill_m3_value converte litros pra m³ (mesma unidade de gold.ft_water_bill_monthly.m3_value)
+        SELECT
+              b.reference_month
+            , b.total_cost
+            , b.total_liters / 1000
+          INTO
+              v_last_bill_month
+            , v_last_bill_total_value
+            , v_last_bill_m3_value
+          FROM fn_organization_last_billed_period(
+                   v_resolved_property_ids, p_today
+               ) b;
+
+        v_effective_rate := fn_organization_effective_rate(
+                                 v_resolved_property_ids, p_today, p_rate_window_days
+                             );
+
+    END IF;
+
+
+    RETURN QUERY
+    SELECT
+          v_access_kind
+        , v_match_status
+        , v_resolved_property_ids
+        , v_candidate_properties
+        , v_can_estimate
+        , v_history
+        , v_last_bill_month
+        , v_last_bill_total_value
+        , v_last_bill_m3_value
+        , v_effective_rate;
+
+END;
+$$;

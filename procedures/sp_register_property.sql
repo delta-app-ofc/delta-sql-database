@@ -9,7 +9,6 @@ CREATE OR REPLACE PROCEDURE sp_register_property(
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_property_id INTEGER;
     v_classification_id INTEGER;
 BEGIN
 

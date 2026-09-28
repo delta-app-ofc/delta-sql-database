@@ -10,7 +10,7 @@ BEGIN
           property_id, name, property_type, classification_id, classification_group
         , region_id, city, state, built_area_m2
         , organization_id, organization_name
-        , has_operational_profile, shift_count, main_water_source
+        , has_operational_profile, main_water_source
     )
     SELECT
           p.id
@@ -25,7 +25,6 @@ BEGIN
         , p.organization_id
         , o.trade_name
         , (op.property_id IS NOT NULL)
-        , op.shift_count
         , op.main_water_source
     FROM tb_property p
     JOIN tb_property_classification pc ON pc.id = p.classification_id

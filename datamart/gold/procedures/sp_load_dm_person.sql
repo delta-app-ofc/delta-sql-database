@@ -6,12 +6,11 @@ BEGIN
     DELETE FROM gold.dm_person
     WHERE user_id NOT IN (SELECT user_id FROM silver.dm_person);
 
-    INSERT INTO gold.dm_person (user_id, name, profile_type)
-    SELECT user_id, name, profile_type
+    INSERT INTO gold.dm_person (user_id, name)
+    SELECT user_id, name
     FROM silver.dm_person
     ON CONFLICT (user_id) DO UPDATE
-        SET name         = EXCLUDED.name
-          , profile_type = EXCLUDED.profile_type;
+        SET name = EXCLUDED.name;
 
 END;
 $$;

@@ -4,7 +4,6 @@ CREATE TABLE tb_log_property_operational_profile (
 
     , property_operational_profile_id INTEGER
 
-    , shift_count           SMALLINT
     , main_water_source     VARCHAR(20)
 
     , operation             VARCHAR(10) NOT NULL

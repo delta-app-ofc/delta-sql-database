@@ -4529,7 +4529,6 @@ CREATE TABLE tb_log_property_operational_profile (
 
     , property_operational_profile_id INTEGER
 
-    , shift_count           SMALLINT
     , main_water_source     VARCHAR(20)
 
     , operation             VARCHAR(10) NOT NULL
@@ -4595,7 +4594,6 @@ BEGIN
         (
               property_operational_profile_id
 
-            , shift_count
             , main_water_source
 
             , operation
@@ -4610,7 +4608,6 @@ BEGIN
         (
               NEW.property_id
 
-            , NEW.shift_count
             , NEW.main_water_source
 
             , TG_OP
@@ -4662,7 +4659,6 @@ BEGIN
         (
               property_operational_profile_id
 
-            , shift_count
             , main_water_source
 
             , operation
@@ -4677,7 +4673,6 @@ BEGIN
         (
               NEW.property_id
 
-            , NEW.shift_count
             , NEW.main_water_source
 
             , TG_OP
@@ -4702,7 +4697,6 @@ BEGIN
         (
               property_operational_profile_id
 
-            , shift_count
             , main_water_source
 
             , operation
@@ -4717,7 +4711,6 @@ BEGIN
         (
               OLD.property_id
 
-            , OLD.shift_count
             , OLD.main_water_source
 
             , TG_OP

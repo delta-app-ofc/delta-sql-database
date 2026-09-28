@@ -37,12 +37,10 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('silver.dm_property', 'organization_id', 'INTEGER', 'Organização gestora, quando aplicável.', 'NULL para imóvel residencial de pessoa física.', 'INTERNO'),
 ('silver.dm_property', 'organization_name', 'VARCHAR(150)', 'Nome fantasia da organização gestora.', '', 'INTERNO'),
 ('silver.dm_property', 'has_operational_profile', 'BOOLEAN', 'Indica se a instalação passou pelo cadastro industrial completo.', 'TRUE quando existe linha em tb_property_operational_profile.', 'INTERNO'),
-('silver.dm_property', 'shift_count', 'SMALLINT', 'Quantidade de turnos, quando aplicável.', '', 'INTERNO'),
 ('silver.dm_property', 'main_water_source', 'VARCHAR(20)', 'Fonte principal de água, quando aplicável.', '', 'INTERNO'),
 
 ('silver.dm_person', 'user_id', 'INTEGER', 'Pessoa (usuário residencial ou gestor).', 'Chave primária, corresponde a tb_user.id.', 'INTERNO'),
 ('silver.dm_person', 'name', 'VARCHAR(100)', 'Nome da pessoa.', '', 'RESTRITO'),
-('silver.dm_person', 'profile_type', 'VARCHAR(20)', 'Perfil de uso da pessoa.', 'RESIDENCIAL ou GESTOR, derivado da existência de vínculo em tb_user_organization. Sem papel/hierarquia.', 'INTERNO'),
 
 ('silver.ft_water_bill', 'id', 'BIGSERIAL', 'Identificador da fatura tratada.', 'Chave primária.', 'INTERNO'),
 ('silver.ft_water_bill', 'user_id', 'INTEGER', 'Usuário dono da fatura.', 'Único em conjunto com bill_month.', 'INTERNO'),
@@ -75,7 +73,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('gold.dm_person', 'person_key', 'SERIAL', 'Chave substituta da pessoa.', 'Chave primária.', 'PUBLICO'),
 ('gold.dm_person', 'user_id', 'INTEGER', 'Chave natural (tb_user.id).', 'Única.', 'INTERNO'),
 ('gold.dm_person', 'name', 'VARCHAR(100)', 'Nome da pessoa.', '', 'RESTRITO'),
-('gold.dm_person', 'profile_type', 'VARCHAR(20)', 'Perfil de uso (RESIDENCIAL/GESTOR).', '', 'INTERNO'),
 
 ('gold.ft_consumption_daily', 'fact_key', 'BIGSERIAL', 'Identificador do fato.', 'Chave primária.', 'INTERNO'),
 ('gold.ft_consumption_daily', 'property_key', 'INTEGER', 'Instalação (industrial).', 'FK para gold.dm_property. Única em conjunto com date_key.', 'INTERNO'),

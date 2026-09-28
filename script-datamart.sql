@@ -32,16 +32,12 @@ CREATE TABLE silver.dm_property (
     , organization_id       INTEGER
     , organization_name     VARCHAR(150)
     , has_operational_profile BOOLEAN     NOT NULL DEFAULT FALSE
-    , shift_count           SMALLINT
     , main_water_source     VARCHAR(20)
 );
 
 CREATE TABLE silver.dm_person (
       user_id               INTEGER     PRIMARY KEY
     , name                  VARCHAR(100) NOT NULL
-    , profile_type          VARCHAR(20) NOT NULL
-      CONSTRAINT chk_silver_dm_person_profile_type
-        CHECK (profile_type IN ('RESIDENCIAL', 'GESTOR'))
 );
 
 CREATE TABLE silver.ft_consumption_reading (
@@ -87,7 +83,7 @@ BEGIN
           property_id, name, property_type, classification_id, classification_group
         , region_id, city, state, built_area_m2
         , organization_id, organization_name
-        , has_operational_profile, shift_count, main_water_source
+        , has_operational_profile, main_water_source
     )
     SELECT
           p.id
@@ -102,7 +98,6 @@ BEGIN
         , p.organization_id
         , o.trade_name
         , (op.property_id IS NOT NULL)
-        , op.shift_count
         , op.main_water_source
     FROM tb_property p
     JOIN tb_property_classification pc ON pc.id = p.classification_id
@@ -120,13 +115,9 @@ BEGIN
 
     TRUNCATE TABLE silver.dm_person;
 
-    INSERT INTO silver.dm_person (user_id, name, profile_type)
-    SELECT
-          u.id
-        , u.name
-        , CASE WHEN uo.user_id IS NOT NULL THEN 'GESTOR' ELSE 'RESIDENCIAL' END
-    FROM tb_user u
-    LEFT JOIN (SELECT DISTINCT user_id FROM tb_user_organization) uo ON uo.user_id = u.id;
+    INSERT INTO silver.dm_person (user_id, name)
+    SELECT id, name
+    FROM tb_user;
 
 END;
 $$;
@@ -234,7 +225,6 @@ CREATE TABLE gold.dm_person (
       person_key            SERIAL      PRIMARY KEY
     , user_id               INTEGER     NOT NULL UNIQUE
     , name                  VARCHAR(100) NOT NULL
-    , profile_type          VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE gold.ft_consumption_daily (
@@ -330,12 +320,11 @@ BEGIN
     DELETE FROM gold.dm_person
     WHERE user_id NOT IN (SELECT user_id FROM silver.dm_person);
 
-    INSERT INTO gold.dm_person (user_id, name, profile_type)
-    SELECT user_id, name, profile_type
+    INSERT INTO gold.dm_person (user_id, name)
+    SELECT user_id, name
     FROM silver.dm_person
     ON CONFLICT (user_id) DO UPDATE
-        SET name         = EXCLUDED.name
-          , profile_type = EXCLUDED.profile_type;
+        SET name = EXCLUDED.name;
 
 END;
 $$;

@@ -66,7 +66,6 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_property', 'registration_date', 'DATE', 'Data de cadastro do imóvel.', 'Padrão CURRENT_DATE.', 'INTERNO'),
 
 ('tb_property_operational_profile', 'property_id', 'INTEGER', 'Imóvel ao qual o perfil operacional pertence.', 'Chave primária e FK obrigatória para tb_property ao mesmo tempo (extensão 1:1). Só imóveis com cadastro industrial completo ganham linha aqui.', 'INTERNO'),
-('tb_property_operational_profile', 'shift_count', 'SMALLINT', 'Quantidade de turnos de operação da instalação industrial.', 'Opcional. CHECK: se preenchida, deve ser maior que zero.', 'INTERNO'),
 ('tb_property_operational_profile', 'main_water_source', 'VARCHAR(20)', 'Fonte principal de água da instalação industrial.', 'Valores fixos (CHECK): CONCESSIONARIA, POCO_ARTESIANO, CISTERNA, REUSO.', 'INTERNO'),
 
 ('tb_property_shift', 'id', 'SERIAL', 'Identificador do turno.', 'Chave primária.', 'INTERNO'),

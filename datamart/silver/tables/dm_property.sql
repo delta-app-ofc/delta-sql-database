@@ -11,6 +11,5 @@ CREATE TABLE silver.dm_property (
     , organization_id       INTEGER
     , organization_name     VARCHAR(150)
     , has_operational_profile BOOLEAN     NOT NULL DEFAULT FALSE
-    , shift_count           SMALLINT
     , main_water_source     VARCHAR(20)
 );

@@ -48,23 +48,23 @@ def _find_env_file(here: str, given: str | None) -> str | None:
 
 
 def _connection_params() -> dict:
-    host = os.getenv("SECOND_YEAR_DB_HOST", "")
-    name = os.getenv("SECOND_YEAR_DB_NAME", "")
-    user = os.getenv("SECOND_YEAR_DB_USER", "")
+    host = os.getenv("DB_HOST", "")
+    name = os.getenv("DB_NAME", "")
+    user = os.getenv("DB_USER", "")
 
     if not host or not name or not user:
         sys.exit(
-            "Faltam variaveis SECOND_YEAR_DB_HOST / _NAME / _USER. "
+            "Faltam variaveis DB_HOST / DB_NAME / DB_USER. "
             "Confira o .env."
         )
 
     return {
         "host": host,
-        "port": os.getenv("SECOND_YEAR_DB_PORT", "5432"),
+        "port": os.getenv("DB_PORT", "5432"),
         "dbname": name,
         "user": user,
-        "password": os.getenv("SECOND_YEAR_DB_PASSWORD", ""),
-        "sslmode": os.getenv("SECOND_YEAR_DB_SSLMODE", "prefer"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "sslmode": os.getenv("DB_SSLMODE", "prefer"),
     }
 
 
@@ -89,7 +89,7 @@ def main() -> None:
     parser.add_argument(
         "--env-file",
         default=None,
-        help="Arquivo .env com as variaveis SECOND_YEAR_DB_*."
+        help="Arquivo .env com as variaveis DB_*."
     )
     parser.add_argument(
         "--scripts-dir",

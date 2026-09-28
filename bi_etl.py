@@ -1,13 +1,11 @@
+import argparse
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import psycopg2
 from dotenv import load_dotenv
 from pymongo import MongoClient
-
-
-DEFAULT_LOOKBACK_DAYS = 7
 
 
 def _find_env_file(here: str, given: str | None) -> str | None:
@@ -22,49 +20,47 @@ def _find_env_file(here: str, given: str | None) -> str | None:
 
 
 def _pg_connection_params() -> dict:
-    host = os.getenv("SECOND_YEAR_DB_HOST", "")
-    name = os.getenv("SECOND_YEAR_DB_NAME", "")
-    user = os.getenv("SECOND_YEAR_DB_USER", "")
+    host = os.getenv("DB_HOST", "")
+    name = os.getenv("DB_NAME", "")
+    user = os.getenv("DB_USER", "")
 
     if not host or not name or not user:
         sys.exit(
-            "Faltam variaveis SECOND_YEAR_DB_HOST / _NAME / _USER. "
+            "Faltam variaveis DB_HOST / DB_NAME / DB_USER. "
             "Confira o .env."
         )
 
     return {
         "host": host,
-        "port": os.getenv("SECOND_YEAR_DB_PORT", "5432"),
+        "port": os.getenv("DB_PORT", "5432"),
         "dbname": name,
         "user": user,
-        "password": os.getenv("SECOND_YEAR_DB_PASSWORD", ""),
-        "sslmode": os.getenv("SECOND_YEAR_DB_SSLMODE", "prefer"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "sslmode": os.getenv("DB_SSLMODE", "prefer"),
     }
 
 
 def _mongo_client() -> MongoClient:
-    uri = os.getenv("MONGO_URI", "")
+    uri = os.getenv("MONGODB_TELEMETRY_URI", "")
 
     if not uri:
-        sys.exit("Falta a variavel MONGO_URI. Confira o .env.")
+        sys.exit("Falta a variavel MONGODB_TELEMETRY_URI. Confira o .env.")
 
     return MongoClient(uri)
 
 
-def _get_watermark(connection) -> datetime:
+def _get_watermark(connection) -> datetime | None:
     with connection.cursor() as cursor:
         cursor.execute("SELECT MAX(window_started_at) FROM stage.consumption_summary;")
         (watermark,) = cursor.fetchone()
 
-    if watermark is None:
-        return datetime.utcnow() - timedelta(days=DEFAULT_LOOKBACK_DAYS)
-
     return watermark
 
 
-def _extract_documents(mongo_client: MongoClient, mongo_db_name: str, watermark: datetime):
+def _extract_documents(mongo_client: MongoClient, mongo_db_name: str, watermark: datetime | None):
     collection = mongo_client[mongo_db_name]["consumption_summary"]
-    return list(collection.find({"window_started_at": {"$gt": watermark}}))
+    query = {"window_started_at": {"$gt": watermark}} if watermark is not None else {}
+    return list(collection.find(query))
 
 
 def _load_stage(connection, documents: list) -> int:
@@ -109,8 +105,12 @@ def _run_load_chain(connection) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env-file", default=None)
+    arguments = parser.parse_args()
+
     here = os.path.dirname(os.path.abspath(__file__))
-    env_file = _find_env_file(here, None)
+    env_file = _find_env_file(here, arguments.env_file)
 
     if env_file:
         load_dotenv(env_file)
@@ -118,14 +118,17 @@ def main() -> None:
     else:
         print(".env nao encontrado; usando as variaveis do ambiente.")
 
-    mongo_db_name = os.getenv("MONGO_DB_NAME", "db_delta_telemetry")
+    mongo_db_name = os.getenv("MONGO_DB_TELEMETRY", "db_delta_telemetry")
 
     pg_connection = psycopg2.connect(**_pg_connection_params())
     mongo_client = _mongo_client()
 
     try:
         watermark = _get_watermark(pg_connection)
-        print(f"Buscando documentos com window_started_at > {watermark.isoformat()}")
+        if watermark is None:
+            print("stage.consumption_summary vazio - buscando todo o historico do Mongo.")
+        else:
+            print(f"Buscando documentos com window_started_at > {watermark.isoformat()}")
 
         documents = _extract_documents(mongo_client, mongo_db_name, watermark)
         print(f"Documentos encontrados no Mongo: {len(documents)}")

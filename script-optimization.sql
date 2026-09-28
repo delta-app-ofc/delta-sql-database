@@ -415,6 +415,8 @@ BEGIN
 END;
 $$;
 
+DROP PROCEDURE IF EXISTS sp_register_property(INTEGER, VARCHAR, VARCHAR, VARCHAR, INTEGER);
+
 CREATE OR REPLACE PROCEDURE sp_register_property(
     IN p_user_id INTEGER,
     IN p_name VARCHAR(100),

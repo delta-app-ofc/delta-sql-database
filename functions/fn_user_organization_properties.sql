@@ -11,7 +11,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Propriedades de todas as organizações do usuário (M:N, sem papel/hierarquia)
     RETURN QUERY
     SELECT
           p.id

@@ -26,15 +26,11 @@ BEGIN
     v_can_estimate := fn_user_can_estimate(p_user_id);
 
 
-    -- Primeira propriedade do usuário (NULL/NULL quando não há nenhuma)
     SELECT c.region_id, c.classification_id
       INTO v_region_id, v_classification_id
       FROM fn_get_user_property_context(p_user_id) c;
 
 
-    -- Tarifa vigente: fn_get_current_region_rate levanta exceção quando não
-    -- há tarifa cadastrada; aqui isso é tratado como "sem tarifa disponível"
-    -- (NULL), igual o Python faz hoje, sem propagar o erro
     IF v_region_id IS NOT NULL AND v_classification_id IS NOT NULL THEN
 
         BEGIN
@@ -49,7 +45,6 @@ BEGIN
     END IF;
 
 
-    -- Última conta de água registrada (NULL em tudo quando não há nenhuma)
     SELECT b.month, b.total_value, b.m3_value
       INTO v_last_bill_month, v_last_bill_total_value, v_last_bill_m3_value
       FROM tb_last_water_bill b

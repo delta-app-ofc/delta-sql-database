@@ -11,7 +11,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Soma o consumo das propriedades informadas por dia, nos últimos p_days dias
     RETURN QUERY
     SELECT
           v.full_date

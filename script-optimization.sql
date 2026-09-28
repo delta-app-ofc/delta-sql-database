@@ -587,7 +587,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Usuário com propriedade residencial própria (comportamento antigo, não mexe)
     IF EXISTS
     (
         SELECT 1
@@ -599,7 +598,6 @@ BEGIN
     END IF;
 
 
-    -- Sem propriedade residencial: verifica vínculo com organização
     IF EXISTS
     (
         SELECT 1
@@ -629,7 +627,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Propriedades de todas as organizações do usuário (M:N, sem papel/hierarquia)
     RETURN QUERY
     SELECT
           p.id
@@ -654,7 +651,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Uma linha em gold.ft_consumption_daily já implica tarifa válida calculada pelo ETL
     RETURN EXISTS
     (
         SELECT 1
@@ -680,7 +676,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Soma o consumo das propriedades informadas por dia, nos últimos p_days dias
     RETURN QUERY
     SELECT
           v.full_date
@@ -709,7 +704,6 @@ DECLARE
     v_last_closed_month DATE := DATE_TRUNC('month', p_today) - INTERVAL '1 month';
 BEGIN
 
-    -- Último mês calendário fechado
     RETURN QUERY
     SELECT
           v_last_closed_month
@@ -725,8 +719,6 @@ BEGIN
     END IF;
 
 
-    -- Fallback: dado real ainda escasso, soma todo o histórico disponível,
-    -- rotulado com o mês da leitura mais recente
     RETURN QUERY
     SELECT
           DATE_TRUNC('month', MAX(v.full_date))::DATE
@@ -752,9 +744,6 @@ DECLARE
     v_total_cost   NUMERIC;
 BEGIN
 
-    -- Tarifa efetiva na janela: não existe um único region_id/classification_id
-    -- válido pro conjunto (propriedades de uma organização podem estar em
-    -- regiões/categorias diferentes), por isso é calculada, não consultada
     SELECT
           SUM(v.total_liters)
         , SUM(v.cost_value)
@@ -810,7 +799,6 @@ BEGIN
     v_access_kind := fn_user_access_kind(p_user_id);
 
 
-    -- Só se aplica a usuário vinculado a organização (sem imóvel residencial próprio)
     IF v_access_kind <> 'organizational' THEN
 
         RETURN QUERY
@@ -831,8 +819,6 @@ BEGIN
     END IF;
 
 
-    -- Resolve a lista de propriedades: sem filtro agrega todas, com filtro
-    -- desambigua por substring case-insensitive no nome
     IF p_property_name IS NULL THEN
 
         v_match_status := 'resolved';
@@ -889,7 +875,6 @@ BEGIN
     END IF;
 
 
-    -- Só compõe o contexto de previsão quando a propriedade foi resolvida sem ambiguidade
     IF v_match_status = 'resolved' THEN
 
         v_can_estimate := fn_organization_can_estimate(v_resolved_property_ids);
@@ -903,7 +888,6 @@ BEGIN
                    v_resolved_property_ids, p_history_days, p_today
                ) h;
 
-        -- last_bill_m3_value converte litros pra m³ (mesma unidade de gold.ft_water_bill_monthly.m3_value)
         SELECT
               b.reference_month
             , b.total_cost
@@ -950,8 +934,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Primeira propriedade vinculada ao usuário (mesmo critério das duas
-    -- consultas Python que esta function substitui: ORDER BY up.id LIMIT 1)
     RETURN QUERY
     SELECT
           a.region_id
@@ -996,15 +978,11 @@ BEGIN
     v_can_estimate := fn_user_can_estimate(p_user_id);
 
 
-    -- Primeira propriedade do usuário (NULL/NULL quando não há nenhuma)
     SELECT c.region_id, c.classification_id
       INTO v_region_id, v_classification_id
       FROM fn_get_user_property_context(p_user_id) c;
 
 
-    -- Tarifa vigente: fn_get_current_region_rate levanta exceção quando não
-    -- há tarifa cadastrada; aqui isso é tratado como "sem tarifa disponível"
-    -- (NULL), igual o Python faz hoje, sem propagar o erro
     IF v_region_id IS NOT NULL AND v_classification_id IS NOT NULL THEN
 
         BEGIN
@@ -1019,7 +997,6 @@ BEGIN
     END IF;
 
 
-    -- Última conta de água registrada (NULL em tudo quando não há nenhuma)
     SELECT b.month, b.total_value, b.m3_value
       INTO v_last_bill_month, v_last_bill_total_value, v_last_bill_m3_value
       FROM tb_last_water_bill b

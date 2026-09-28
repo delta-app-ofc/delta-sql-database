@@ -6,7 +6,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Uma linha em gold.ft_consumption_daily já implica tarifa válida calculada pelo ETL
     RETURN EXISTS
     (
         SELECT 1

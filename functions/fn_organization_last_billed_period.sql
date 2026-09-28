@@ -13,7 +13,6 @@ DECLARE
     v_last_closed_month DATE := DATE_TRUNC('month', p_today) - INTERVAL '1 month';
 BEGIN
 
-    -- Último mês calendário fechado
     RETURN QUERY
     SELECT
           v_last_closed_month
@@ -29,8 +28,6 @@ BEGIN
     END IF;
 
 
-    -- Fallback: dado real ainda escasso, soma todo o histórico disponível,
-    -- rotulado com o mês da leitura mais recente
     RETURN QUERY
     SELECT
           DATE_TRUNC('month', MAX(v.full_date))::DATE

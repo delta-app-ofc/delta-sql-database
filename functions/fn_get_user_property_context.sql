@@ -9,8 +9,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Primeira propriedade vinculada ao usuário (mesmo critério das duas
-    -- consultas Python que esta function substitui: ORDER BY up.id LIMIT 1)
     RETURN QUERY
     SELECT
           a.region_id

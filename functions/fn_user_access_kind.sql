@@ -6,7 +6,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    -- Usuário com propriedade residencial própria (comportamento antigo, não mexe)
     IF EXISTS
     (
         SELECT 1
@@ -18,7 +17,6 @@ BEGIN
     END IF;
 
 
-    -- Sem propriedade residencial: verifica vínculo com organização
     IF EXISTS
     (
         SELECT 1

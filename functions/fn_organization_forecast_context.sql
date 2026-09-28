@@ -36,7 +36,6 @@ BEGIN
     v_access_kind := fn_user_access_kind(p_user_id);
 
 
-    -- Só se aplica a usuário vinculado a organização (sem imóvel residencial próprio)
     IF v_access_kind <> 'organizational' THEN
 
         RETURN QUERY
@@ -57,8 +56,6 @@ BEGIN
     END IF;
 
 
-    -- Resolve a lista de propriedades: sem filtro agrega todas, com filtro
-    -- desambigua por substring case-insensitive no nome
     IF p_property_name IS NULL THEN
 
         v_match_status := 'resolved';
@@ -115,7 +112,6 @@ BEGIN
     END IF;
 
 
-    -- Só compõe o contexto de previsão quando a propriedade foi resolvida sem ambiguidade
     IF v_match_status = 'resolved' THEN
 
         v_can_estimate := fn_organization_can_estimate(v_resolved_property_ids);
@@ -129,7 +125,6 @@ BEGIN
                    v_resolved_property_ids, p_history_days, p_today
                ) h;
 
-        -- last_bill_m3_value converte litros pra m³ (mesma unidade de gold.ft_water_bill_monthly.m3_value)
         SELECT
               b.reference_month
             , b.total_cost

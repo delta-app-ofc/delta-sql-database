@@ -11,9 +11,6 @@ DECLARE
     v_total_cost   NUMERIC;
 BEGIN
 
-    -- Tarifa efetiva na janela: não existe um único region_id/classification_id
-    -- válido pro conjunto (propriedades de uma organização podem estar em
-    -- regiões/categorias diferentes), por isso é calculada, não consultada
     SELECT
           SUM(v.total_liters)
         , SUM(v.cost_value)

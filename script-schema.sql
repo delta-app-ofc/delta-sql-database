@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS tb_data_catalog      CASCADE;
 DROP TABLE IF EXISTS tb_log_rpa           CASCADE;
+DROP TABLE IF EXISTS tb_user_access_log   CASCADE;
 DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
 DROP TABLE IF EXISTS tb_region_rate       CASCADE;
 DROP TABLE IF EXISTS tb_user_habit_day    CASCADE;
@@ -210,6 +211,24 @@ CREATE TABLE tb_last_water_bill (
         UNIQUE (user_id, month)
 
     , CONSTRAINT fk_tb_last_water_bill_user
+        FOREIGN KEY (user_id)
+        REFERENCES tb_user (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE tb_user_access_log (
+
+      id                    SERIAL       PRIMARY KEY
+    , user_id               INTEGER      NOT NULL
+
+    , access_channel        VARCHAR(20)
+      CONSTRAINT chk_tb_user_access_log_access_channel
+          CHECK (access_channel IN ('WEB', 'MOBILE', 'CHATBOT'))
+
+    , accessed_at           TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+    , CONSTRAINT fk_tb_user_access_log_user
         FOREIGN KEY (user_id)
         REFERENCES tb_user (id)
         ON DELETE CASCADE

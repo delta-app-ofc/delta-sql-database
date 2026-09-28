@@ -90,6 +90,12 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_last_water_bill', 'total_value', 'NUMERIC(10,2)', 'Valor total pago na conta.', 'CHECK: deve ser maior ou igual a zero. Dado financeiro ligado diretamente a uma pessoa.', 'RESTRITO'),
 ('tb_last_water_bill', 'm3_value', 'NUMERIC(10,2)', 'Consumo em m³ registrado na conta.', 'CHECK: deve ser maior ou igual a zero.', 'RESTRITO'),
 
+-- tb_user_access_log
+('tb_user_access_log', 'id', 'SERIAL', 'Identificador do registro de acesso.', 'Chave primária.', 'INTERNO'),
+('tb_user_access_log', 'user_id', 'INTEGER', 'Usuário que realizou o acesso.', 'FK obrigatória para tb_user.', 'INTERNO'),
+('tb_user_access_log', 'access_channel', 'VARCHAR(20)', 'Canal utilizado no acesso.', 'Opcional. Valores fixos (CHECK): WEB, MOBILE, CHATBOT.', 'INTERNO'),
+('tb_user_access_log', 'accessed_at', 'TIMESTAMP', 'Data e hora em que o acesso foi registrado.', 'Padrão CURRENT_TIMESTAMP.', 'INTERNO'),
+
 -- tb_log_rpa
 ('tb_log_rpa', 'id', 'SERIAL', 'Identificador da execução do RPA.', 'Chave primária.', 'INTERNO'),
 ('tb_log_rpa', 'started_at', 'TIMESTAMP', 'Início da execução.', 'Padrão CURRENT_TIMESTAMP.', 'INTERNO'),

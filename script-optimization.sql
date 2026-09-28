@@ -38,6 +38,31 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION fn_get_dau(
+    p_date DATE
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+STABLE
+AS $$
+DECLARE
+    v_dau INTEGER;
+BEGIN
+
+    IF p_date IS NULL THEN
+        RAISE EXCEPTION 'A data não pode ser nula.';
+    END IF;
+
+    SELECT COUNT(DISTINCT user_id)
+    INTO v_dau
+    FROM tb_user_access_log
+    WHERE accessed_at::DATE = p_date;
+
+    RETURN v_dau;
+
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION fn_get_property_classification(
     p_property_id INTEGER
 )
@@ -514,6 +539,25 @@ BEGIN
         v_property_id
     );
 
+
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_register_user_access(
+    p_user_id INTEGER,
+    p_access_channel VARCHAR(20) DEFAULT NULL
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    -- fn_user_is_active já lança exceção se o usuário não existir
+    IF NOT fn_user_is_active(p_user_id) THEN
+        RAISE EXCEPTION 'Usuário % está inativo e não pode ter acesso registrado.', p_user_id;
+    END IF;
+
+    INSERT INTO tb_user_access_log (user_id, access_channel)
+    VALUES (p_user_id, p_access_channel);
 
 END;
 $$;

@@ -1,3 +1,69 @@
+CREATE OR REPLACE FUNCTION fn_calculate_water_cost(
+    p_property_id   INTEGER,
+    p_consumption_m3 NUMERIC,
+    p_reference_date DATE DEFAULT CURRENT_DATE
+)
+RETURNS TABLE (
+    property_id    INTEGER,
+    region_id      INTEGER,
+    consumption_m3 NUMERIC,
+    rate_per_m3    NUMERIC,
+    estimated_cost NUMERIC,
+    reference_date DATE
+)
+LANGUAGE plpgsql
+STABLE
+AS $$
+BEGIN
+    IF p_property_id IS NULL THEN
+        RAISE EXCEPTION 'O ID da propriedade é obrigatório';
+    END IF;
+
+    IF p_consumption_m3 IS NULL OR p_consumption_m3 < 0 THEN
+        RAISE EXCEPTION 'O consumo deve ser informado e não pode ser negativo';
+    END IF;
+
+    PERFORM 1
+    FROM tb_property tp
+    WHERE tp.id = p_property_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Propriedade de ID % não encontrada', p_property_id;
+    END IF;
+
+    RETURN QUERY
+    SELECT
+        tp.id,
+        tr.id,
+        p_consumption_m3,
+        trr.m3_value,
+        ROUND(p_consumption_m3 * trr.m3_value, 2),
+        p_reference_date
+    FROM tb_property tp
+    JOIN tb_address a
+        ON a.id = tp.address_id
+    JOIN tb_region tr
+        ON tr.id = a.region_id
+    JOIN tb_region_rate trr
+        ON trr.region_id = tr.id
+       AND trr.classification_id = tp.classification_id
+    WHERE tp.id = p_property_id
+      AND trr.initial_validity <= p_reference_date
+      AND (
+          trr.final_validity IS NULL
+          OR trr.final_validity >= p_reference_date
+      )
+    ORDER BY trr.initial_validity DESC
+    LIMIT 1;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'Nenhuma tarifa encontrada para a propriedade % na data %',
+            p_property_id, p_reference_date;
+    END IF;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION fn_get_current_region_rate(
     p_region_id INTEGER,
     p_classification_id INTEGER,
@@ -224,81 +290,6 @@ BEGIN
     END IF;
 
     RETURN v_is_active;
-
-END;
-$$;
-
-CREATE OR REPLACE PROCEDURE sp_change_region_rate(
-    p_region_id INTEGER,
-    p_classification_id INTEGER,
-    p_new_rate NUMERIC(10,2),
-    p_initial_validity DATE
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-
-    -- Verifica se a região existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_region
-         WHERE id = p_region_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Região com id % não encontrada.',
-            p_region_id;
-    END IF;
-
-
-    -- Verifica se a categoria existe
-    IF NOT EXISTS
-    (
-        SELECT 1
-          FROM tb_property_classification
-         WHERE id = p_classification_id
-    )
-    THEN
-        RAISE EXCEPTION
-            'Categoria com id % não encontrada.',
-            p_classification_id;
-    END IF;
-
-
-    -- Valida o valor da tarifa
-    IF p_new_rate <= 0 THEN
-        RAISE EXCEPTION
-            'O valor da tarifa deve ser maior que zero.';
-    END IF;
-
-
-    -- Fecha a tarifa atualmente vigente
-    UPDATE tb_region_rate
-       SET final_validity = p_initial_validity - INTERVAL '1 day'
-     WHERE region_id = p_region_id
-       AND classification_id = p_classification_id
-       AND final_validity IS NULL;
-
-
-    -- Insere a nova tarifa
-    INSERT INTO tb_region_rate
-    (
-        region_id,
-        classification_id,
-        m3_value,
-        initial_validity,
-        final_validity
-    )
-    VALUES
-    (
-        p_region_id,
-        p_classification_id,
-        p_new_rate,
-        p_initial_validity,
-        NULL
-    );
-
 
 END;
 $$;

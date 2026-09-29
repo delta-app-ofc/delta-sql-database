@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS tb_data_catalog      CASCADE;
+DROP TABLE IF EXISTS tb_backup_restore_log CASCADE;
 DROP TABLE IF EXISTS tb_log_rpa           CASCADE;
 DROP TABLE IF EXISTS tb_investment_scenario CASCADE;
+DROP TABLE IF EXISTS tb_user_access_log   CASCADE;
 DROP TABLE IF EXISTS tb_last_water_bill   CASCADE;
 DROP TABLE IF EXISTS tb_user_habit_day    CASCADE;
 DROP TABLE IF EXISTS tb_user_habit        CASCADE;
@@ -360,6 +362,24 @@ CREATE TABLE tb_investment_scenario (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE tb_user_access_log (
+
+      id                    SERIAL       PRIMARY KEY
+    , user_id               INTEGER      NOT NULL
+
+    , access_channel        VARCHAR(20)
+      CONSTRAINT chk_tb_user_access_log_access_channel
+          CHECK (access_channel IN ('WEB', 'MOBILE', 'CHATBOT'))
+
+    , accessed_at           TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+    , CONSTRAINT fk_tb_user_access_log_user
+        FOREIGN KEY (user_id)
+        REFERENCES tb_user (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
 CREATE TABLE tb_log_rpa (
 
       id                       SERIAL      PRIMARY KEY
@@ -398,4 +418,26 @@ CREATE TABLE tb_data_catalog (
         CHECK (access_level IN ('PUBLICO', 'INTERNO', 'RESTRITO', 'SENSIVEL'))
     , CONSTRAINT uq_tb_data_catalog_table_column
         UNIQUE (table_name, column_name)
+);
+
+CREATE TABLE tb_backup_restore_log (
+
+      id                       SERIAL      PRIMARY KEY
+
+    , started_at               TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+    , finished_at              TIMESTAMP
+
+    , status                   VARCHAR(10) NOT NULL DEFAULT 'RUNNING'
+      CONSTRAINT chk_tb_backup_restore_log_status
+          CHECK (status IN ('RUNNING', 'SUCCESS', 'ERROR'))
+
+    , table_name               VARCHAR(60) NOT NULL
+
+    , expected_row_count       INTEGER
+      CONSTRAINT chk_tb_backup_restore_log_expected_row_count  CHECK (expected_row_count >= 0)
+
+    , restored_row_count       INTEGER
+      CONSTRAINT chk_tb_backup_restore_log_restored_row_count  CHECK (restored_row_count >= 0)
+
+    , note                     TEXT
 );

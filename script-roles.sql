@@ -48,7 +48,8 @@
           tb_user_habit_day,
           tb_last_water_bill,
           tb_investment_scenario,
-          tb_log_rpa
+          tb_log_rpa,
+          tb_user_access_log
     TO sys_backend_developer;
 
     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO sys_backend_developer;

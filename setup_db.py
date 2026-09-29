@@ -35,14 +35,9 @@ def _find_env_file(here: str, given: str | None) -> str | None:
     if given:
         return given
 
-    candidates = [
-        os.path.join(here, ".env"),
-        os.path.join(here, "..", "..", "delta-rpa", ".env"),
-    ]
-
-    for candidate in candidates:
-        if os.path.isfile(candidate):
-            return candidate
+    candidate = os.path.join(here, ".env")
+    if os.path.isfile(candidate):
+        return candidate
 
     return None
 

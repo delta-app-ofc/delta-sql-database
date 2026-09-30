@@ -9,7 +9,7 @@ BEGIN
         , s.device_id
         , s.window_started_at
         , s.consumption_liters
-        , s.lpm_average
+        , COALESCE(s.lpm_average, 0)
     FROM stage.consumption_summary s
     JOIN tb_device d ON d.device_id = s.device_id
     ON CONFLICT (device_id, read_at) DO NOTHING;

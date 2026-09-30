@@ -134,7 +134,7 @@ BEGIN
         , s.device_id
         , s.window_started_at
         , s.consumption_liters
-        , s.lpm_average
+        , COALESCE(s.lpm_average, 0)
     FROM stage.consumption_summary s
     JOIN tb_device d ON d.device_id = s.device_id
     ON CONFLICT (device_id, read_at) DO NOTHING;
@@ -350,8 +350,18 @@ BEGIN
     with_cost AS (
         SELECT
               sd.*
-            , ROUND(sd.total_liters / 1000.0 * fn_get_current_region_rate(sd.region_id, sd.classification_id, sd.consumption_day), 2) AS cost_value
+            , ROUND(sd.total_liters / 1000.0 * r.m3_value, 2) AS cost_value
         FROM staging_daily sd
+        JOIN LATERAL (
+            SELECT rr.m3_value
+              FROM tb_region_rate rr
+             WHERE rr.region_id = sd.region_id
+               AND rr.classification_id = sd.classification_id
+               AND rr.initial_validity <= sd.consumption_day
+               AND (rr.final_validity IS NULL OR rr.final_validity >= sd.consumption_day)
+             ORDER BY rr.initial_validity DESC
+             LIMIT 1
+        ) r ON TRUE
     )
     INSERT INTO gold.ft_consumption_daily (property_key, date_key, total_liters, avg_flow_lmin, cost_value)
     SELECT

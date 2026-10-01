@@ -3,8 +3,11 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
+    -- Nunca remove uma propriedade que ainda tem fato vinculado (preserva histórico) -
+    -- só limpa dimensão órfã sem nenhum dado de consumo associado.
     DELETE FROM gold.dm_property
-    WHERE property_id NOT IN (SELECT property_id FROM silver.dm_property);
+    WHERE property_id NOT IN (SELECT property_id FROM silver.dm_property)
+      AND property_key NOT IN (SELECT property_key FROM gold.ft_consumption_daily);
 
     INSERT INTO gold.dm_property (property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile)
     SELECT property_id, name, property_type, classification_group, city, state, built_area_m2, organization_name, has_operational_profile

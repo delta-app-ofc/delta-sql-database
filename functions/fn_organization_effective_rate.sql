@@ -15,7 +15,7 @@ BEGIN
           SUM(v.total_liters)
         , SUM(v.cost_value)
       INTO v_total_liters, v_total_cost
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND v.full_date BETWEEN (p_today - (p_window_days - 1)) AND p_today;
 

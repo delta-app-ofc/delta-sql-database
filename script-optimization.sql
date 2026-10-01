@@ -645,7 +645,7 @@ BEGIN
     SELECT
           v.full_date
         , SUM(v.total_liters) AS total_liters
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND v.full_date BETWEEN (p_today - (p_days - 1)) AND p_today
      GROUP BY v.full_date
@@ -674,7 +674,7 @@ BEGIN
           v_last_closed_month
         , SUM(v.total_liters)
         , SUM(v.cost_value)
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND DATE_TRUNC('month', v.full_date) = v_last_closed_month
     HAVING SUM(v.total_liters) IS NOT NULL;
@@ -689,7 +689,7 @@ BEGIN
           DATE_TRUNC('month', MAX(v.full_date))::DATE
         , SUM(v.total_liters)
         , SUM(v.cost_value)
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
     HAVING SUM(v.total_liters) IS NOT NULL;
 
@@ -713,7 +713,7 @@ BEGIN
           SUM(v.total_liters)
         , SUM(v.cost_value)
       INTO v_total_liters, v_total_cost
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND v.full_date BETWEEN (p_today - (p_window_days - 1)) AND p_today;
 

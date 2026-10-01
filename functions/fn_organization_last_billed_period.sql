@@ -18,7 +18,7 @@ BEGIN
           v_last_closed_month
         , SUM(v.total_liters)
         , SUM(v.cost_value)
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND DATE_TRUNC('month', v.full_date) = v_last_closed_month
     HAVING SUM(v.total_liters) IS NOT NULL;
@@ -33,7 +33,7 @@ BEGIN
           DATE_TRUNC('month', MAX(v.full_date))::DATE
         , SUM(v.total_liters)
         , SUM(v.cost_value)
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
     HAVING SUM(v.total_liters) IS NOT NULL;
 

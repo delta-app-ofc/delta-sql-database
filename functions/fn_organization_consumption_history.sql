@@ -15,7 +15,7 @@ BEGIN
     SELECT
           v.full_date
         , SUM(v.total_liters) AS total_liters
-      FROM dw.vw_consumption_daily v
+      FROM dw.vw_ft_consumption_daily v
      WHERE v.property_id = ANY(p_property_ids)
        AND v.full_date BETWEEN (p_today - (p_days - 1)) AND p_today
      GROUP BY v.full_date

@@ -53,6 +53,8 @@ BEGIN
             , type
             , classification_id
             , address_id
+            , organization_id
+            , built_area_m2
             , registration_date
 
             , operation
@@ -71,6 +73,8 @@ BEGIN
             , NEW.type
             , NEW.classification_id
             , NEW.address_id
+            , NEW.organization_id
+            , NEW.built_area_m2
             , NEW.registration_date
 
             , TG_OP
@@ -126,6 +130,8 @@ BEGIN
             , type
             , classification_id
             , address_id
+            , organization_id
+            , built_area_m2
             , registration_date
 
             , operation
@@ -144,6 +150,8 @@ BEGIN
             , NEW.type
             , NEW.classification_id
             , NEW.address_id
+            , NEW.organization_id
+            , NEW.built_area_m2
             , NEW.registration_date
 
             , TG_OP
@@ -172,6 +180,8 @@ BEGIN
             , type
             , classification_id
             , address_id
+            , organization_id
+            , built_area_m2
             , registration_date
 
             , operation
@@ -190,6 +200,8 @@ BEGIN
             , OLD.type
             , OLD.classification_id
             , OLD.address_id
+            , OLD.organization_id
+            , OLD.built_area_m2
             , OLD.registration_date
 
             , TG_OP

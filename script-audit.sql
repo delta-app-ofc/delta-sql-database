@@ -659,6 +659,8 @@ CREATE TABLE tb_log_address (
     , cep                     CHAR(8)
     , city                    VARCHAR(60)
     , state                   VARCHAR(30)
+    , latitude                NUMERIC(8,6)
+    , longitude               NUMERIC(9,6)
 
     , operation               VARCHAR(10)  NOT NULL
     , executed_by             VARCHAR(100) NOT NULL
@@ -725,6 +727,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -741,6 +745,8 @@ BEGIN
             , NEW.cep
             , NEW.city
             , NEW.state
+            , NEW.latitude
+            , NEW.longitude
 
             , TG_OP
             , CURRENT_USER
@@ -794,6 +800,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -810,6 +818,8 @@ BEGIN
             , NEW.cep
             , NEW.city
             , NEW.state
+            , NEW.latitude
+            , NEW.longitude
 
             , TG_OP
             , CURRENT_USER
@@ -836,6 +846,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -852,6 +864,8 @@ BEGIN
             , OLD.cep
             , OLD.city
             , OLD.state
+            , OLD.latitude
+            , OLD.longitude
 
             , TG_OP
             , CURRENT_USER

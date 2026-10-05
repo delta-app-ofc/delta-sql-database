@@ -9,3 +9,5 @@ CREATE INDEX idx_gold_dm_property_organization
 CREATE INDEX idx_log_region_rate_previous_log_id
     ON tb_log_region_rate (previous_log_id);
 
+CREATE INDEX idx_device_credential_device 
+ON tb_device_credential(device_id);

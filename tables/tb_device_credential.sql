@@ -14,7 +14,7 @@ CREATE TABLE tb_device_credential (
         (revoked_at IS NULL AND current_device_id IS NOT NULL AND current_device_id = device_id)
         OR (revoked_at IS NOT NULL AND current_device_id IS NULL)
     ),
-    CONSTRAINT ck_device_credential_hash CHECK (CHAR_LENGTH(key_hash) = 64),
-    CONSTRAINT ck_device_credential_expiry CHECK (expires_at IS NULL OR expires_at > created_at),
-    CONSTRAINT ck_device_credential_revocation CHECK (revoked_at IS NULL OR revoked_at >= created_at)
+    CONSTRAINT chk_device_credential_hash CHECK (CHAR_LENGTH(key_hash) = 64),
+    CONSTRAINT chk_device_credential_expiry CHECK (expires_at IS NULL OR expires_at > created_at),
+    CONSTRAINT chk_device_credential_revocation CHECK (revoked_at IS NULL OR revoked_at >= created_at)
 );

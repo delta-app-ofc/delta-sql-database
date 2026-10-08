@@ -134,6 +134,3 @@ desktop.ini
 # Arquivos locais do projeto
 # ============================================
 TASK*.md
---- FIM DO .gitignore OBRIGATÓRIO ---
- 
-Regras adicionais podem ser incluídas, sem alterar a ordem das obrigatórias

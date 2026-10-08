@@ -8,6 +8,8 @@ CREATE TABLE tb_log_property (
     , type                  VARCHAR(20)
     , classification_id     INTEGER
     , address_id            INTEGER
+    , organization_id       INTEGER
+    , built_area_m2         NUMERIC(10,2)
     , registration_date     DATE
 
     , operation             VARCHAR(10) NOT NULL

@@ -7,6 +7,8 @@ CREATE TABLE tb_log_address (
     , cep                     CHAR(8)
     , city                    VARCHAR(60)
     , state                   VARCHAR(30)
+    , latitude                NUMERIC(8,6)
+    , longitude               NUMERIC(9,6)
 
     , operation               VARCHAR(10)  NOT NULL
     , executed_by             VARCHAR(100) NOT NULL

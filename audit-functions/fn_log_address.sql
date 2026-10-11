@@ -52,6 +52,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -68,6 +70,8 @@ BEGIN
             , NEW.cep
             , NEW.city
             , NEW.state
+            , NEW.latitude
+            , NEW.longitude
 
             , TG_OP
             , CURRENT_USER
@@ -121,6 +125,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -137,6 +143,8 @@ BEGIN
             , NEW.cep
             , NEW.city
             , NEW.state
+            , NEW.latitude
+            , NEW.longitude
 
             , TG_OP
             , CURRENT_USER
@@ -163,6 +171,8 @@ BEGIN
             , cep
             , city
             , state
+            , latitude
+            , longitude
 
             , operation
             , executed_by
@@ -179,6 +189,8 @@ BEGIN
             , OLD.cep
             , OLD.city
             , OLD.state
+            , OLD.latitude
+            , OLD.longitude
 
             , TG_OP
             , CURRENT_USER

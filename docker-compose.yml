@@ -4,6 +4,11 @@ services:
     image: postgres:16
     environment:
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
 
   tools:
     build: .
@@ -19,4 +24,5 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - test-db
+      test-db:
+        condition: service_healthy

@@ -27,37 +27,15 @@
     GRANT sys_first_year            TO first_year;
 
 -- 4. BACKEND
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
-          tb_region,
-          tb_day_of_week,
-          tb_habit,
-          tb_water_usage_type,
-          tb_address,
-          tb_user,
-          tb_organization,
-          tb_property,
-          tb_property_operational_profile,
-          tb_property_shift,
-          tb_property_water_usage,
-          tb_property_operation_day,
-          tb_user_property,
-          tb_user_organization,
-          tb_device,
-          tb_region_rate,
-          tb_user_habit,
-          tb_user_habit_day,
-          tb_last_water_bill,
-          tb_investment_scenario,
-          tb_log_rpa,
-          tb_user_access_log
-    TO sys_backend_developer;
-
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO sys_backend_developer;
+    GRANT USAGE                          ON SCHEMA public TO sys_backend_developer;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES    IN SCHEMA public TO sys_backend_developer;
+    GRANT USAGE, SELECT                  ON ALL SEQUENCES IN SCHEMA public TO sys_backend_developer;
 
 -- 5. DATA ENGINEER
+    GRANT USAGE          ON SCHEMA public TO sys_data_engineer;
     GRANT ALL PRIVILEGES ON ALL TABLES    IN SCHEMA public TO sys_data_engineer;
     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO sys_data_engineer;
-    GRANT CREATE                         ON SCHEMA public TO sys_data_engineer;
+    GRANT CREATE         ON SCHEMA public TO sys_data_engineer;
 
 -- 6. BI ANALYST
     GRANT USAGE  ON SCHEMA public TO sys_bi_analyst;

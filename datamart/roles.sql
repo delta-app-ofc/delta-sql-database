@@ -8,9 +8,10 @@ GRANT SELECT ON ALL TABLES             IN SCHEMA dw TO sys_data_engineer;
 GRANT USAGE  ON SCHEMA gold, dw TO sys_bi_analyst;
 GRANT SELECT ON ALL TABLES IN SCHEMA gold, dw TO sys_bi_analyst;
 
--- BACKEND DEVELOPER (leitura nos schemas analíticos para consultas da API)
-GRANT USAGE  ON SCHEMA stage, silver, gold, dw TO sys_backend_developer;
-GRANT SELECT ON ALL TABLES IN SCHEMA stage, silver, gold, dw TO sys_backend_developer;
+-- BACKEND DEVELOPER
+GRANT USAGE ON SCHEMA stage, silver, gold, dw TO sys_backend_developer;
+GRANT ALL PRIVILEGES ON ALL TABLES     IN SCHEMA stage, silver, gold, dw TO sys_backend_developer;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES  IN SCHEMA stage, silver, gold, dw TO sys_backend_developer;
 
 -- DEVOPS (acesso total ao banco, precisa enxergar todos os schemas)
 GRANT USAGE ON SCHEMA stage, silver, gold, dw TO sys_devops;
@@ -25,4 +26,6 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA dw
 ALTER DEFAULT PRIVILEGES IN SCHEMA gold, dw
     GRANT SELECT ON TABLES TO sys_bi_analyst;
 ALTER DEFAULT PRIVILEGES IN SCHEMA stage, silver, gold, dw
-    GRANT SELECT ON TABLES TO sys_backend_developer;
+    GRANT ALL ON TABLES TO sys_backend_developer;
+ALTER DEFAULT PRIVILEGES IN SCHEMA stage, silver, gold, dw
+    GRANT ALL ON SEQUENCES TO sys_backend_developer;

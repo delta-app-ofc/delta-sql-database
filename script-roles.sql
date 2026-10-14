@@ -5,8 +5,6 @@
     REVOKE ALL ON SCHEMA public, stage, silver, gold, dw FROM sys_data_engineer, sys_backend_developer, sys_bi_analyst, sys_devops, sys_first_year;
     REVOKE ALL PRIVILEGES ON DATABASE deltadb FROM sys_data_engineer, sys_backend_developer, sys_bi_analyst, sys_devops, sys_first_year;
 
-    DROP USER IF EXISTS samuel, mariana, davi, joao, ana, rahquel, first_year;
-    DROP ROLE IF EXISTS sys_data_engineer, sys_backend_developer, sys_bi_analyst, sys_devops, sys_first_year;
 
 -- 1. SYSTEM ROLES
     CREATE ROLE sys_data_engineer;

@@ -1,0 +1,40 @@
+services:
+  test-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: delta_test_only
+      POSTGRES_DB: deltadb
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d deltadb"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  smoke:
+    image: postgres:16
+    depends_on:
+      test-db:
+        condition: service_healthy
+    environment:
+      PGHOST: test-db
+      PGPORT: 5432
+      PGDATABASE: deltadb
+      PGUSER: postgres
+      PGPASSWORD: delta_test_only
+    volumes:
+      - ./script-schema.sql:/sql/01-schema.sql:ro
+      - ./script-optimization.sql:/sql/02-optimization.sql:ro
+      - ./script-audit.sql:/sql/03-audit.sql:ro
+      - ./script-roles.sql:/sql/04-roles.sql:ro
+      - ./tests/docker/smoke.sql:/sql/smoke.sql:ro
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        psql -v ON_ERROR_STOP=1 -f /sql/01-schema.sql
+        psql -v ON_ERROR_STOP=1 -f /sql/02-optimization.sql
+        psql -v ON_ERROR_STOP=1 -f /sql/03-audit.sql
+        psql -v ON_ERROR_STOP=1 -f /sql/04-roles.sql
+        exec psql -v ON_ERROR_STOP=1 -f /sql/smoke.sql

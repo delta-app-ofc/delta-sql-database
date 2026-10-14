@@ -26,7 +26,7 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 -- tb_address
 ('tb_address', 'id', 'SERIAL', 'Identificador do endereço.', 'Chave primária.', 'INTERNO'),
 ('tb_address', 'region_id', 'INTEGER', 'Região à qual o endereço pertence.', 'FK obrigatória para tb_region.', 'INTERNO'),
-('tb_address', 'cep', 'CHAR(8)', 'CEP do endereço.', '8 dígitos numéricos (CHECK regex). Único — cada CEP cadastrado só uma vez.', 'RESTRITO'),
+('tb_address', 'cep', 'CHAR(8)', 'CEP do endereço.', '8 dígitos numéricos (CHECK regex).', 'RESTRITO'),
 ('tb_address', 'city', 'VARCHAR(60)', 'Cidade do endereço.', 'Obrigatório.', 'INTERNO'),
 ('tb_address', 'state', 'VARCHAR(30)', 'Estado do endereço.', 'Obrigatório.', 'INTERNO'),
 ('tb_address', 'latitude', 'NUMERIC(8,6)', 'Latitude geográfica do endereço.', 'Opcional. CHECK entre -90 e 90.', 'INTERNO'),

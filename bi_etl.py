@@ -123,7 +123,7 @@ def main() -> None:
     else:
         print(".env nao encontrado; usando as variaveis do ambiente.")
 
-    mongo_db_name = os.getenv("MONGO_DB_TELEMETRY", "db_delta_telemetry")
+    mongo_db_name = os.getenv("MONGO_DB_TELEMETRY") or "db_delta_telemetry"
 
     pg_connection = psycopg2.connect(**_pg_connection_params())
     mongo_client = _mongo_client()

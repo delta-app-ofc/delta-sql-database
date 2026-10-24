@@ -290,6 +290,8 @@ CREATE TABLE tb_user_habit (
     , start_time            TIME
     , end_time              TIME
     , estimated_liters      NUMERIC(6, 2)
+      CONSTRAINT chk_tb_user_habit_estimated_liters
+          CHECK (estimated_liters IS NULL OR estimated_liters >= 0)
       CONSTRAINT chk_tb_user_habit_time
           CHECK (
               (start_time IS NULL AND end_time IS NULL)

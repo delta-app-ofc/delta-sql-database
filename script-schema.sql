@@ -38,10 +38,12 @@ CREATE TABLE tb_day_of_week (
 );
 
 CREATE TABLE tb_habit (
-      id                                  SERIAL      PRIMARY KEY
-    , name                                VARCHAR(30) NOT NULL UNIQUE
-      CONSTRAINT chk_tb_habit_name_values CHECK (name IN ('BANHO LONGO', 'LAVAR QUINTAL', 'LAVAR ROUPA', 'REGAR PLANTAS', 'LAVAR CARRO', 'LAVAR LOUÇA'))
-    , description         TEXT
+      id                                      SERIAL      PRIMARY KEY
+    , name                                    VARCHAR(30) NOT NULL UNIQUE
+      CONSTRAINT chk_tb_habit_name_values     CHECK (name IN ('BANHO LONGO', 'LAVAR QUINTAL', 'LAVAR ROUPA', 'REGAR PLANTAS', 'LAVAR CARRO', 'LAVAR LOUÇA'))
+    , category                                VARCHAR(30) NOT NULL
+      CONSTRAINT chk_tb_habit_category_values CHECK (category IN ('HIGIENE E CUIDADOS', 'LIMPEZA', 'JARDINAGEM'))
+    , description                             TEXT
 );
 
 CREATE TABLE tb_water_usage_type (
@@ -63,6 +65,7 @@ CREATE TABLE tb_address (
       CONSTRAINT chk_tb_address_latitude  CHECK (latitude  BETWEEN -90  AND 90)
     , longitude                     NUMERIC(9,6)
       CONSTRAINT chk_tb_address_longitude CHECK (longitude BETWEEN -180 AND 180)
+    , CONSTRAINT uq_tb_address_cep              UNIQUE (cep)
     , CONSTRAINT fk_tb_address_region           FOREIGN KEY (region_id)
         REFERENCES tb_region (id)
         ON DELETE RESTRICT
@@ -278,12 +281,20 @@ CREATE TABLE tb_region_rate (
 );
 
 CREATE TABLE tb_user_habit (
-      id                    SERIAL      PRIMARY KEY
-    , user_id               INTEGER     NOT NULL
-    , habit_id              INTEGER     NOT NULL
-    , frequency             INTEGER     NOT NULL
+      id                    SERIAL          PRIMARY KEY
+    , user_id               INTEGER         NOT NULL
+    , habit_id              INTEGER         NOT NULL
+    , frequency             INTEGER         NOT NULL
       CONSTRAINT chk_tb_user_habit_frequency
           CHECK (frequency > 0)
+    , start_time            TIME
+    , end_time              TIME
+    , estimated_liters      NUMERIC(6, 2)
+      CONSTRAINT chk_tb_user_habit_time
+          CHECK (
+              (start_time IS NULL AND end_time IS NULL)
+              OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)
+          )
     , CONSTRAINT uq_tb_user_habit_user_habit
         UNIQUE (user_id, habit_id)
     , CONSTRAINT fk_tb_user_habit_user

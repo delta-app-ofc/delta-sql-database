@@ -4,6 +4,7 @@ CREATE TABLE tb_log_habit (
 
     , habit_id                INTEGER
     , name                    VARCHAR(30)
+    , category                VARCHAR(30)
     , description             TEXT
 
     , operation               VARCHAR(10)  NOT NULL

@@ -459,6 +459,7 @@ CREATE TABLE tb_log_habit (
 
     , habit_id                INTEGER
     , name                    VARCHAR(30)
+    , category                VARCHAR(30)
     , description             TEXT
 
     , operation               VARCHAR(10)  NOT NULL
@@ -524,6 +525,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -538,6 +540,7 @@ BEGIN
         (
               NEW.id
             , NEW.name
+            , NEW.category
             , NEW.description
 
             , TG_OP
@@ -589,6 +592,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -603,6 +607,7 @@ BEGIN
         (
               NEW.id
             , NEW.name
+            , NEW.category
             , NEW.description
 
             , TG_OP
@@ -627,6 +632,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -641,6 +647,7 @@ BEGIN
         (
               OLD.id
             , OLD.name
+            , OLD.category
             , OLD.description
 
             , TG_OP

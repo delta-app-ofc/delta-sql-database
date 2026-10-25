@@ -167,4 +167,20 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_backup_restore_log', 'restored_row_count', 'INTEGER', 'Quantidade de linhas realmente restauradas no banco descartável.', 'CHECK: não pode ser negativo. NULL se a tabela nem foi restaurada.', 'INTERNO'),
 ('tb_backup_restore_log', 'note', 'TEXT', 'Observação livre sobre a execução (ex. origem do teste).', 'Opcional.', 'INTERNO');
 
+INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, business_rule, access_level) VALUES
+('tb_data_catalog', 'id', 'SERIAL', 'Identificador da linha do catálogo.', 'Chave primária.', 'PUBLICO'),
+('tb_data_catalog', 'table_name', 'VARCHAR(60)', 'Nome da tabela descrita.', 'Pode vir como schema.tabela. Único junto com column_name.', 'PUBLICO'),
+('tb_data_catalog', 'column_name', 'VARCHAR(60)', 'Nome da coluna descrita.', 'Único junto com table_name.', 'PUBLICO'),
+('tb_data_catalog', 'data_type', 'VARCHAR(60)', 'Tipo de dado da coluna.', 'Obrigatório.', 'PUBLICO'),
+('tb_data_catalog', 'description', 'TEXT', 'Descrição da coluna.', 'Obrigatório.', 'PUBLICO'),
+('tb_data_catalog', 'business_rule', 'TEXT', 'Regra de negócio ou restrição aplicada à coluna.', 'Opcional.', 'PUBLICO'),
+('tb_data_catalog', 'access_level', 'VARCHAR(20)', 'Nível de acesso da coluna.', 'Valores fixos (CHECK): PUBLICO, INTERNO, RESTRITO, SENSIVEL.', 'PUBLICO'),
+('tb_device_credential', 'id', 'SERIAL', 'Identificador da credencial do device.', 'Chave primária.', 'INTERNO'),
+('tb_device_credential', 'device_id', 'INTEGER', 'Device (tb_device.id) dono da credencial.', 'Obrigatório.', 'INTERNO'),
+('tb_device_credential', 'key_hash', 'VARCHAR(64)', 'Hash da chave do device. Nunca guarda a chave em texto puro.', 'Obrigatório, único, 64 caracteres (CHECK).', 'SENSIVEL'),
+('tb_device_credential', 'created_at', 'TIMESTAMPTZ', 'Data e hora de criação da credencial.', 'Obrigatório.', 'INTERNO'),
+('tb_device_credential', 'revoked_at', 'TIMESTAMPTZ', 'Data e hora da revogação; vazio enquanto a credencial está ativa.', 'CHECK: não pode ser anterior à criação.', 'INTERNO'),
+('tb_device_credential', 'expires_at', 'TIMESTAMPTZ', 'Data e hora de expiração.', 'Opcional; CHECK: deve ser posterior à criação.', 'INTERNO'),
+('tb_device_credential', 'current_device_id', 'INTEGER', 'Igual a device_id enquanto a credencial está vigente; vazio após revogada.', 'Único — garante uma credencial vigente por device (CHECK de consistência com revoked_at).', 'INTERNO');
+
 COMMIT;

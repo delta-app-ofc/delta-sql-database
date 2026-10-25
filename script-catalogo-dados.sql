@@ -17,6 +17,7 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 -- tb_habit
 ('tb_habit', 'id', 'SERIAL', 'Identificador do hábito de consumo.', 'Chave primária.', 'PUBLICO'),
 ('tb_habit', 'name', 'VARCHAR(30)', 'Nome do hábito de consumo de água.', 'Valores fixos (CHECK), ex. BANHO LONGO, LAVAR CARRO. Único.', 'PUBLICO'),
+('tb_habit', 'category', 'VARCHAR(30)', 'Categoria do hábito, usada para agrupar a tela de rotinas.', 'Valores fixos (CHECK): HIGIENE E CUIDADOS, LIMPEZA, JARDINAGEM.', 'PUBLICO'),
 ('tb_habit', 'description', 'TEXT', 'Descrição opcional do hábito.', 'Sem restrição de formato.', 'PUBLICO'),
 
 ('tb_water_usage_type', 'id', 'SERIAL', 'Identificador do tipo de uso da água.', 'Chave primária.', 'PUBLICO'),
@@ -114,6 +115,9 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_user_habit', 'user_id', 'INTEGER', 'Usuário dono do hábito.', 'FK obrigatória para tb_user. Único em conjunto com habit_id.', 'RESTRITO'),
 ('tb_user_habit', 'habit_id', 'INTEGER', 'Hábito associado ao usuário.', 'FK obrigatória para tb_habit.', 'RESTRITO'),
 ('tb_user_habit', 'frequency', 'INTEGER', 'Frequência semanal do hábito.', 'CHECK: deve ser maior que zero.', 'RESTRITO'),
+('tb_user_habit', 'start_time', 'TIME', 'Horário de início do hábito na rotina do usuário.', 'Opcional. Informado junto com end_time.', 'RESTRITO'),
+('tb_user_habit', 'end_time', 'TIME', 'Horário de término do hábito na rotina do usuário.', 'Opcional. CHECK: deve ser depois de start_time.', 'RESTRITO'),
+('tb_user_habit', 'estimated_liters', 'NUMERIC(6,2)', 'Estimativa de litros consumidos por execução do hábito.', 'Opcional.', 'RESTRITO'),
 
 -- tb_user_habit_day
 ('tb_user_habit_day', 'id', 'SERIAL', 'Identificador do dia do hábito.', 'Chave primária.', 'RESTRITO'),

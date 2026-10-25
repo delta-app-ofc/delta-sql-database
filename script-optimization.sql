@@ -1006,3 +1006,165 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION fn_user_habits(
+    p_user_id INTEGER
+)
+RETURNS TABLE (
+    name             VARCHAR,
+    category         VARCHAR,
+    frequency        INTEGER,
+    days             VARCHAR[],
+    start_time       TIME,
+    end_time         TIME,
+    estimated_liters NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    RETURN QUERY
+    SELECT
+          h.name
+        , h.category
+        , uh.frequency
+        , COALESCE(
+              array_agg(d.name ORDER BY d.id) FILTER (WHERE d.id IS NOT NULL)
+            , ARRAY[]::VARCHAR[]
+          )
+        , uh.start_time
+        , uh.end_time
+        , uh.estimated_liters
+      FROM tb_user_habit uh
+      JOIN tb_habit h
+        ON h.id = uh.habit_id
+      LEFT JOIN tb_user_habit_day uhd
+        ON uhd.user_habit_id = uh.id
+      LEFT JOIN tb_day_of_week d
+        ON d.id = uhd.day_of_week_id
+     WHERE uh.user_id = p_user_id
+     GROUP BY uh.id, h.name, h.category
+     ORDER BY h.name;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_user_habits_by_day(
+    p_user_id INTEGER,
+    p_day     VARCHAR
+)
+RETURNS TABLE (
+    name             VARCHAR,
+    frequency        INTEGER,
+    start_time       TIME,
+    end_time         TIME,
+    estimated_liters NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    RETURN QUERY
+    SELECT
+          h.name
+        , uh.frequency
+        , uh.start_time
+        , uh.end_time
+        , uh.estimated_liters
+      FROM tb_user_habit uh
+      JOIN tb_habit h
+        ON h.id = uh.habit_id
+      JOIN tb_user_habit_day uhd
+        ON uhd.user_habit_id = uh.id
+      JOIN tb_day_of_week d
+        ON d.id = uhd.day_of_week_id
+     WHERE uh.user_id = p_user_id
+       AND d.name = UPPER(p_day)
+     ORDER BY uh.start_time NULLS LAST, h.name;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_user_location(
+    p_user_id INTEGER
+)
+RETURNS TABLE (
+    city  VARCHAR,
+    state VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    RETURN QUERY
+    SELECT
+          a.city
+        , a.state
+      FROM tb_user_property up
+      JOIN tb_property p
+        ON p.id = up.property_id
+      JOIN tb_address a
+        ON a.id = p.address_id
+     WHERE up.user_id = p_user_id
+     ORDER BY up.id
+     LIMIT 1;
+
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_create_user_habit(
+    p_user_id    INTEGER,
+    p_habit_name VARCHAR,
+    p_frequency  INTEGER,
+    p_days       VARCHAR[] DEFAULT ARRAY[]::VARCHAR[]
+)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_habit_id      INTEGER;
+    v_user_habit_id INTEGER;
+    v_days_count    INTEGER;
+    v_inserted      INTEGER;
+BEGIN
+
+    SELECT h.id
+      INTO v_habit_id
+      FROM tb_habit h
+     WHERE h.name = UPPER(p_habit_name);
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Hábito % não existe no catálogo.', p_habit_name;
+    END IF;
+
+
+    INSERT INTO tb_user_habit (user_id, habit_id, frequency)
+    VALUES (p_user_id, v_habit_id, p_frequency)
+    ON CONFLICT (user_id, habit_id) DO NOTHING
+    RETURNING id INTO v_user_habit_id;
+
+    IF v_user_habit_id IS NULL THEN
+        RAISE EXCEPTION 'O usuário já possui o hábito %.', p_habit_name;
+    END IF;
+
+
+    SELECT COUNT(DISTINCT UPPER(x))
+      INTO v_days_count
+      FROM unnest(p_days) AS x;
+
+    INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id)
+    SELECT v_user_habit_id, d.id
+      FROM tb_day_of_week d
+     WHERE d.name IN (SELECT UPPER(x) FROM unnest(p_days) AS x);
+
+    GET DIAGNOSTICS v_inserted = ROW_COUNT;
+
+    IF v_inserted <> v_days_count THEN
+        RAISE EXCEPTION 'Dia da semana inválido em %.', p_days;
+    END IF;
+
+
+    RETURN v_user_habit_id;
+
+END;
+$$;
+

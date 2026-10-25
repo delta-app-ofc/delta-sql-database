@@ -207,6 +207,35 @@ INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (1, '01100005', 'CAMPINAS', 'SP'),
 (1, '01100006', 'SANTOS', 'SP');
 
+-- Coordenadas de teste: centro de cada região, com pequeno deslocamento por id
+-- para os endereços não ficarem todos no mesmo ponto. Campinas e Santos usam o centro da própria cidade.
+UPDATE tb_address a
+SET latitude  = ROUND((c.lat  + ((a.id % 10) - 5) * 0.004)::NUMERIC, 6)
+  , longitude = ROUND((c.lon  + ((a.id % 7)  - 3) * 0.004)::NUMERIC, 6)
+FROM (
+    SELECT a2.id,
+           CASE
+               WHEN a2.city = 'CAMPINAS' THEN -22.9099
+               WHEN a2.city = 'SANTOS'   THEN -23.9608
+               WHEN a2.region_id = 1     THEN -23.5505
+               WHEN a2.region_id = 2     THEN -21.6786
+               WHEN a2.region_id = 3     THEN -22.1207
+               WHEN a2.region_id = 4     THEN -21.6820
+               ELSE                           -22.9527
+           END AS lat,
+           CASE
+               WHEN a2.city = 'CAMPINAS' THEN -47.0626
+               WHEN a2.city = 'SANTOS'   THEN -46.3336
+               WHEN a2.region_id = 1     THEN -46.6333
+               WHEN a2.region_id = 2     THEN -49.7424
+               WHEN a2.region_id = 3     THEN -51.3925
+               WHEN a2.region_id = 4     THEN -51.0689
+               ELSE                           -46.5419
+           END AS lon
+    FROM tb_address a2
+) c
+WHERE c.id = a.id;
+
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager) VALUES
 ('BRUNO SANTOS 1', 'BRUNO.SANTOS1@HOTMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91001-1001', '1985-01-02', '2022-01-02', TRUE, FALSE, FALSE),
 ('CARLA OLIVEIRA 2', 'CARLA.OLIVEIRA2@OUTLOOK.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91002-1002', '1985-01-03', '2022-01-03', TRUE, FALSE, TRUE),

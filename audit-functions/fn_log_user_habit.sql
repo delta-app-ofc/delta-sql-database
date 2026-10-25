@@ -51,6 +51,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -66,6 +69,9 @@ BEGIN
             , NEW.user_id
             , NEW.habit_id
             , NEW.frequency
+            , NEW.start_time
+            , NEW.end_time
+            , NEW.estimated_liters
 
             , TG_OP
             , CURRENT_USER
@@ -118,6 +124,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -133,6 +142,9 @@ BEGIN
             , NEW.user_id
             , NEW.habit_id
             , NEW.frequency
+            , NEW.start_time
+            , NEW.end_time
+            , NEW.estimated_liters
 
             , TG_OP
             , CURRENT_USER
@@ -158,6 +170,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -173,6 +188,9 @@ BEGIN
             , OLD.user_id
             , OLD.habit_id
             , OLD.frequency
+            , OLD.start_time
+            , OLD.end_time
+            , OLD.estimated_liters
 
             , TG_OP
             , CURRENT_USER

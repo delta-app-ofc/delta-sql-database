@@ -6,6 +6,9 @@ CREATE TABLE tb_log_user_habit (
     , user_id               INTEGER
     , habit_id              INTEGER
     , frequency             INTEGER
+    , start_time            TIME
+    , end_time              TIME
+    , estimated_liters      NUMERIC(6, 2)
 
     , operation             VARCHAR(10) NOT NULL
     , executed_by           VARCHAR(100) NOT NULL

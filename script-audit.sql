@@ -2267,6 +2267,9 @@ CREATE TABLE tb_log_user_habit (
     , user_id               INTEGER
     , habit_id              INTEGER
     , frequency             INTEGER
+    , start_time            TIME
+    , end_time              TIME
+    , estimated_liters      NUMERIC(6, 2)
 
     , operation             VARCHAR(10) NOT NULL
     , executed_by           VARCHAR(100) NOT NULL
@@ -2274,7 +2277,7 @@ CREATE TABLE tb_log_user_habit (
 
     , previous_log_id       INTEGER
     , log_description       TEXT
-    
+
     , CONSTRAINT fk_tb_log_user_habit_previous_log
         FOREIGN KEY (previous_log_id)
         REFERENCES tb_log_user_habit (id)
@@ -2334,6 +2337,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -2349,6 +2355,9 @@ BEGIN
             , NEW.user_id
             , NEW.habit_id
             , NEW.frequency
+            , NEW.start_time
+            , NEW.end_time
+            , NEW.estimated_liters
 
             , TG_OP
             , CURRENT_USER
@@ -2401,6 +2410,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -2416,6 +2428,9 @@ BEGIN
             , NEW.user_id
             , NEW.habit_id
             , NEW.frequency
+            , NEW.start_time
+            , NEW.end_time
+            , NEW.estimated_liters
 
             , TG_OP
             , CURRENT_USER
@@ -2441,6 +2456,9 @@ BEGIN
             , user_id
             , habit_id
             , frequency
+            , start_time
+            , end_time
+            , estimated_liters
 
             , operation
             , executed_by
@@ -2456,6 +2474,9 @@ BEGIN
             , OLD.user_id
             , OLD.habit_id
             , OLD.frequency
+            , OLD.start_time
+            , OLD.end_time
+            , OLD.estimated_liters
 
             , TG_OP
             , CURRENT_USER

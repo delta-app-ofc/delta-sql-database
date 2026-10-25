@@ -31,13 +31,13 @@ INSERT INTO tb_day_of_week (name) VALUES
     ('SÁBADO'),
     ('DOMINGO');
 
-INSERT INTO tb_habit (name, description) VALUES
-    ('BANHO LONGO',   'HÁBITO DE TOMAR BANHOS COM DURAÇÃO SUPERIOR A 15 MINUTOS'),
-    ('LAVAR QUINTAL', 'LAVAGEM DE ÁREAS EXTERNAS COMO QUINTAL E CALÇADA COM MANGUEIRA'),
-    ('LAVAR ROUPA',   'USO FREQUENTE DA MÁQUINA DE LAVAR ROUPAS'),
-    ('REGAR PLANTAS', 'IRRIGAÇÃO DE JARDINS E PLANTAS COM MANGUEIRA OU REGADOR'),
-    ('LAVAR CARRO',   'LAVAGEM DE VEÍCULOS NA GARAGEM OU QUINTAL COM MANGUEIRA'),
-    ('LAVAR LOUÇA',   'LAVAGEM DE LOUÇA COM A TORNEIRA ABERTA POR LONGOS PERÍODOS');
+INSERT INTO tb_habit (name, category, description) VALUES
+    ('BANHO LONGO',   'HIGIENE E CUIDADOS', 'HÁBITO DE TOMAR BANHOS COM DURAÇÃO SUPERIOR A 15 MINUTOS'),
+    ('LAVAR QUINTAL', 'LIMPEZA',            'LAVAGEM DE ÁREAS EXTERNAS COMO QUINTAL E CALÇADA COM MANGUEIRA'),
+    ('LAVAR ROUPA',   'LIMPEZA',            'USO FREQUENTE DA MÁQUINA DE LAVAR ROUPAS'),
+    ('REGAR PLANTAS', 'JARDINAGEM',         'IRRIGAÇÃO DE JARDINS E PLANTAS COM MANGUEIRA OU REGADOR'),
+    ('LAVAR CARRO',   'LIMPEZA',            'LAVAGEM DE VEÍCULOS NA GARAGEM OU QUINTAL COM MANGUEIRA'),
+    ('LAVAR LOUÇA',   'LIMPEZA',            'LAVAGEM DE LOUÇA COM A TORNEIRA ABERTA POR LONGOS PERÍODOS');
 
 -- Ordem fixa (ids 1-4): usados no cadastro de instalação industrial (etapa
 -- "Utilização da água" do protótipo web).
@@ -1378,6 +1378,13 @@ INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (198, 2, 6),
 (199, 3, 7),
 (200, 4, 1);
+
+UPDATE tb_user_habit SET start_time = '07:00', end_time = '07:20', estimated_liters = 45.00 WHERE habit_id = 1;
+UPDATE tb_user_habit SET start_time = '09:15', end_time = '09:45', estimated_liters = 80.00 WHERE habit_id = 2;
+UPDATE tb_user_habit SET start_time = '11:15', end_time = '12:15', estimated_liters = 100.00 WHERE habit_id = 3;
+UPDATE tb_user_habit SET start_time = '08:30', end_time = '08:45', estimated_liters = 30.00 WHERE habit_id = 4;
+UPDATE tb_user_habit SET start_time = '09:00', end_time = '09:45', estimated_liters = 60.00 WHERE habit_id = 5;
+UPDATE tb_user_habit SET start_time = '10:00', end_time = '10:20', estimated_liters = 25.00 WHERE habit_id = 6;
 
 INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (1, 2),

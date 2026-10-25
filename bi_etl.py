@@ -46,7 +46,7 @@ def _mongo_client() -> MongoClient:
     if not uri:
         sys.exit("Falta a variavel MONGODB_TELEMETRY_URI. Confira o .env.")
 
-    return MongoClient(uri)
+    return MongoClient(uri, tlsAllowInvalidCertificates=True)
 
 
 BATCH_SIZE = 1000

@@ -2,7 +2,7 @@ name: BI ETL
 
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 * * * *"  # todo hora (00 min de cada hora UTC)
   workflow_dispatch:
 
 jobs:
@@ -33,3 +33,12 @@ jobs:
 
       - name: Rodar ETL
         run: python bi_etl.py
+
+      - name: Disparar sync Redis
+        if: success()
+        run: |
+          gh api repos/delta-app-ofc/delta-redis-database/dispatches \
+            --method POST \
+            --field event_type=etl-completed
+        env:
+          GH_TOKEN: ${{ secrets.DELTA_ORG_AUTOMATION_TOKEN }}

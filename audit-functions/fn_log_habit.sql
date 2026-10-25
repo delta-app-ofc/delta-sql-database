@@ -49,6 +49,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -63,6 +64,7 @@ BEGIN
         (
               NEW.id
             , NEW.name
+            , NEW.category
             , NEW.description
 
             , TG_OP
@@ -114,6 +116,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -128,6 +131,7 @@ BEGIN
         (
               NEW.id
             , NEW.name
+            , NEW.category
             , NEW.description
 
             , TG_OP
@@ -152,6 +156,7 @@ BEGIN
         (
               habit_id
             , name
+            , category
             , description
 
             , operation
@@ -166,6 +171,7 @@ BEGIN
         (
               OLD.id
             , OLD.name
+            , OLD.category
             , OLD.description
 
             , TG_OP

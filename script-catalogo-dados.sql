@@ -24,9 +24,15 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('tb_water_usage_type', 'name', 'VARCHAR(30)', 'Nome do tipo de uso da água na instalação industrial.', 'Valores fixos (CHECK): LIMPEZA, CONSUMO_HUMANO, PROCESSO_PRODUTIVO, IRRIGACAO. Único.', 'PUBLICO'),
 ('tb_water_usage_type', 'description', 'TEXT', 'Descrição opcional do tipo de uso.', 'Sem restrição de formato.', 'PUBLICO'),
 
+-- tb_city_region
+('tb_city_region', 'id', 'SERIAL', 'Identificador do mapeamento cidade-região.', 'Chave primária.', 'PUBLICO'),
+('tb_city_region', 'city', 'VARCHAR(60)', 'Nome da cidade, como a API de CEP devolve (com acento e maiúscula inicial).', 'Obrigatório. A API compara sem diferenciar maiúsculas de minúsculas. Único em conjunto com state.', 'PUBLICO'),
+('tb_city_region', 'state', 'CHAR(2)', 'UF da cidade.', 'Obrigatório. CHECK: duas letras maiúsculas.', 'PUBLICO'),
+('tb_city_region', 'region_id', 'INTEGER', 'Região de tarifa que a cidade usa.', 'FK obrigatória para tb_region. Usada pela API para preencher tb_address.region_id; cidade fora desta tabela não é atendida.', 'PUBLICO'),
+
 -- tb_address
 ('tb_address', 'id', 'SERIAL', 'Identificador do endereço.', 'Chave primária.', 'INTERNO'),
-('tb_address', 'region_id', 'INTEGER', 'Região à qual o endereço pertence.', 'FK obrigatória para tb_region.', 'INTERNO'),
+('tb_address', 'region_id', 'INTEGER', 'Região à qual o endereço pertence.', 'FK obrigatória para tb_region. Definida pela API a partir de city e state (ver tb_city_region).', 'INTERNO'),
 ('tb_address', 'cep', 'CHAR(8)', 'CEP do endereço.', '8 dígitos numéricos (CHECK regex).', 'RESTRITO'),
 ('tb_address', 'city', 'VARCHAR(60)', 'Cidade do endereço.', 'Obrigatório.', 'INTERNO'),
 ('tb_address', 'state', 'VARCHAR(30)', 'Estado do endereço.', 'Obrigatório.', 'INTERNO'),

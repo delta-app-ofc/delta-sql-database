@@ -22,13 +22,26 @@ DROP TABLE IF EXISTS tb_address           CASCADE;
 DROP TABLE IF EXISTS tb_water_usage_type  CASCADE;
 DROP TABLE IF EXISTS tb_habit             CASCADE;
 DROP TABLE IF EXISTS tb_day_of_week       CASCADE;
+DROP TABLE IF EXISTS tb_municipality      CASCADE;
 DROP TABLE IF EXISTS tb_region            CASCADE;
 
 
 CREATE TABLE tb_region (
       id                                   SERIAL      PRIMARY KEY
     , name                                 VARCHAR(30) NOT NULL UNIQUE
-      CONSTRAINT chk_tb_region_name_values CHECK (name IN ('GRANDE_SP', 'LINS', 'PRESIDENTE_PRUDENTE', 'ADAMANTINA_PIRAPOZINHO', 'BRAGANCA_PAULISTA'))
+      CONSTRAINT chk_tb_region_name_values CHECK (name IN ('GRANDE_SP', 'LINS', 'PRESIDENTE_PRUDENTE', 'ADAMANTINA_PIRAPOZINHO', 'BRAGANCA_PAULISTA', 'LITORAL', 'VALE_DO_RIBEIRA', 'INTERIOR', 'VALE_DO_PARAIBA'))
+);
+
+CREATE TABLE tb_municipality (
+      id                                 SERIAL      PRIMARY KEY
+    , name                               VARCHAR(60) NOT NULL UNIQUE
+    , ibge_code                          INTEGER     NOT NULL UNIQUE
+      CONSTRAINT chk_tb_municipality_ibge_code CHECK (ibge_code BETWEEN 3500000 AND 3599999)
+    , region_id                          INTEGER     NOT NULL
+    , CONSTRAINT fk_tb_municipality_region FOREIGN KEY (region_id)
+        REFERENCES tb_region (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
 );
 
 CREATE TABLE tb_day_of_week (

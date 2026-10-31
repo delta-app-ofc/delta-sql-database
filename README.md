@@ -13,3 +13,14 @@ docker compose --env-file docker-compose.test.env -p delta-sql-audit-test -f doc
 ```
 
 Esses testes SQL são evidência comportamental; não geram percentual de cobertura de linhas SQL.
+
+## Testes offline do ETL Python
+
+O arquivo bi_etl.py tambem possui suite offline com adaptadores simulados. Instale requirements.txt e requirements-dev.txt, crie reports/ e execute:
+
+```powershell
+python -m coverage run --branch --source=bi_etl -m pytest -q tests/test_bi_etl.py --junitxml=reports/junit.xml
+python -m coverage xml -o reports/coverage.xml
+```
+
+O Sonar mede o ETL Python; os arquivos SQL continuam validados pelo smoke e isolamento PostgreSQL, sem percentual de linhas SQL. Os checks de ETL e integracao devem ser obrigatorios na main. Os testes offline nao acessam bancos reais nem alteram o workflow de ETL/deploy.

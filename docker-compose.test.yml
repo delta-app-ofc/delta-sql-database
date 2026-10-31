@@ -31,13 +31,15 @@ services:
       - ./script-optimization.sql:/sql/02-optimization.sql:ro
       - ./script-audit.sql:/sql/03-audit.sql:ro
       - ./tests/docker/smoke.sql:/sql/smoke.sql:ro
+      - ./tests/docker/isolation.sql:/sql/isolation.sql:ro
     entrypoint: ["/bin/sh", "-ec"]
     command:
       - |
         psql -v ON_ERROR_STOP=1 -f /sql/01-schema.sql
         psql -v ON_ERROR_STOP=1 -f /sql/02-optimization.sql
         psql -v ON_ERROR_STOP=1 -f /sql/03-audit.sql
-        exec psql -v ON_ERROR_STOP=1 -f /sql/smoke.sql
+        psql -v ON_ERROR_STOP=1 -f /sql/smoke.sql
+        exec psql -v ON_ERROR_STOP=1 -f /sql/isolation.sql
     networks:
       - test
 

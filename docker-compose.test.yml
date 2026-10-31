@@ -12,6 +12,8 @@ services:
       interval: 3s
       timeout: 5s
       retries: 20
+    networks:
+      - test
 
   smoke:
     image: postgres:16
@@ -28,7 +30,6 @@ services:
       - ./script-schema.sql:/sql/01-schema.sql:ro
       - ./script-optimization.sql:/sql/02-optimization.sql:ro
       - ./script-audit.sql:/sql/03-audit.sql:ro
-      - ./script-roles.sql:/sql/04-roles.sql:ro
       - ./tests/docker/smoke.sql:/sql/smoke.sql:ro
     entrypoint: ["/bin/sh", "-ec"]
     command:
@@ -36,5 +37,10 @@ services:
         psql -v ON_ERROR_STOP=1 -f /sql/01-schema.sql
         psql -v ON_ERROR_STOP=1 -f /sql/02-optimization.sql
         psql -v ON_ERROR_STOP=1 -f /sql/03-audit.sql
-        psql -v ON_ERROR_STOP=1 -f /sql/04-roles.sql
         exec psql -v ON_ERROR_STOP=1 -f /sql/smoke.sql
+    networks:
+      - test
+
+networks:
+  test:
+    internal: true

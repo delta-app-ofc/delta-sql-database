@@ -55,10 +55,10 @@ DECLARE
     v_last_bill_liters NUMERIC;
     v_last_bill_cost NUMERIC;
 BEGIN
-    IF fn_user_authorized_property_ids(10, ARRAY[100, 200]) <> ARRAY[100] THEN
+    IF fn_user_authorized_property_ids(10, ARRAY[100, 200]) IS DISTINCT FROM ARRAY[100] THEN
         RAISE EXCEPTION 'property authorization included another organization';
     END IF;
-    IF fn_user_authorized_property_ids(99, ARRAY[100, 200]) <> ARRAY[]::INTEGER[] THEN
+    IF fn_user_authorized_property_ids(99, ARRAY[100, 200]) IS DISTINCT FROM ARRAY[]::INTEGER[] THEN
         RAISE EXCEPTION 'user without an organization should have no authorized properties';
     END IF;
 
@@ -73,10 +73,10 @@ BEGIN
         RAISE EXCEPTION 'history returned data for another organization';
     END IF;
 
-    IF NOT fn_organization_can_estimate(10, ARRAY[100]) THEN
+    IF fn_organization_can_estimate(10, ARRAY[100]) IS DISTINCT FROM TRUE THEN
         RAISE EXCEPTION 'can_estimate should be true for the user''s own property';
     END IF;
-    IF fn_organization_can_estimate(10, ARRAY[200]) THEN
+    IF fn_organization_can_estimate(10, ARRAY[200]) IS DISTINCT FROM FALSE THEN
         RAISE EXCEPTION 'can_estimate accepted another organization''s property';
     END IF;
 

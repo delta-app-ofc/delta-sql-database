@@ -134,3 +134,7 @@ desktop.ini
 # Arquivos locais do projeto
 # ============================================
 TASK*.md
+
+# Relatorios de testes Python e scanner
+reports/
+.scannerwork/

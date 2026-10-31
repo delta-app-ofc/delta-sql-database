@@ -40,11 +40,11 @@ def _pg_connection_params() -> dict:
     }
 
 
-def _mongo_client() -> MongoClient:
-    uri = os.getenv("MONGODB_TELEMETRY_URI", "")
+def _mongo_client(env_var: str) -> MongoClient:
+    uri = os.getenv(env_var, "")
 
     if not uri:
-        sys.exit("Falta a variavel MONGODB_TELEMETRY_URI. Confira o .env.")
+        sys.exit(f"Falta a variavel {env_var}. Confira o .env.")
 
     return MongoClient(uri, tlsAllowInvalidCertificates=True)
 
@@ -101,6 +101,74 @@ def _load_stage_batch(connection, rows: list) -> int:
     return len(rows)
 
 
+def _load_user_preferences(connection, mongo_client: MongoClient, mongo_db_name: str) -> int:
+    # Colecao pequena e editavel pelo usuario: le tudo e atualiza pelo mongo_id.
+    rows = []
+    for doc in mongo_client[mongo_db_name]["user_preferences"].find():
+        quiet_hours = doc.get("quiet_hours") or {}
+        rows.append((
+            str(doc["_id"]),
+            doc["user_id"],
+            doc.get("daily_liters_target"),
+            doc.get("notifications_enabled"),
+            quiet_hours.get("start_hour"),
+            quiet_hours.get("end_hour"),
+            doc["dark_mode_enabled"],
+        ))
+
+    if rows:
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                """
+                INSERT INTO stage.user_preferences
+                    (mongo_id, user_id, daily_liters_target, notifications_enabled, quiet_start_hour, quiet_end_hour, dark_mode_enabled)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (mongo_id) DO UPDATE
+                    SET daily_liters_target   = EXCLUDED.daily_liters_target
+                      , notifications_enabled = EXCLUDED.notifications_enabled
+                      , quiet_start_hour      = EXCLUDED.quiet_start_hour
+                      , quiet_end_hour        = EXCLUDED.quiet_end_hour
+                      , dark_mode_enabled     = EXCLUDED.dark_mode_enabled;
+                """,
+                rows,
+            )
+        connection.commit()
+
+    return len(rows)
+
+
+def _load_alerts_history(connection, mongo_client: MongoClient, mongo_db_name: str) -> int:
+    # O alerta pode ser resolvido depois (resolved_at), por isso o upsert atualiza esse campo.
+    rows = []
+    for doc in mongo_client[mongo_db_name]["alerts_history"].find():
+        rows.append((
+            str(doc["_id"]),
+            doc["device_id"],
+            doc["user_id"],
+            doc["alert_type"],
+            doc["triggered_at"],
+            doc.get("resolved_at"),
+            doc.get("severity"),
+        ))
+
+    if rows:
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                """
+                INSERT INTO stage.alerts_history
+                    (mongo_id, device_id, user_id, alert_type, triggered_at, resolved_at, severity)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (mongo_id) DO UPDATE
+                    SET resolved_at = EXCLUDED.resolved_at
+                      , severity    = EXCLUDED.severity;
+                """,
+                rows,
+            )
+        connection.commit()
+
+    return len(rows)
+
+
 def _run_load_chain(connection) -> None:
     with connection.cursor() as cursor:
         cursor.execute("CALL silver.sp_load();")
@@ -124,9 +192,11 @@ def main() -> None:
         print(".env nao encontrado; usando as variaveis do ambiente.")
 
     mongo_db_name = os.getenv("MONGO_DB_TELEMETRY") or "db_delta_telemetry"
+    mongo_app_db_name = os.getenv("MONGO_DB_APP") or "db_delta_app"
 
     pg_connection = psycopg2.connect(**_pg_connection_params())
-    mongo_client = _mongo_client()
+    mongo_client = _mongo_client("MONGODB_TELEMETRY_URI")
+    mongo_app_client = _mongo_client("MONGODB_APP_URI")
 
     try:
         watermark = _get_watermark(pg_connection)
@@ -154,10 +224,17 @@ def main() -> None:
         print(f"Documentos encontrados no Mongo: {total_found}")
         print(f"Linhas inseridas em stage.consumption_summary: {total_inserted}")
 
+        total_preferences = _load_user_preferences(pg_connection, mongo_app_client, mongo_app_db_name)
+        print(f"Linhas gravadas em stage.user_preferences: {total_preferences}")
+
+        total_alerts = _load_alerts_history(pg_connection, mongo_app_client, mongo_app_db_name)
+        print(f"Linhas gravadas em stage.alerts_history: {total_alerts}")
+
         _run_load_chain(pg_connection)
         print("silver.sp_load() e gold.sp_load() executados com sucesso.")
 
     finally:
+        mongo_app_client.close()
         mongo_client.close()
         pg_connection.close()
 

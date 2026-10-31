@@ -129,4 +129,27 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('dw.vw_audit_history_chain', 'region_rate_id', 'INTEGER', 'Tarifa auditada.', '', 'PUBLICO'),
 ('dw.vw_audit_history_chain', 'level', 'INTEGER', 'Posição do evento na cadeia de mudanças da tarifa (1 = inserção original).', 'CTE recursiva sobre tb_log_region_rate.previous_log_id.', 'PUBLICO');
 
+INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, business_rule, access_level) VALUES
+('dw.vw_ft_capex_comparison', 'name', 'VARCHAR(100)', 'Nome do cenário de investimento.', '', 'PUBLICO'),
+('dw.vw_ft_capex_comparison', 'investment_value', 'NUMERIC', 'Valor investido no cenário.', 'Medida — unidade: R$.', 'PUBLICO'),
+('dw.vw_ft_capex_comparison', 'reduction_pct', 'NUMERIC', 'Percentual de redução de consumo esperado.', 'Medida — unidade: %.', 'PUBLICO'),
+('dw.vw_ft_capex_comparison', 'annual_savings_value', 'NUMERIC', 'Economia anual estimada.', 'Medida — unidade: R$.', 'PUBLICO'),
+('dw.vw_ft_capex_comparison', 'payback_months', 'NUMERIC', 'Meses para o investimento se pagar.', 'Base do ranking rank_by_payback.', 'PUBLICO'),
+('dw.vw_ft_consumption_daily', 'property_name', 'VARCHAR(100)', 'Nome do imóvel.', '', 'INTERNO'),
+('dw.vw_ft_consumption_distribution', 'total_liters', 'NUMERIC', 'Total de litros consumidos por dia, usado nas estatísticas da distribuição.', 'Medida — unidade: L.', 'PUBLICO'),
+('dw.vw_ft_consumption_distribution', 'min_liters', 'NUMERIC', 'Menor consumo diário.', 'Medida — unidade: L.', 'PUBLICO'),
+('dw.vw_ft_consumption_distribution', 'q1_liters', 'DOUBLE PRECISION', 'Primeiro quartil (25%) do consumo diário.', 'percentile_cont(0.25). Unidade: L.', 'PUBLICO'),
+('dw.vw_ft_consumption_distribution', 'q3_liters', 'DOUBLE PRECISION', 'Terceiro quartil (75%) do consumo diário.', 'percentile_cont(0.75). Unidade: L.', 'PUBLICO'),
+('dw.vw_ft_consumption_distribution', 'max_liters', 'NUMERIC', 'Maior consumo diário.', 'Medida — unidade: L.', 'PUBLICO'),
+('dw.vw_ft_monthly_variation', 'property_name', 'VARCHAR(100)', 'Nome do imóvel.', '', 'INTERNO'),
+('dw.vw_ft_monthly_variation', 'total_liters', 'NUMERIC', 'Total de litros consumidos no mês.', 'Medida — unidade: L.', 'PUBLICO'),
+('dw.vw_ft_monthly_variation', 'previous_month_liters', 'NUMERIC', 'Total de litros consumidos no mês anterior.', 'Window function LAG().', 'PUBLICO'),
+('dw.vw_ft_property_ranking', 'property_name', 'VARCHAR(100)', 'Nome do imóvel.', '', 'INTERNO'),
+('dw.vw_ft_property_ranking', 'total_liters', 'NUMERIC', 'Total de litros consumidos pelo imóvel no período.', 'Medida — unidade: L.', 'PUBLICO'),
+('dw.vw_ft_property_ranking', 'total_cost', 'NUMERIC', 'Custo total do consumo do imóvel.', 'Medida — unidade: R$.', 'PUBLICO'),
+('dw.vw_ft_residential_efficiency_ranking', 'person_name', 'VARCHAR(100)', 'Nome da pessoa dona da fatura.', '', 'RESTRITO'),
+('dw.vw_ft_residential_efficiency_ranking', 'reference_month', 'DATE', 'Mês de referência da fatura (primeiro dia do mês).', '', 'PUBLICO'),
+('dw.vw_ft_residential_efficiency_ranking', 'm3_value', 'NUMERIC', 'Consumo faturado no mês.', 'Medida — unidade: m³. Base do ranking.', 'PUBLICO'),
+('dw.vw_ft_residential_efficiency_ranking', 'total_value', 'NUMERIC', 'Valor total da fatura.', 'Medida — unidade: R$.', 'PUBLICO');
+
 COMMIT;

@@ -631,12 +631,41 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION fn_user_authorized_property_ids(
+    p_user_id      INTEGER,
+    p_property_ids INTEGER[]
+)
+RETURNS INTEGER[]
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_authorized INTEGER[];
+BEGIN
+
+    SELECT COALESCE(ARRAY_AGG(p.id), ARRAY[]::INTEGER[])
+      INTO v_authorized
+      FROM tb_user_organization uo
+      JOIN tb_property p
+        ON p.organization_id = uo.organization_id
+     WHERE uo.user_id = p_user_id
+       AND p.id = ANY(p_property_ids);
+
+    RETURN v_authorized;
+
+END;
+$$;
+
+DROP FUNCTION IF EXISTS fn_organization_can_estimate(INTEGER[]);
+
 CREATE OR REPLACE FUNCTION fn_organization_can_estimate(
+    p_user_id      INTEGER,
     p_property_ids INTEGER[]
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_property_ids INTEGER[] := fn_user_authorized_property_ids(p_user_id, p_property_ids);
 BEGIN
 
     RETURN EXISTS
@@ -645,13 +674,16 @@ BEGIN
           FROM gold.ft_consumption_daily f
           JOIN gold.dm_property dp
             ON dp.property_key = f.property_key
-         WHERE dp.property_id = ANY(p_property_ids)
+         WHERE dp.property_id = ANY(v_property_ids)
     );
 
 END;
 $$;
 
+DROP FUNCTION IF EXISTS fn_organization_consumption_history(INTEGER[], INTEGER, DATE);
+
 CREATE OR REPLACE FUNCTION fn_organization_consumption_history(
+    p_user_id      INTEGER,
     p_property_ids INTEGER[],
     p_days         INTEGER,
     p_today        DATE
@@ -662,6 +694,8 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_property_ids INTEGER[] := fn_user_authorized_property_ids(p_user_id, p_property_ids);
 BEGIN
 
     RETURN QUERY
@@ -669,7 +703,7 @@ BEGIN
           v.full_date
         , SUM(v.total_liters) AS total_liters
       FROM dw.vw_ft_consumption_daily v
-     WHERE v.property_id = ANY(p_property_ids)
+     WHERE v.property_id = ANY(v_property_ids)
        AND v.full_date BETWEEN (p_today - (p_days - 1)) AND p_today
      GROUP BY v.full_date
      ORDER BY v.full_date;
@@ -677,7 +711,10 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS fn_organization_last_billed_period(INTEGER[], DATE);
+
 CREATE OR REPLACE FUNCTION fn_organization_last_billed_period(
+    p_user_id      INTEGER,
     p_property_ids INTEGER[],
     p_today        DATE
 )
@@ -689,6 +726,7 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 DECLARE
+    v_property_ids INTEGER[] := fn_user_authorized_property_ids(p_user_id, p_property_ids);
     v_last_closed_month DATE := DATE_TRUNC('month', p_today) - INTERVAL '1 month';
 BEGIN
 
@@ -698,7 +736,7 @@ BEGIN
         , SUM(v.total_liters)
         , SUM(v.cost_value)
       FROM dw.vw_ft_consumption_daily v
-     WHERE v.property_id = ANY(p_property_ids)
+     WHERE v.property_id = ANY(v_property_ids)
        AND DATE_TRUNC('month', v.full_date) = v_last_closed_month
     HAVING SUM(v.total_liters) IS NOT NULL;
 
@@ -713,13 +751,16 @@ BEGIN
         , SUM(v.total_liters)
         , SUM(v.cost_value)
       FROM dw.vw_ft_consumption_daily v
-     WHERE v.property_id = ANY(p_property_ids)
+     WHERE v.property_id = ANY(v_property_ids)
     HAVING SUM(v.total_liters) IS NOT NULL;
 
 END;
 $$;
 
+DROP FUNCTION IF EXISTS fn_organization_effective_rate(INTEGER[], DATE, INTEGER);
+
 CREATE OR REPLACE FUNCTION fn_organization_effective_rate(
+    p_user_id      INTEGER,
     p_property_ids  INTEGER[],
     p_today         DATE,
     p_window_days   INTEGER DEFAULT 30
@@ -728,6 +769,7 @@ RETURNS NUMERIC
 LANGUAGE plpgsql
 AS $$
 DECLARE
+    v_property_ids INTEGER[] := fn_user_authorized_property_ids(p_user_id, p_property_ids);
     v_total_liters NUMERIC;
     v_total_cost   NUMERIC;
 BEGIN
@@ -737,7 +779,7 @@ BEGIN
         , SUM(v.cost_value)
       INTO v_total_liters, v_total_cost
       FROM dw.vw_ft_consumption_daily v
-     WHERE v.property_id = ANY(p_property_ids)
+     WHERE v.property_id = ANY(v_property_ids)
        AND v.full_date BETWEEN (p_today - (p_window_days - 1)) AND p_today;
 
     IF v_total_liters IS NULL OR v_total_liters = 0 THEN
@@ -865,7 +907,7 @@ BEGIN
 
     IF v_match_status = 'resolved' THEN
 
-        v_can_estimate := fn_organization_can_estimate(v_resolved_property_ids);
+        v_can_estimate := fn_organization_can_estimate(p_user_id, v_resolved_property_ids);
 
         SELECT json_agg(json_build_object(
                    'full_date', h.full_date,
@@ -873,7 +915,7 @@ BEGIN
                ) ORDER BY h.full_date)
           INTO v_history
           FROM fn_organization_consumption_history(
-                   v_resolved_property_ids, p_history_days, p_today
+                   p_user_id, v_resolved_property_ids, p_history_days, p_today
                ) h;
 
         SELECT
@@ -885,11 +927,11 @@ BEGIN
             , v_last_bill_total_value
             , v_last_bill_m3_value
           FROM fn_organization_last_billed_period(
-                   v_resolved_property_ids, p_today
+                   p_user_id, v_resolved_property_ids, p_today
                ) b;
 
         v_effective_rate := fn_organization_effective_rate(
-                                 v_resolved_property_ids, p_today, p_rate_window_days
+                                 p_user_id, v_resolved_property_ids, p_today, p_rate_window_days
                              );
 
     END IF;

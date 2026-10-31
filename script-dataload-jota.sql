@@ -45,12 +45,12 @@ BEGIN
     -- tb_address não tem UNIQUE — usa WHERE NOT EXISTS
     -- ----------------------------------------------------------
     INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude)
-    SELECT v_region_sp_id, '04038001', 'SÃO PAULO', 'SP', -23.6101, -46.6648
+    SELECT v_region_sp_id, '04038001', 'São Paulo', 'SP', -23.6101, -46.6648
     WHERE NOT EXISTS (SELECT 1 FROM tb_address WHERE cep = '04038001');
     SELECT id INTO v_addr_res_id FROM tb_address WHERE cep = '04038001';
 
     INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude)
-    SELECT v_region_ln_id, '16900010', 'LINS', 'SP', -21.6800, -49.7450
+    SELECT v_region_ln_id, '16900010', 'Lins', 'SP', -21.6800, -49.7450
     WHERE NOT EXISTS (SELECT 1 FROM tb_address WHERE cep = '16900010');
     SELECT id INTO v_addr_soc_id FROM tb_address WHERE cep = '16900010';
 

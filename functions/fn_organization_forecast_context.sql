@@ -114,7 +114,7 @@ BEGIN
 
     IF v_match_status = 'resolved' THEN
 
-        v_can_estimate := fn_organization_can_estimate(v_resolved_property_ids);
+        v_can_estimate := fn_organization_can_estimate(p_user_id, v_resolved_property_ids);
 
         SELECT json_agg(json_build_object(
                    'full_date', h.full_date,
@@ -122,7 +122,7 @@ BEGIN
                ) ORDER BY h.full_date)
           INTO v_history
           FROM fn_organization_consumption_history(
-                   v_resolved_property_ids, p_history_days, p_today
+                   p_user_id, v_resolved_property_ids, p_history_days, p_today
                ) h;
 
         SELECT
@@ -134,11 +134,11 @@ BEGIN
             , v_last_bill_total_value
             , v_last_bill_m3_value
           FROM fn_organization_last_billed_period(
-                   v_resolved_property_ids, p_today
+                   p_user_id, v_resolved_property_ids, p_today
                ) b;
 
         v_effective_rate := fn_organization_effective_rate(
-                                 v_resolved_property_ids, p_today, p_rate_window_days
+                                 p_user_id, v_resolved_property_ids, p_today, p_rate_window_days
                              );
 
     END IF;

@@ -310,8 +310,6 @@ CREATE TABLE tb_user_habit (
               (start_time IS NULL AND end_time IS NULL)
               OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time > start_time)
           )
-    , CONSTRAINT uq_tb_user_habit_user_habit
-        UNIQUE (user_id, habit_id)
     , CONSTRAINT fk_tb_user_habit_user
         FOREIGN KEY (user_id)
         REFERENCES tb_user (id)

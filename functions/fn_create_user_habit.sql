@@ -1,8 +1,12 @@
+DROP FUNCTION IF EXISTS fn_create_user_habit(INTEGER, VARCHAR, INTEGER, VARCHAR[]);
+
 CREATE OR REPLACE FUNCTION fn_create_user_habit(
     p_user_id    INTEGER,
     p_habit_name VARCHAR,
     p_frequency  INTEGER,
-    p_days       VARCHAR[] DEFAULT ARRAY[]::VARCHAR[]
+    p_days       VARCHAR[] DEFAULT ARRAY[]::VARCHAR[],
+    p_start_time TIME      DEFAULT NULL,
+    p_end_time   TIME      DEFAULT NULL
 )
 RETURNS INTEGER
 LANGUAGE plpgsql
@@ -24,14 +28,11 @@ BEGIN
     END IF;
 
 
-    INSERT INTO tb_user_habit (user_id, habit_id, frequency)
-    VALUES (p_user_id, v_habit_id, p_frequency)
-    ON CONFLICT (user_id, habit_id) DO NOTHING
+    -- O mesmo hábito pode ser cadastrado mais de uma vez (horários ou dias diferentes).
+    -- Conflito de dia + horário é barrado pela trigger trg_check_user_habit_day_conflict.
+    INSERT INTO tb_user_habit (user_id, habit_id, frequency, start_time, end_time)
+    VALUES (p_user_id, v_habit_id, p_frequency, p_start_time, p_end_time)
     RETURNING id INTO v_user_habit_id;
-
-    IF v_user_habit_id IS NULL THEN
-        RAISE EXCEPTION 'O usuário já possui o hábito %.', p_habit_name;
-    END IF;
 
 
     SELECT COUNT(DISTINCT UPPER(x))

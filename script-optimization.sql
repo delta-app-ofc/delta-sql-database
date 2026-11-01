@@ -1153,11 +1153,15 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS fn_create_user_habit(INTEGER, VARCHAR, INTEGER, VARCHAR[]);
+
 CREATE OR REPLACE FUNCTION fn_create_user_habit(
     p_user_id    INTEGER,
     p_habit_name VARCHAR,
     p_frequency  INTEGER,
-    p_days       VARCHAR[] DEFAULT ARRAY[]::VARCHAR[]
+    p_days       VARCHAR[] DEFAULT ARRAY[]::VARCHAR[],
+    p_start_time TIME      DEFAULT NULL,
+    p_end_time   TIME      DEFAULT NULL
 )
 RETURNS INTEGER
 LANGUAGE plpgsql
@@ -1179,14 +1183,11 @@ BEGIN
     END IF;
 
 
-    INSERT INTO tb_user_habit (user_id, habit_id, frequency)
-    VALUES (p_user_id, v_habit_id, p_frequency)
-    ON CONFLICT (user_id, habit_id) DO NOTHING
+    -- O mesmo hábito pode ser cadastrado mais de uma vez (horários ou dias diferentes).
+    -- Conflito de dia + horário é barrado pela trigger trg_check_user_habit_day_conflict.
+    INSERT INTO tb_user_habit (user_id, habit_id, frequency, start_time, end_time)
+    VALUES (p_user_id, v_habit_id, p_frequency, p_start_time, p_end_time)
     RETURNING id INTO v_user_habit_id;
-
-    IF v_user_habit_id IS NULL THEN
-        RAISE EXCEPTION 'O usuário já possui o hábito %.', p_habit_name;
-    END IF;
 
 
     SELECT COUNT(DISTINCT UPPER(x))
@@ -1209,4 +1210,75 @@ BEGIN
 
 END;
 $$;
+
+-- Regra: o mesmo usuário não pode ter o mesmo hábito, no mesmo dia da semana,
+-- com o mesmo horário de início (NULL conta como "sem horário", igual a outro NULL).
+
+-- Dispara ao inserir/alterar um dia em tb_user_habit_day.
+CREATE OR REPLACE FUNCTION fn_check_user_habit_day_conflict()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    IF EXISTS (
+        SELECT 1
+          FROM tb_user_habit me
+          JOIN tb_user_habit other
+            ON other.user_id = me.user_id
+           AND other.habit_id = me.habit_id
+           AND other.id <> me.id
+           AND other.start_time IS NOT DISTINCT FROM me.start_time
+          JOIN tb_user_habit_day other_day
+            ON other_day.user_habit_id = other.id
+           AND other_day.day_of_week_id = NEW.day_of_week_id
+         WHERE me.id = NEW.user_habit_id
+    ) THEN
+        RAISE EXCEPTION 'O usuário já possui esse hábito nesse dia e horário.';
+    END IF;
+
+    RETURN NEW;
+
+END;
+$$;
+
+-- Dispara ao trocar o hábito ou o horário em tb_user_habit (os dias já existem).
+CREATE OR REPLACE FUNCTION fn_check_user_habit_conflict()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+    IF EXISTS (
+        SELECT 1
+          FROM tb_user_habit other
+          JOIN tb_user_habit_day other_day
+            ON other_day.user_habit_id = other.id
+          JOIN tb_user_habit_day my_day
+            ON my_day.user_habit_id = NEW.id
+           AND my_day.day_of_week_id = other_day.day_of_week_id
+         WHERE other.user_id = NEW.user_id
+           AND other.habit_id = NEW.habit_id
+           AND other.id <> NEW.id
+           AND other.start_time IS NOT DISTINCT FROM NEW.start_time
+    ) THEN
+        RAISE EXCEPTION 'O usuário já possui esse hábito nesse dia e horário.';
+    END IF;
+
+    RETURN NEW;
+
+END;
+$$;
+
+CREATE TRIGGER trg_check_user_habit_day_conflict
+BEFORE INSERT OR UPDATE
+ON tb_user_habit_day
+FOR EACH ROW
+EXECUTE FUNCTION fn_check_user_habit_day_conflict();
+
+CREATE TRIGGER trg_check_user_habit_conflict
+BEFORE UPDATE OF habit_id, start_time
+ON tb_user_habit
+FOR EACH ROW
+EXECUTE FUNCTION fn_check_user_habit_conflict();
 

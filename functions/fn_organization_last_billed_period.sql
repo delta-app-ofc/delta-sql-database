@@ -33,12 +33,21 @@ BEGIN
 
 
     RETURN QUERY
+    WITH latest_closed_month AS (
+        SELECT DATE_TRUNC('month', MAX(v.full_date))::DATE AS reference_month
+        FROM dw.vw_ft_consumption_daily v
+        WHERE v.property_id = ANY(v_property_ids)
+          AND v.full_date < DATE_TRUNC('month', p_today)
+    )
     SELECT
-          DATE_TRUNC('month', MAX(v.full_date))::DATE
+          m.reference_month
         , SUM(v.total_liters)
         , SUM(v.cost_value)
       FROM dw.vw_ft_consumption_daily v
+      JOIN latest_closed_month m
+        ON DATE_TRUNC('month', v.full_date)::DATE = m.reference_month
      WHERE v.property_id = ANY(v_property_ids)
+     GROUP BY m.reference_month
     HAVING SUM(v.total_liters) IS NOT NULL;
 
 END;

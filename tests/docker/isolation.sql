@@ -22,7 +22,8 @@ VALUES
 INSERT INTO tb_user (id, name, email, password, birth_date)
 VALUES
     (10, 'USUARIO UM', 'usuario.um@example.test', 'placeholder', DATE '1990-01-01'),
-    (20, 'USUARIO DOIS', 'usuario.dois@example.test', 'placeholder', DATE '1990-01-01');
+    (20, 'USUARIO DOIS', 'usuario.dois@example.test', 'placeholder', DATE '1990-01-01'),
+    (30, 'USUARIO TRES', 'usuario.tres@example.test', 'placeholder', DATE '1990-01-01');
 INSERT INTO tb_address (id, region_id, cep, city, state, latitude, longitude)
 VALUES
     (1, 1, '01001000', 'SAO PAULO', 'SP', -23.550520, -46.633308),
@@ -43,9 +44,20 @@ INSERT INTO dw.vw_ft_consumption_daily VALUES
     (100, DATE '2026-10-01', 2000, 20),
     (100, DATE '2026-10-29', 1000, 10),
     (100, DATE '2026-10-30', 100, 1),
-    (200, DATE '2026-10-29', 5000, 50);
+    (200, DATE '2026-07-10', 100, 1),
+    (200, DATE '2026-08-10', 300, 3),
+    (200, DATE '2026-10-29', 5000, 50),
+    (200, DATE '2026-12-10', 9000, 90);
 INSERT INTO gold.dm_property VALUES (1, 100), (2, 200);
 INSERT INTO gold.ft_consumption_daily VALUES (1), (2);
+
+-- A primeira associação deve determinar o imóvel em todas as funções residenciais.
+INSERT INTO tb_user_property (id, user_id, property_id)
+VALUES (1001, 30, 101), (1002, 30, 102);
+INSERT INTO tb_device (device_id, property_id, is_active)
+VALUES ('TEST-FIRST', 101, FALSE), ('TEST-SECOND', 102, TRUE);
+INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_validity, final_validity)
+VALUES (1, 1, 12.34, DATE '2001-01-01', DATE '2001-12-31');
 
 DO $$
 DECLARE
@@ -104,8 +116,40 @@ BEGIN
     SELECT reference_month, total_liters
       INTO v_reference_month, v_last_bill_liters
       FROM fn_organization_last_billed_period(20, ARRAY[200], DATE '2026-10-30');
-    IF v_reference_month IS DISTINCT FROM DATE '2026-10-01' OR v_last_bill_liters IS DISTINCT FROM 5000 THEN
-        RAISE EXCEPTION 'last_billed_period fallback should select the latest available month';
+    IF v_reference_month IS DISTINCT FROM DATE '2026-08-01' OR v_last_bill_liters IS DISTINCT FROM 300 THEN
+        RAISE EXCEPTION 'fallback must aggregate only the latest closed month, not all months';
+    END IF;
+
+    SELECT * INTO v_context
+      FROM fn_organization_forecast_context(20, NULL, DATE '2026-10-30', 45, 30);
+    IF v_context.last_bill_month IS DISTINCT FROM DATE '2026-08-01'
+       OR v_context.last_bill_total_value IS DISTINCT FROM 3
+       OR v_context.last_bill_m3_value IS DISTINCT FROM 0.3 THEN
+        RAISE EXCEPTION 'forecast fallback must report only the selected closed month';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM fn_organization_last_billed_period(20, ARRAY[200], DATE '2026-07-15')
+    ) THEN
+        RAISE EXCEPTION 'fallback must exclude the current month and future readings';
+    END IF;
+
+    IF fn_user_can_estimate(30, DATE '2001-06-01') IS DISTINCT FROM FALSE THEN
+        RAISE EXCEPTION 'the active device in a later property must not authorize the first property';
+    END IF;
+    UPDATE tb_device SET is_active = TRUE WHERE device_id = 'TEST-FIRST';
+    IF fn_user_can_estimate(30, DATE '2001-06-01') IS DISTINCT FROM TRUE THEN
+        RAISE EXCEPTION 'an active device and rate valid on the reference date must allow estimates';
+    END IF;
+    IF fn_user_can_estimate(30, DATE '2002-06-01') IS DISTINCT FROM FALSE THEN
+        RAISE EXCEPTION 'an expired rate must not allow estimates';
+    END IF;
+    IF fn_user_can_estimate(30) IS DISTINCT FROM fn_user_can_estimate(30, CURRENT_DATE) THEN
+        RAISE EXCEPTION 'the single-argument function must preserve current-date behavior';
+    END IF;
+    SELECT * INTO v_context FROM fn_user_forecast_context(30, DATE '2001-06-01');
+    IF v_context.can_estimate IS DISTINCT FROM TRUE OR v_context.region_rate IS DISTINCT FROM 12.34 THEN
+        RAISE EXCEPTION 'forecast context and eligibility must use the same property and date';
     END IF;
 
     SELECT * INTO v_context

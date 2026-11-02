@@ -23,7 +23,7 @@ DECLARE
     v_last_bill_m3_value    NUMERIC;
 BEGIN
 
-    v_can_estimate := fn_user_can_estimate(p_user_id);
+    v_can_estimate := fn_user_can_estimate(p_user_id, p_today);
 
 
     SELECT c.region_id, c.classification_id

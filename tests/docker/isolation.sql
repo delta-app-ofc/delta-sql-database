@@ -23,11 +23,11 @@ INSERT INTO tb_user (id, name, email, password, birth_date)
 VALUES
     (10, 'USUARIO UM', 'usuario.um@example.test', 'placeholder', DATE '1990-01-01'),
     (20, 'USUARIO DOIS', 'usuario.dois@example.test', 'placeholder', DATE '1990-01-01');
-INSERT INTO tb_address (id, region_id, cep, city, state)
+INSERT INTO tb_address (id, region_id, cep, city, state, latitude, longitude)
 VALUES
-    (1, 1, '01001000', 'SAO PAULO', 'SP'),
-    (2, 1, '02002000', 'SAO PAULO', 'SP'),
-    (3, 1, '03003000', 'SAO PAULO', 'SP');
+    (1, 1, '01001000', 'SAO PAULO', 'SP', -23.550520, -46.633308),
+    (2, 1, '02002000', 'SAO PAULO', 'SP', -23.550520, -46.633308),
+    (3, 1, '03003000', 'SAO PAULO', 'SP', -23.550520, -46.633308);
 INSERT INTO tb_property (id, organization_id, address_id, classification_id, name, type)
 VALUES
     (100, 1, 1, 1, 'FILIAL A', 'CASA'),

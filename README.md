@@ -27,7 +27,7 @@ O banco de dados que guarda a história de cada gota. Aqui ficam os scripts SQL 
 | Banco relacional | 22 tabelas de negócio e 4 técnicas, normalizadas até a 3FN, com PKs, FKs e restrições `CHECK` e `UNIQUE` |
 | Regras de negócio | 24 Functions e 5 Procedures em PL/pgSQL |
 | Auditoria | 21 tabelas `tb_log_*`, com triggers que registram `TG_OP`, `OLD`, `NEW` e `CURRENT_USER` |
-| Data Mart | Schemas `stage`, `silver`, `gold` e `dw`, com Star Schema e sete views analíticas |
+| Data Mart | Schemas `stage`, `silver`, `gold` e `dw`, com Star Schema e nove views analíticas |
 | Governança | Catálogo `tb_data_catalog` com 268 colunas e roles `sys_*` |
 | Operação | Backup a cada 6 horas, ETL do MongoDB e testes de integração no CI |
 

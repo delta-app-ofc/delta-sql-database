@@ -5,9 +5,11 @@ BEGIN
 
     CALL silver.sp_load_ft_consumption_reading();
     CALL silver.sp_load_ft_consumption_daily();
+    CALL silver.sp_load_ft_alert();
     CALL silver.sp_load_dm_property();
     CALL silver.sp_load_dm_person();
     CALL silver.sp_load_ft_water_bill();
+    CALL silver.sp_load_dm_user_preference();
 
 END;
 $$;

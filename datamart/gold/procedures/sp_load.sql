@@ -9,6 +9,8 @@ BEGIN
     CALL gold.sp_load_ft_consumption_daily();
     CALL gold.sp_load_ft_water_bill_monthly();
     CALL gold.sp_load_ft_investment_scenario();
+    CALL gold.sp_load_ft_alert();
+    CALL gold.sp_load_dm_user_preference();
 
 END;
 $$;

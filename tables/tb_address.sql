@@ -1,3 +1,4 @@
+-- Latitude e longitude são obrigatórias (o RPA preenche pelo centro da cidade quando o legado não tem).
 CREATE TABLE tb_address (
       id                            SERIAL      PRIMARY KEY
     , region_id                     INTEGER     NOT NULL

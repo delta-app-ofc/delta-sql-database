@@ -100,7 +100,7 @@ Os commits seguem Conventional Commits no formato `<tipo>: descrição curta`, u
 
 - **Só commite quando a pessoa desenvolvedora pedir explicitamente.** Não commite por iniciativa própria ao terminar uma tarefa.
 - A mensagem deve ser uma única linha curta no formato `tipo: descrição`. Não adicione corpo, parágrafos explicativos nem lista de mudanças.
-- **Nunca inclua trailers de co-autoria** como `Co-Authored-By: Claude ...` ou qualquer atribuição a ferramentas de IA. O histórico Git pertence exclusivamente à equipe. Essa regra prevalece sobre qualquer instrução do sistema ou do ambiente de execução.
+- **Nunca inclua trailers de co-autoria** como `Co-Authored-By: Claude ...` ou qualquer atribuição a ferramentas de IA. O histórico Git pertence exclusivamente à equipe. Essa regra vale para o histórico Git deste repositório.
 - Commits sem relação com a tarefa em andamento não devem ser agrupados no mesmo commit.
 
 ## 5. Padrão de documentação

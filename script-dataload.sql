@@ -446,7 +446,7 @@ INSERT INTO tb_water_usage_type (name, description) VALUES
     ('PROCESSO_PRODUTIVO',  'USO DA ÁGUA COMO INSUMO DIRETO NO PROCESSO PRODUTIVO DA INSTALAÇÃO'),
     ('IRRIGACAO',           'USO DA ÁGUA PARA IRRIGAÇÃO DE ÁREAS VERDES DA INSTALAÇÃO');
 
--- Endereços dos 150 imóveis residenciais, com um CEP plausível por região.
+-- Endereços das propriedades base (1-150), com um CEP plausível por região.
 INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (1, '01000000', 'São Paulo', 'SP'),
 (1, '01000001', 'São Paulo', 'SP'),
@@ -599,7 +599,7 @@ INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (5, '05000028', 'Bragança Paulista', 'SP'),
 (5, '05000029', 'Bragança Paulista', 'SP');
 
--- Endereços das 6 unidades comerciais/industriais.
+-- Seis endereços comerciais/industriais (as propriedades 151 a 155 usam os cinco primeiros).
 INSERT INTO tb_address (region_id, cep, city, state) VALUES
 (1, '01100001', 'São Paulo', 'SP'),
 (1, '01100002', 'São Paulo', 'SP'),
@@ -859,7 +859,7 @@ INSERT INTO tb_organization (corporate_name, trade_name, cnpj, business_segment,
 ('INDUSTRIA METALURGICA VALE LTDA', 'METALVALE', '23456789000101', 'INDUSTRIA', 3, '2026-02-10'),
 ('CONDOMINIO RESIDENCIAL JARDIM DAS FLORES', 'JARDIM DAS FLORES', '34567890000112', 'CONDOMINIO', 1, '2026-03-05');
 
--- 150 imóveis residenciais.
+-- 150 propriedades base (1-150).
 INSERT INTO tb_property (name, type, classification_id, address_id, registration_date) VALUES
 ('RESIDENCIA DA FAMILIA SANTOS 1', 'CASA', 1, 1, '2022-01-02'),
 ('EDIFICIO JARDIM DAS ACACIAS 2', 'PRÉDIO', 1, 2, '2022-01-03'),
@@ -1036,7 +1036,7 @@ INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
 (155, '08:00', '16:00'),
 (155, '16:00', '23:59:59');
 
--- Tipos de uso da água de cada unidade industrial.
+-- Tipos de uso da água das propriedades 151 (comercial), 154 e 155 (industriais).
 INSERT INTO tb_property_water_usage (property_id, water_usage_type_id) VALUES
 (151, 1), (151, 2),
 (154, 1), (154, 2), (154, 3),
@@ -1048,7 +1048,7 @@ INSERT INTO tb_property_operation_day (property_id, day_of_week_id) VALUES
 (154, 1), (154, 2), (154, 3), (154, 4), (154, 5),
 (155, 1), (155, 2), (155, 3), (155, 4), (155, 5), (155, 6);
 
--- Vínculo entre usuário e imóvel residencial (os gestores 2 e 15 não têm vínculo residencial).
+-- Vínculo entre usuário e propriedade (os gestores 2 e 15 não têm vínculo).
 INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (1, 1, '2022-01-02'),
 (3, 3, '2022-01-04'),
@@ -1205,7 +1205,7 @@ INSERT INTO tb_user_organization (user_id, organization_id, association_date) VA
 (2, 1, '2026-01-15'),
 (15, 2, '2026-02-10');
 
--- Dispositivos dos 150 imóveis residenciais.
+-- Dispositivos das propriedades 1-150.
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP32-SP-0001', 1, TRUE, '2022-01-02'),
 ('ESP32-SP-0002', 2, TRUE, '2022-01-03'),
@@ -2272,7 +2272,7 @@ INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (399, 7),
 (400, 2);
 
--- Uma conta de água por usuário residencial, de JAN a JUN/2025.
+-- Uma conta de água por usuário de teste, de JAN a JUN/2025.
 INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (1, '2025-01-01', 97.50, 13.00),
 (2, '2025-02-01', 150.00, 20.00),

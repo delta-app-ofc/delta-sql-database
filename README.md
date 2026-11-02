@@ -31,7 +31,7 @@ O banco de dados que guarda a história de cada gota. Aqui ficam os scripts SQL 
 | Governança | Catálogo `tb_data_catalog` com 268 colunas e roles `sys_*` |
 | Operação | Backup a cada 6 horas, ETL do MongoDB e testes de integração no CI |
 
-A arquitetura completa, do sensor ao relatório de BI, está na [modelagem conceitual](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/anexos/modelagem-conceitual.png).
+A arquitetura completa, do sensor ao relatório de BI, está na [modelagem conceitual](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/anexos/modelagem-conceitual.png).
 
 ## Estrutura do repositório
 
@@ -75,30 +75,30 @@ Consulte [DOCKER-HELP.md](DOCKER-HELP.md) para usar o ambiente Docker local.
 
 ## Requisitos de Modelagem de Dados (MOD-01 a MOD-16)
 
-Cada requisito tem uma justificativa própria no handbook e uma evidência neste repositório. O texto consolidado da entrega está em [entrega-modelagem-dados.md](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/entrega-modelagem-dados.md).
+Cada requisito tem uma justificativa própria no handbook e uma evidência neste repositório. O texto consolidado da entrega está em [entrega-modelagem-dados.md](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/entrega-modelagem-dados.md).
 
 | Requisito | Evidência neste repositório | Justificativa |
 |---|---|---|
-| MOD-01 Banco normalizado até 3FN | [script-schema.sql](script-schema.sql) | [mod-01](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-01-banco-postgresql-normalizacao.md) |
-| MOD-02 PKs, FKs e cardinalidades | [script-schema.sql](script-schema.sql) | [mod-02](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-02-pk-fk-cardinalidades.md) |
-| MOD-03 Carga de 500 ou mais registros | [script-dataload.sql](script-dataload.sql) | [mod-03](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-03-carga-registros-verossimeis.md) |
-| MOD-04 RPA de migração do legado | [delta-rpa](https://github.com/delta-app-ofc/delta-rpa) | [mod-04](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-04-rpa-migracao-banco-legado.md) |
-| MOD-05 Views analíticas e Data Mart | [script-datamart.sql](script-datamart.sql) e [datamart/](datamart) | [mod-05](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-05-views-analiticas-data-mart.md) |
-| MOD-06 CTEs no ETL | [sp_load_ft_consumption_daily.sql](datamart/silver/procedures/sp_load_ft_consumption_daily.sql) | [mod-06](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-06-ctes-etl-sql.md) |
-| MOD-07 Window Functions | [datamart/dw/views](datamart/dw/views) | [mod-07](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-07-window-functions.md) |
-| MOD-08 Functions de regras de negócio | [functions/](functions) | [mod-08](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-08-functions-regras-negocio.md) |
-| MOD-09 Procedures de regras de negócio | [procedures/](procedures) | [mod-09](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-09-procedures-regras-negocio.md) |
-| MOD-10 Triggers de auditoria | [script-audit.sql](script-audit.sql) | [mod-10](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-10-triggers-auditoria.md) |
-| MOD-11 EXPLAIN ANALYZE e índices | [script-indexes.sql](script-indexes.sql) | [mod-11](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-11-explain-analyze-indices.md) |
-| MOD-12 Catálogo de metadados | [tb_data_catalog.sql](tables/tb_data_catalog.sql) e [script-catalogo-dados.sql](script-catalogo-dados.sql) | [mod-12](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-12-catalogo-metadados.md) |
-| MOD-13 Backup e recuperação | [backup_db.py](backup_db.py) e [backup-postgres.yml](.github/workflows/backup-postgres.yml) | [mod-13](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-13-backup-recuperacao.md) |
-| MOD-14 DAU no PostgreSQL | [sp_register_user_access.sql](procedures/sp_register_user_access.sql) e [fn_get_dau.sql](functions/fn_get_dau.sql) | [mod-14](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-14-dau-daily-active-user.md) |
-| MOD-15 CTE recursiva | [vw_audit_history_chain.sql](datamart/dw/views/vw_audit_history_chain.sql) | [mod-15](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-15-cte-recursiva-heranca.md) |
-| MOD-16 Relatório de justificativas | Este README | [mod-16](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-16-relatorio-justificativas.md) |
+| MOD-01 Banco normalizado até 3FN | [script-schema.sql](script-schema.sql) | [mod-01](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-01-banco-postgresql-normalizacao.md) |
+| MOD-02 PKs, FKs e cardinalidades | [script-schema.sql](script-schema.sql) | [mod-02](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-02-pk-fk-cardinalidades.md) |
+| MOD-03 Carga de 500 ou mais registros | [script-dataload.sql](script-dataload.sql) | [mod-03](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-03-carga-registros-verossimeis.md) |
+| MOD-04 RPA de migração do legado | [delta-rpa](https://github.com/delta-app-ofc/delta-rpa) | [mod-04](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-04-rpa-migracao-banco-legado.md) |
+| MOD-05 Views analíticas e Data Mart | [script-datamart.sql](script-datamart.sql) e [datamart/](datamart) | [mod-05](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-05-views-analiticas-data-mart.md) |
+| MOD-06 CTEs no ETL | [sp_load_ft_consumption_daily.sql](datamart/silver/procedures/sp_load_ft_consumption_daily.sql) | [mod-06](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-06-ctes-etl-sql.md) |
+| MOD-07 Window Functions | [datamart/dw/views](datamart/dw/views) | [mod-07](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-07-window-functions.md) |
+| MOD-08 Functions de regras de negócio | [functions/](functions) | [mod-08](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-08-functions-regras-negocio.md) |
+| MOD-09 Procedures de regras de negócio | [procedures/](procedures) | [mod-09](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-09-procedures-regras-negocio.md) |
+| MOD-10 Triggers de auditoria | [script-audit.sql](script-audit.sql) | [mod-10](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-10-triggers-auditoria.md) |
+| MOD-11 EXPLAIN ANALYZE e índices | [script-indexes.sql](script-indexes.sql) | [mod-11](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-11-explain-analyze-indices.md) |
+| MOD-12 Catálogo de metadados | [tb_data_catalog.sql](tables/tb_data_catalog.sql) e [script-catalogo-dados.sql](script-catalogo-dados.sql) | [mod-12](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-12-catalogo-metadados.md) |
+| MOD-13 Backup e recuperação | [backup_db.py](backup_db.py) e [backup-postgres.yml](.github/workflows/backup-postgres.yml) | [mod-13](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-13-backup-recuperacao.md) |
+| MOD-14 DAU no PostgreSQL | [sp_register_user_access.sql](procedures/sp_register_user_access.sql) e [fn_get_dau.sql](functions/fn_get_dau.sql) | [mod-14](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-14-dau-daily-active-user.md) |
+| MOD-15 CTE recursiva | [vw_audit_history_chain.sql](datamart/dw/views/vw_audit_history_chain.sql) | [mod-15](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-15-cte-recursiva-heranca.md) |
+| MOD-16 Relatório de justificativas | Este README | [mod-16](https://github.com/delta-app-ofc/delta-handbook/blob/docs/explicacao-requisitos/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/mod-16-relatorio-justificativas.md) |
 
 ## Testes de integração
 
-Os testes executam os scripts SQL em um PostgreSQL 16 descartável. A suite verifica a criação do schema, constraints e o comportamento das funções de autorização e contexto organizacional com dados mínimos revertidos ao final.
+Os testes executam os scripts SQL em um PostgreSQL 16 descartável. A suíte verifica a criação do schema, constraints e o comportamento das funções de autorização e contexto organizacional com dados mínimos revertidos ao final.
 
 ```bash
 docker compose --env-file docker-compose.test.env -p delta-sql-audit-test -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from smoke
@@ -120,5 +120,5 @@ O Sonar mede o ETL Python; os scripts `script-schema.sql`, `script-optimization.
 
 ## Repositórios relacionados
 
-- [delta-handbook](https://github.com/delta-app-ofc/delta-handbook/tree/main/DADOS): documentação técnica de dados, com a justificativa de cada requisito.
+- [delta-handbook](https://github.com/delta-app-ofc/delta-handbook/tree/docs/explicacao-requisitos/DADOS): documentação técnica de dados, com a justificativa de cada requisito.
 - [delta-rpa](https://github.com/delta-app-ofc/delta-rpa): RPA que migra o banco legado para este banco normalizado.

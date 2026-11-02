@@ -1,14 +1,17 @@
 -- Carga complementar do usuário 210 (Davi)
 -- Já existente: tb_user (id=210), tb_user_property (property_id=159), tb_user_habit (habit_id=1)
--- Adiciona: device, fatura e 62 dias de consumo na stage (agosto e setembro de 2026)
+-- Adiciona: device, fatura e consumo na stage (agosto e setembro de 2026 + dados de hoje, 02/11/2026)
+-- Pode ser executado mais de uma vez: os INSERTs usam ON CONFLICT DO NOTHING
 
 -- DEVICE para a propriedade 159
 INSERT INTO public.tb_device (device_id, property_id, is_active, installation_date) VALUES
-('ESP32-SP-0159', 159, TRUE, '2022-08-01');
+('ESP32-SP-0159', 159, TRUE, '2022-08-01')
+ON CONFLICT (device_id) DO NOTHING;
 
 -- FATURA
 INSERT INTO public.tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
-(210, '2026-09-01', 75.00, 10.00);
+(210, '2026-09-01', 75.00, 10.00)
+ON CONFLICT (user_id, month) DO NOTHING;
 
 -- CONSUMO NA STAGE (agosto e setembro de 2026 — 2 janelas por dia)
 INSERT INTO stage.consumption_summary (mongo_id, device_id, user_id, window_started_at, window_finished_at, consumption_liters, lpm_average, anomaly_detected) VALUES
@@ -135,4 +138,8 @@ INSERT INTO stage.consumption_summary (mongo_id, device_id, user_id, window_star
 ('b210sep260929a', 'ESP32-SP-0159', '210', '2026-09-29 06:00:00', '2026-09-29 12:00:00', 113.400, 0.315, FALSE),
 ('b210sep260929b', 'ESP32-SP-0159', '210', '2026-09-29 12:00:00', '2026-09-29 18:00:00',  87.200, 0.242, FALSE),
 ('b210sep260930a', 'ESP32-SP-0159', '210', '2026-09-30 06:00:00', '2026-09-30 12:00:00',  95.800, 0.266, FALSE),
-('b210sep260930b', 'ESP32-SP-0159', '210', '2026-09-30 12:00:00', '2026-09-30 18:00:00', 140.100, 0.389, FALSE);
+('b210sep260930b', 'ESP32-SP-0159', '210', '2026-09-30 12:00:00', '2026-09-30 18:00:00', 140.100, 0.389, FALSE),
+-- HOJE (02/11/2026): janela da manhã completa e janela da tarde parcial (12:00 às 15:30)
+('b210nov261102a', 'ESP32-SP-0159', '210', '2026-11-02 06:00:00', '2026-11-02 12:00:00',  90.400, 0.251, FALSE),
+('b210nov261102b', 'ESP32-SP-0159', '210', '2026-11-02 12:00:00', '2026-11-02 15:30:00',  52.500, 0.250, FALSE)
+ON CONFLICT (mongo_id) DO NOTHING;

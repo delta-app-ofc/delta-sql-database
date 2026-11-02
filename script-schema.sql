@@ -68,6 +68,7 @@ CREATE TABLE tb_water_usage_type (
 );
 
 -- Latitude e longitude são obrigatórias (o RPA preenche pelo centro da cidade quando o legado não tem).
+-- O CEP não é único: um mesmo CEP (rua ou prédio) pode ter vários endereços e imóveis.
 CREATE TABLE tb_address (
       id                            SERIAL      PRIMARY KEY
     , region_id                     INTEGER     NOT NULL
@@ -79,7 +80,6 @@ CREATE TABLE tb_address (
       CONSTRAINT chk_tb_address_latitude  CHECK (latitude  BETWEEN -90  AND 90)
     , longitude                     NUMERIC(9,6) NOT NULL
       CONSTRAINT chk_tb_address_longitude CHECK (longitude BETWEEN -180 AND 180)
-    , CONSTRAINT uq_tb_address_cep              UNIQUE (cep)
     , CONSTRAINT fk_tb_address_region           FOREIGN KEY (region_id)
         REFERENCES tb_region (id)
         ON DELETE RESTRICT

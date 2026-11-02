@@ -419,6 +419,7 @@ INSERT INTO tb_property_classification (name, group_name) VALUES
     ('COMERCIAL_ENTIDADE_ASSISTENCIA_SOCIAL', 'COMERCIAL'),
     ('PUBLICA_COM_CONTRATO', 'COMERCIAL');
 
+-- Dias da semana (ids 1-7), usados por hábitos e dias de operação.
 INSERT INTO tb_day_of_week (name) VALUES
     ('SEGUNDA'),
     ('TERÇA'),
@@ -428,6 +429,7 @@ INSERT INTO tb_day_of_week (name) VALUES
     ('SÁBADO'),
     ('DOMINGO');
 
+-- Catálogo de hábitos de consumo de água, agrupados por categoria.
 INSERT INTO tb_habit (name, category, description) VALUES
     ('BANHO LONGO',   'HIGIENE E CUIDADOS', 'HÁBITO DE TOMAR BANHOS COM DURAÇÃO SUPERIOR A 15 MINUTOS'),
     ('LAVAR QUINTAL', 'LIMPEZA',            'LAVAGEM DE ÁREAS EXTERNAS COMO QUINTAL E CALÇADA COM MANGUEIRA'),
@@ -444,6 +446,7 @@ INSERT INTO tb_water_usage_type (name, description) VALUES
     ('PROCESSO_PRODUTIVO',  'USO DA ÁGUA COMO INSUMO DIRETO NO PROCESSO PRODUTIVO DA INSTALAÇÃO'),
     ('IRRIGACAO',           'USO DA ÁGUA PARA IRRIGAÇÃO DE ÁREAS VERDES DA INSTALAÇÃO');
 
+-- Endereços das propriedades base (1-150), com um CEP plausível por região.
 INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
 (1, '01000000', 'São Paulo', 'SP', -23.566500, -46.641300),
 (1, '01000001', 'São Paulo', 'SP', -23.562500, -46.637300),
@@ -596,6 +599,7 @@ INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
 (5, '05000028', 'Bragança Paulista', 'SP', -22.936700, -46.545900),
 (5, '05000029', 'Bragança Paulista', 'SP', -22.972700, -46.541900);
 
+-- Seis endereços comerciais/industriais (as propriedades 151 a 155 usam os cinco primeiros).
 INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
 (1, '01100001', 'São Paulo', 'SP', -23.566500, -46.629300),
 (1, '01100002', 'São Paulo', 'SP', -23.562500, -46.625300),
@@ -604,6 +608,7 @@ INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
 (1, '01100005', 'Osasco', 'SP', -23.532900, -46.799700),
 (1, '01100006', 'Guarulhos', 'SP', -23.449800, -46.537300);
 
+-- 200 usuários de teste. A senha é um hash Argon2id, nunca texto puro.
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager) VALUES
 ('BRUNO SANTOS 1', 'BRUNO.SANTOS1@HOTMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91001-1001', '1985-01-02', '2022-01-02', TRUE, FALSE, FALSE),
 ('CARLA OLIVEIRA 2', 'CARLA.OLIVEIRA2@OUTLOOK.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91002-1002', '1985-01-03', '2022-01-03', TRUE, FALSE, TRUE),
@@ -806,6 +811,7 @@ INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date
 ('WAGNER CARDOSO 199', 'WAGNER.CARDOSO199@UOL.COM.BR', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91199-1199', '1985-07-19', '2022-07-19', TRUE, FALSE, FALSE),
 ('CAMILA SILVA 200', 'CAMILA.SILVA200@GMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91200-1200', '1985-07-20', '2022-07-20', TRUE, FALSE, FALSE);
 
+-- Administrador fixo do sistema.
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager)
 VALUES (
     'ADMINISTRADOR DO SISTEMA',
@@ -818,11 +824,13 @@ VALUES (
     TRUE,
     FALSE
 );
+-- Organizações: varejo, indústria e condomínio.
 INSERT INTO tb_organization (corporate_name, trade_name, cnpj, business_segment, declared_unit_count, registration_date) VALUES
 ('SWIFT DISTRIBUIDORA DE ALIMENTOS LTDA', 'SWIFT DISTRIBUIDORA', '12345678000190', 'VAREJO', 10, '2026-01-15'),
 ('INDUSTRIA METALURGICA VALE LTDA', 'METALVALE', '23456789000101', 'INDUSTRIA', 3, '2026-02-10'),
 ('CONDOMINIO RESIDENCIAL JARDIM DAS FLORES', 'JARDIM DAS FLORES', '34567890000112', 'CONDOMINIO', 1, '2026-03-05');
 
+-- 150 propriedades base (1-150).
 INSERT INTO tb_property (name, type, classification_id, address_id, registration_date) VALUES
 ('RESIDENCIA DA FAMILIA SANTOS 1', 'CASA', 1, 1, '2022-01-02'),
 ('EDIFICIO JARDIM DAS ACACIAS 2', 'PRÉDIO', 1, 2, '2022-01-03'),
@@ -975,19 +983,23 @@ INSERT INTO tb_property (name, type, classification_id, address_id, registration
 ('RESIDENCIA DA FAMILIA LIMA 149', 'CASA', 1, 149, '2022-05-30'),
 ('EDIFICIO AURORA 150', 'PRÉDIO', 1, 150, '2022-05-31');
 
+-- Unidades comerciais da organização SWIFT.
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('LOJA SWIFT - VILA LEOPOLDINA', 'PRÉDIO', 5, 151, 1, 850.00, '2026-01-16'),
 ('LOJA SWIFT - VILA ROMANA', 'PRÉDIO', 5, 152, 1, 1200.00, '2026-01-17'),
 ('LOJA SWIFT - PERDIZES', 'PRÉDIO', 5, 153, 1, 950.00, '2026-01-18');
 
+-- Unidades industriais da organização METALVALE.
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('FABRICA METALVALE - OSASCO', 'PRÉDIO', 5, 154, 2, 3200.00, '2026-02-11'),
 ('CENTRO DE DISTRIBUICAO METALVALE - GUARULHOS', 'PRÉDIO', 5, 155, 2, 1800.00, '2026-02-12');
 
+-- Perfil operacional das duas unidades industriais.
 INSERT INTO tb_property_operational_profile (property_id, main_water_source) VALUES
 (154, 'CONCESSIONARIA'),
 (155, 'POCO_ARTESIANO');
 
+-- Turnos de funcionamento das unidades 154 e 155.
 INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
 (154, '06:00', '14:00'),
 (154, '14:00', '22:00'),
@@ -995,16 +1007,19 @@ INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
 (155, '08:00', '16:00'),
 (155, '16:00', '23:59:59');
 
+-- Tipos de uso da água das propriedades 151 (comercial), 154 e 155 (industriais).
 INSERT INTO tb_property_water_usage (property_id, water_usage_type_id) VALUES
 (151, 1), (151, 2),
 (154, 1), (154, 2), (154, 3),
 (155, 1), (155, 2), (155, 3);
 
+-- Dias de operação das unidades 151, 154 e 155.
 INSERT INTO tb_property_operation_day (property_id, day_of_week_id) VALUES
 (151, 1), (151, 2), (151, 3), (151, 4), (151, 5),
 (154, 1), (154, 2), (154, 3), (154, 4), (154, 5),
 (155, 1), (155, 2), (155, 3), (155, 4), (155, 5), (155, 6);
 
+-- Vínculo entre usuário e propriedade (os gestores 2 e 15 não têm vínculo).
 INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (1, 1, '2022-01-02'),
 (3, 3, '2022-01-04'),
@@ -1156,10 +1171,12 @@ INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (150, 150, '2022-01-01');
 
 
+-- Gestores vinculados às organizações.
 INSERT INTO tb_user_organization (user_id, organization_id, association_date) VALUES
 (2, 1, '2026-01-15'),
 (15, 2, '2026-02-10');
 
+-- Dispositivos das propriedades 1-150.
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP32-SP-0001', 1, TRUE, '2022-01-02'),
 ('ESP32-SP-0002', 2, TRUE, '2022-01-03'),
@@ -1312,6 +1329,7 @@ INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VAL
 ('ESP32-SP-0149', 149, TRUE, '2022-01-30'),
 ('ESP32-SP-0150', 150, FALSE, '2022-01-31');
 
+-- Dispositivos das unidades comerciais e industriais.
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP32-SP-1000', 151, TRUE, '2026-01-16'),
 ('ESP32-SP-1001', 152, TRUE, '2026-01-17'),
@@ -1407,9 +1425,11 @@ INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_vali
 (9, 7, 8.13,  '2026-01-01', NULL),
 (9, 8, 12.09, '2026-01-01', NULL);
 
+-- Dois reajustes na tarifa 5, para gerar a cadeia de auditoria lida por dw.vw_audit_history_chain.
 UPDATE tb_region_rate SET m3_value = 30.62 WHERE id = 5;
 UPDATE tb_region_rate SET m3_value = 30.57 WHERE id = 5;
 
+-- Hábitos cadastrados por usuário, com frequência semanal de 1 a 7.
 INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (1, 1, 1),
 (2, 2, 2),
@@ -1812,6 +1832,7 @@ INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (199, 3, 7),
 (200, 4, 1);
 
+-- Horário e volume estimado de cada hábito.
 UPDATE tb_user_habit SET start_time = '07:00', end_time = '07:20', estimated_liters = 45.00 WHERE habit_id = 1;
 UPDATE tb_user_habit SET start_time = '09:15', end_time = '09:45', estimated_liters = 80.00 WHERE habit_id = 2;
 UPDATE tb_user_habit SET start_time = '11:15', end_time = '12:15', estimated_liters = 100.00 WHERE habit_id = 3;
@@ -1819,6 +1840,7 @@ UPDATE tb_user_habit SET start_time = '08:30', end_time = '08:45', estimated_lit
 UPDATE tb_user_habit SET start_time = '09:00', end_time = '09:45', estimated_liters = 60.00 WHERE habit_id = 5;
 UPDATE tb_user_habit SET start_time = '10:00', end_time = '10:20', estimated_liters = 25.00 WHERE habit_id = 6;
 
+-- Um dia da semana para cada hábito de usuário.
 INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (1, 2),
 (2, 4),
@@ -2221,6 +2243,7 @@ INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (399, 7),
 (400, 2);
 
+-- Uma conta de água por usuário de teste, de JAN a JUN/2025.
 INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (1, '2025-01-01', 97.50, 13.00),
 (2, '2025-02-01', 150.00, 20.00),
@@ -2423,12 +2446,15 @@ INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (199, '2025-01-01', 142.50, 19.00),
 (200, '2025-02-01', 45.00, 6.00);
 
+-- Cenários de investimento com valores pesquisados (ver pesquisa-cenarios-investimento.md).
 INSERT INTO tb_investment_scenario (organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months, description) VALUES
 (NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'TROCA DE TORNEIRAS E REGISTROS POR MODELOS DE FECHAMENTO AUTOMATICO E BAIXO FLUXO EM TODAS AS UNIDADES DA REDE.'),
 (NULL, 'REUSO DE AGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'ESTACAO DE TRATAMENTO E REAPROVEITAMENTO DE AGUA CINZA PARA LIMPEZA E DESCARGA SANITARIA.'),
 (NULL, 'CAPTACAO DE AGUA DE CHUVA', 70000.00, 18.00, 14000.00, 60.0, 'CAPTACAO E RESERVACAO DE AGUA DE CHUVA PARA USO NAO POTAVEL (LIMPEZA EXTERNA, IRRIGACAO).');
 
+-- Conferência da contagem de registros por tabela.
 SELECT 'tb_region'          AS tabela, COUNT(*) AS registros FROM tb_region
+UNION ALL SELECT 'tb_municipality',     COUNT(*) FROM tb_municipality
 UNION ALL SELECT 'tb_day_of_week',      COUNT(*) FROM tb_day_of_week
 UNION ALL SELECT 'tb_habit',            COUNT(*) FROM tb_habit
 UNION ALL SELECT 'tb_water_usage_type', COUNT(*) FROM tb_water_usage_type

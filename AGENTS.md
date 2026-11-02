@@ -53,6 +53,12 @@ Conforme as regras de negócio documentadas no handbook:
 - use `uq_` para constraints de unicidade;
 - use `sys_` para roles do sistema.
 
+### Idioma e legibilidade do código
+
+- **Todo código deve ser escrito em inglês**: nomes de tabelas, colunas, functions, procedures, triggers, classes, métodos, variáveis e testes. Comentários no código podem ser em português. Vale para este repositório e para qualquer código gerado para os demais repositórios do Delta (por exemplo, a API).
+- Textos mostrados à pessoa usuária (mensagens de erro e respostas da API), comentários e a documentação em Markdown continuam em português, seguindo o padrão já existente.
+- Prefira métodos e functions curtos e com poucos parâmetros (no máximo 3). Quando precisar de mais, agrupe os dados em um objeto (por exemplo, o `IO`/DTO já existente) em vez de uma assinatura longa.
+
 ## 3. Leitura obrigatória do TASK.md
 
 Antes de executar qualquer tarefa, leia integralmente o arquivo `TASK.md` localizado na raiz deste repositório e confirme o escopo, as restrições e os critérios de conclusão ali definidos.
@@ -88,7 +94,14 @@ git pull origin main
 git checkout -b <tipo>/<descricao-da-alteracao>
 ```
 
-Os commits seguem Conventional Commits no formato `<tipo>: descrição`, usando os mesmos tipos permitidos para branches. Evite misturar alterações sem relação no mesmo commit e mantenha cada mudança restrita ao repositório responsável.
+Os commits seguem Conventional Commits no formato `<tipo>: descrição curta`, usando os mesmos tipos permitidos para branches. Evite misturar alterações sem relação no mesmo commit e mantenha cada mudança restrita ao repositório responsável.
+
+### Regras obrigatórias para commits
+
+- **Só commite quando a pessoa desenvolvedora pedir explicitamente.** Não commite por iniciativa própria ao terminar uma tarefa.
+- A mensagem deve ser uma única linha curta no formato `tipo: descrição`. Não adicione corpo, parágrafos explicativos nem lista de mudanças.
+- **Nunca inclua trailers de co-autoria** como `Co-Authored-By: Claude ...` ou qualquer atribuição a ferramentas de IA. O histórico Git pertence exclusivamente à equipe. Essa regra vale para o histórico Git deste repositório.
+- Commits sem relação com a tarefa em andamento não devem ser agrupados no mesmo commit.
 
 ## 5. Padrão de documentação
 

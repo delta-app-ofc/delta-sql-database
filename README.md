@@ -1,4 +1,4 @@
-# 💧 Delta · Banco de Dados Relacional
+# Delta · Banco de Dados Relacional
 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-356ce0?logo=postgresql&logoColor=white)
 ![PL/pgSQL](https://img.shields.io/badge/PL%2FpgSQL-functions%20e%20procedures-4c80ec)
@@ -10,17 +10,17 @@ O banco de dados que guarda a história de cada gota. Aqui ficam os scripts SQL 
 
 **Tags:** `postgresql` · `plpgsql` · `normalizacao-3fn` · `data-mart` · `star-schema` · `window-functions` · `cte-recursiva` · `triggers-de-auditoria` · `backup` · `dau` · `etl` · `iot` · `agua`
 
-## 🧭 Sumário
+## Sumário
 
-- [Visão geral](#-visão-geral)
-- [Estrutura do repositório](#-estrutura-do-repositório)
-- [Como montar o banco](#-como-montar-o-banco)
-- [Requisitos de Modelagem de Dados (MOD-01 a MOD-16)](#-requisitos-de-modelagem-de-dados-mod-01-a-mod-16)
+- [Visão geral](#visão-geral)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Como montar o banco](#como-montar-o-banco)
+- [Requisitos de Modelagem de Dados (MOD-01 a MOD-16)](#requisitos-de-modelagem-de-dados-mod-01-a-mod-16)
 - [Testes de integração](#testes-de-integração)
 - [Testes offline do ETL Python](#testes-offline-do-etl-python)
-- [Repositórios relacionados](#-repositórios-relacionados)
+- [Repositórios relacionados](#repositórios-relacionados)
 
-## 🌊 Visão geral
+## Visão geral
 
 | Camada | O que contém |
 |---|---|
@@ -33,7 +33,7 @@ O banco de dados que guarda a história de cada gota. Aqui ficam os scripts SQL 
 
 A arquitetura completa, do sensor ao relatório de BI, está na [modelagem conceitual](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/anexos/modelagem-conceitual.png).
 
-## 📁 Estrutura do repositório
+## Estrutura do repositório
 
 | Caminho | Conteúdo |
 |---|---|
@@ -55,7 +55,7 @@ A arquitetura completa, do sensor ao relatório de BI, está na [modelagem conce
 | `tests/` | Testes de integração SQL e testes do ETL |
 | `.github/workflows/` | Backup, ETL, testes e análise de qualidade |
 
-## 🛠️ Como montar o banco
+## Como montar o banco
 
 A ordem de execução dos scripts é fixa, e o `setup_db.py` já a segue:
 
@@ -73,7 +73,7 @@ A ordem de execução dos scripts é fixa, e o `setup_db.py` já a segue:
 
 Consulte [DOCKER-HELP.md](DOCKER-HELP.md) para usar o ambiente Docker local.
 
-## 🎓 Requisitos de Modelagem de Dados (MOD-01 a MOD-16)
+## Requisitos de Modelagem de Dados (MOD-01 a MOD-16)
 
 Cada requisito tem uma justificativa própria no handbook e uma evidência neste repositório. O texto consolidado da entrega está em [entrega-modelagem-dados.md](https://github.com/delta-app-ofc/delta-handbook/blob/main/DADOS/SQL/documenta%C3%A7%C3%A3o-requisitos/entrega-modelagem-dados.md).
 
@@ -118,7 +118,7 @@ python -m coverage xml -o reports/coverage.xml
 
 O Sonar mede o ETL Python; os arquivos SQL continuam validados pelo smoke e isolamento PostgreSQL, sem percentual de linhas SQL. Os testes offline não acessam bancos reais nem alteram o workflow de ETL e deploy.
 
-## 🔗 Repositórios relacionados
+## Repositórios relacionados
 
 - [delta-handbook](https://github.com/delta-app-ofc/delta-handbook/tree/main/DADOS): documentação técnica de dados, com a justificativa de cada requisito.
 - [delta-rpa](https://github.com/delta-app-ofc/delta-rpa): RPA que migra o banco legado para este banco normalizado.

@@ -41,4 +41,22 @@ END
 $$;
 ROLLBACK;
 
+BEGIN;
+INSERT INTO tb_region (name) VALUES ('GRANDE_SP');
+
+-- Dois endereços com o mesmo CEP devem ser aceitos (CEP não é único).
+INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude)
+SELECT id, '01001000', 'SAO PAULO', 'SP', -23.550520, -46.633308 FROM tb_region WHERE name = 'GRANDE_SP';
+INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude)
+SELECT id, '01001000', 'SAO PAULO', 'SP', -23.550520, -46.633308 FROM tb_region WHERE name = 'GRANDE_SP';
+
+DO $$
+BEGIN
+    IF (SELECT COUNT(*) FROM tb_address WHERE cep = '01001000') <> 2 THEN
+        RAISE EXCEPTION 'Esperava aceitar dois endereços com o mesmo CEP';
+    END IF;
+END
+$$;
+ROLLBACK;
+
 SELECT 'Schema smoke checks passed.' AS result;

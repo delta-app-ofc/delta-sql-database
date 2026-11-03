@@ -169,6 +169,43 @@ def _load_alerts_history(connection, mongo_client: MongoClient, mongo_db_name: s
     return len(rows)
 
 
+def _load_device_status(connection, mongo_client: MongoClient, mongo_db_name: str) -> int:
+    # Um documento por dispositivo (estado mais recente): le tudo e atualiza pelo mongo_id.
+    rows = []
+    for doc in mongo_client[mongo_db_name]["device_status"].find():
+        rows.append((
+            str(doc["_id"]),
+            doc["device_id"],
+            doc.get("last_ping_at"),
+            doc.get("wifi_signal_rssi"),
+            doc.get("firmware_version"),
+            doc["connectivity_status"],
+            doc.get("battery_level"),
+            doc.get("unavailability_reason"),
+        ))
+
+    if rows:
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                """
+                INSERT INTO stage.device_status
+                    (mongo_id, device_id, last_ping_at, wifi_signal_rssi, firmware_version, connectivity_status, battery_level, unavailability_reason)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (mongo_id) DO UPDATE
+                    SET last_ping_at          = EXCLUDED.last_ping_at
+                      , wifi_signal_rssi      = EXCLUDED.wifi_signal_rssi
+                      , firmware_version      = EXCLUDED.firmware_version
+                      , connectivity_status   = EXCLUDED.connectivity_status
+                      , battery_level         = EXCLUDED.battery_level
+                      , unavailability_reason = EXCLUDED.unavailability_reason;
+                """,
+                rows,
+            )
+        connection.commit()
+
+    return len(rows)
+
+
 def _run_load_chain(connection) -> None:
     with connection.cursor() as cursor:
         cursor.execute("CALL silver.sp_load();")
@@ -229,6 +266,9 @@ def main() -> None:
 
         total_alerts = _load_alerts_history(pg_connection, mongo_app_client, mongo_app_db_name)
         print(f"Linhas gravadas em stage.alerts_history: {total_alerts}")
+
+        total_devices = _load_device_status(pg_connection, mongo_client, mongo_db_name)
+        print(f"Linhas gravadas em stage.device_status: {total_devices}")
 
         _run_load_chain(pg_connection)
         print("silver.sp_load() e gold.sp_load() executados com sucesso.")

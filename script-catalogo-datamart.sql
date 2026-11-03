@@ -152,4 +152,28 @@ INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, bu
 ('dw.vw_ft_residential_efficiency_ranking', 'm3_value', 'NUMERIC', 'Consumo faturado no mês.', 'Medida — unidade: m³. Base do ranking.', 'PUBLICO'),
 ('dw.vw_ft_residential_efficiency_ranking', 'total_value', 'NUMERIC', 'Valor total da fatura.', 'Medida — unidade: R$.', 'PUBLICO');
 
+INSERT INTO tb_data_catalog (table_name, column_name, data_type, description, business_rule, access_level) VALUES
+
+('stage.device_status', 'mongo_id', 'CHAR(24)', 'ObjectId do documento em device_status (MongoDB, db_delta_telemetry).', 'Único — o bi_etl.py faz upsert pelo mongo_id.', 'INTERNO'),
+('stage.device_status', 'device_id', 'VARCHAR(100)', 'Dispositivo físico, igual a tb_device.device_id.', 'Espelha o Mongo sem traduzir nomes.', 'INTERNO'),
+('stage.device_status', 'connectivity_status', 'VARCHAR(50)', 'Estado de conectividade informado pelo firmware (ex.: online, offline).', 'Texto livre da fonte; as views tratam online/connected como online.', 'PUBLICO'),
+('stage.device_status', 'battery_level', 'SMALLINT', 'Nível de bateria de 0 a 100.', 'CHECK entre 0 e 100.', 'PUBLICO'),
+('silver.dm_device_status', 'device_id', 'VARCHAR(100)', 'Dispositivo com o estado mais recente.', 'Snapshot: um registro por dispositivo, o ping mais recente do stage; só entra dispositivo existente em tb_device.', 'INTERNO'),
+('gold.dm_device_status', 'property_key', 'INTEGER', 'Instalação do dispositivo.', 'FK para gold.dm_property.', 'INTERNO'),
+('gold.ft_consumption_reading', 'window_minutes', 'SMALLINT', 'Duração da janela da leitura em minutos.', 'Calculada de window_finished_at - window_started_at; permite o filtro 5/10/15 min do monitoramento.', 'PUBLICO'),
+('gold.dm_property', 'monthly_target_liters', 'NUMERIC(12,2)', 'Meta mensal de consumo da instalação, em litros.', 'Vem de tb_property_goal; sem meta, goal_status = SEM_META.', 'PUBLICO'),
+('tb_property_goal', 'monthly_target_liters', 'NUMERIC(12,2)', 'Meta mensal de consumo da instalação, em litros.', 'CHECK > 0. Base do indicador goal_pct das views dw.', 'PUBLICO'),
+('dw.vw_ft_property_monthly', 'goal_pct', 'NUMERIC', 'Percentual da meta mensal consumido.', 'consumo do mês / meta mensal * 100.', 'PUBLICO'),
+('dw.vw_ft_property_monthly', 'goal_status', 'TEXT', 'Situação frente à meta.', 'OK até 85%, ATENCAO até 100%, CRITICO acima de 100%, SEM_META sem meta.', 'PUBLICO'),
+('dw.vw_ft_property_monthly', 'estimated_savings_value', 'NUMERIC', 'Economia estimada no mês em reais.', 'Litros a menos que o mês anterior (só mês completo) ao custo médio do m³ do mês.', 'PUBLICO'),
+('dw.vw_ft_property_monthly', 'is_complete_month', 'BOOLEAN', 'Indica mês com dados em todos os dias.', 'Variação e economia só são apuradas em mês completo.', 'PUBLICO'),
+('dw.vw_ft_organization_monthly_kpi', 'projected_liters', 'NUMERIC', 'Projeção linear de consumo do mês.', 'consumo atual + (consumo atual - mês anterior), nunca negativo.', 'PUBLICO'),
+('dw.vw_ft_organization_monthly_kpi', 'units_on_target', 'BIGINT', 'Unidades com goal_status OK.', 'Contagem por organização e mês.', 'PUBLICO'),
+('dw.vw_ft_monitoring_hourly', 'reading_hour', 'TIMESTAMP', 'Hora cheia agregada das leituras.', 'Agrupa gold.ft_consumption_reading por hora, instalação e window_minutes.', 'PUBLICO'),
+('dw.vw_ft_device_status', 'is_low_battery', 'BOOLEAN', 'Bateria crítica.', 'battery_level <= 20.', 'PUBLICO'),
+('dw.vw_ft_organization_device_summary', 'devices_online', 'BIGINT', 'Dispositivos pareados e online.', 'is_active e conectividade online/connected.', 'PUBLICO'),
+('dw.vw_ft_leak', 'estimated_loss_liters', 'NUMERIC', 'Litros consumidos durante o vazamento.', 'Soma das leituras entre triggered_at e resolved_at (ou agora, se ativo).', 'PUBLICO'),
+('dw.vw_ft_leak', 'leak_status', 'TEXT', 'Situação do vazamento.', 'ATIVO sem resolved_at; RESOLVIDO caso contrário. Filtra alert_type = vazamento_continuo.', 'PUBLICO'),
+('dw.vw_ft_organization_esg', 'tank_trucks_equivalent', 'NUMERIC', 'Economia anual projetada em caminhões-pipa.', 'litros economizados * 12 / 10.000 L por caminhão.', 'PUBLICO');
 COMMIT;
+

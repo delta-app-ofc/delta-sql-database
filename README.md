@@ -20,6 +20,9 @@ Toda métrica analítica da plataforma web vem de uma view `dw.vw_*`; o front e 
 3. Documente as colunas em `script-catalogo-datamart.sql` e a regra de negócio (limiares, fórmulas) em comentário acima da view.
 4. Rode `python setup_db.py` em um Postgres 16 e confira com `SELECT` nas views.
 
+### Banco já publicado (migração)
+Para quem já tem as camadas criadas por uma versão anterior, rode `script-migration-indicadores.sql` (idempotente): cria `tb_property_goal`, `stage.device_status`, as tabelas/colunas novas de silver e gold, recria as procedures e as views `dw`. Depois execute `CALL silver.sp_load(); CALL gold.sp_load();`. O `script-datamart.sql` continua sendo o script de criação do zero; a migração é gerada a partir dele.
+
 ### Dados de demonstração
 `script-dataload-swift.sql` completa a organização Swift (10 unidades, metas, dispositivos, ~3 meses de consumo, status de dispositivos e alertas) escrevendo no `stage` o que o ETL traria do Mongo, e roda `silver.sp_load()` / `gold.sp_load()`. É idempotente.
 
@@ -27,6 +30,8 @@ Toda métrica analítica da plataforma web vem de uma view `dw.vw_*`; o front e 
 - Meta: `goal_pct = consumo do mês / tb_property_goal.monthly_target_liters * 100`; `OK` ≤ 85%, `ATENCAO` ≤ 100%, `CRITICO` > 100%, `SEM_META` sem meta.
 - Economia estimada: litros a menos que o mês anterior, ao custo médio do m³ do mês; só em mês completo (`is_complete_month`).
 - Projeção do mês: consumo atual + (consumo atual − mês anterior), nunca negativa.
+- Metas: a meta mensal de cada unidade fica em `tb_property_goal` e é alterada por `PUT /delta/property/{id}/goal` (a API recarrega a dimensão de instalações para a view refletir na hora).
+- Impacto por cenário (`vw_ft_investment_impact`): economia anual de água = consumo anual médio dos meses fechados × redução do cenário; 1 caminhão-pipa = 10.000 L; 1 mês de uma família de 4 pessoas = 15.000 L.
 - Vazamento: alertas `vazamento_continuo`; `ATIVO` sem `resolved_at`; perda = soma das leituras durante o alerta.
 
 Observação: `script-roles.sql` pressupõe que os schemas e as roles já existem e que o banco se chama `deltadb`; em um banco totalmente vazio crie-os antes (ou rode sem esse script) para testar localmente.

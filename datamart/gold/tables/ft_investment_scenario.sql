@@ -1,6 +1,7 @@
 CREATE TABLE gold.ft_investment_scenario (
       scenario_key          SERIAL        PRIMARY KEY
     , scenario_id           INTEGER       NOT NULL UNIQUE
+    , organization_id       INTEGER
     , name                  VARCHAR(100)  NOT NULL
     , investment_value      NUMERIC(10,2) NOT NULL
     , reduction_pct         NUMERIC(5,2)  NOT NULL

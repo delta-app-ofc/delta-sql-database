@@ -515,6 +515,7 @@ CREATE TABLE gold.dm_user_preference (
 CREATE TABLE gold.ft_investment_scenario (
       scenario_key          SERIAL        PRIMARY KEY
     , scenario_id           INTEGER       NOT NULL UNIQUE
+    , organization_id       INTEGER
     , name                  VARCHAR(100)  NOT NULL
     , investment_value      NUMERIC(10,2) NOT NULL
     , reduction_pct         NUMERIC(5,2)  NOT NULL
@@ -750,11 +751,12 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
 
-    INSERT INTO gold.ft_investment_scenario (scenario_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
-    SELECT id, name, investment_value, reduction_pct, annual_savings_value, payback_months
+    INSERT INTO gold.ft_investment_scenario (scenario_id, organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months)
+    SELECT id, organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months
     FROM tb_investment_scenario
     ON CONFLICT (scenario_id) DO UPDATE
-        SET name                 = EXCLUDED.name
+        SET organization_id      = EXCLUDED.organization_id
+          , name                 = EXCLUDED.name
           , investment_value     = EXCLUDED.investment_value
           , reduction_pct        = EXCLUDED.reduction_pct
           , annual_savings_value = EXCLUDED.annual_savings_value
@@ -1150,6 +1152,8 @@ SELECT
       END                                                                            AS variation_pct
     , monthly_target_liters
     , goal_pct
+    , ROUND(monthly_target_liters / EXTRACT(DAY FROM (reference_month + INTERVAL '1 month' - INTERVAL '1 day')), 0) AS daily_limit_liters
+    , GREATEST(monthly_target_liters - total_liters, 0)                                                              AS remaining_liters
     , CASE
           WHEN goal_pct IS NULL THEN 'SEM_META'
           WHEN goal_pct <= 85   THEN 'OK'
@@ -1343,6 +1347,48 @@ SELECT
     , k.estimated_savings_value
     , k.is_complete_month
 FROM dw.vw_ft_organization_monthly_kpi k;
+
+-- Impacto de cada cenário de investimento sobre o consumo da organização.
+-- Linha de base: média mensal dos meses fechados * 12. Cenário sem organização vale para todas.
+--   saved_liters_year = linha de base anual * redução do cenário
+--   tank_trucks       = litros economizados / 10.000 L por caminhão-pipa
+--   family_months     = litros economizados / 15.000 L (consumo mensal de uma família de 4 pessoas)
+CREATE OR REPLACE VIEW dw.vw_ft_investment_impact AS
+WITH agg_baseline AS (
+    SELECT
+          organization_id
+        , AVG(total_liters) * 12 AS baseline_annual_liters
+    FROM dw.vw_ft_organization_monthly_kpi
+    WHERE is_complete_month
+    GROUP BY organization_id
+),
+staging_scenario AS (
+    SELECT
+          s.scenario_id
+        , b.organization_id
+        , s.name
+        , s.investment_value
+        , s.reduction_pct
+        , s.annual_savings_value
+        , s.payback_months
+        , b.baseline_annual_liters
+    FROM gold.ft_investment_scenario s
+    JOIN agg_baseline b
+      ON s.organization_id IS NULL OR s.organization_id = b.organization_id
+)
+SELECT
+      scenario_id
+    , organization_id
+    , name
+    , investment_value
+    , reduction_pct
+    , annual_savings_value
+    , payback_months
+    , ROUND(baseline_annual_liters, 0)                                        AS baseline_annual_liters
+    , ROUND(baseline_annual_liters * reduction_pct / 100, 0)                  AS saved_liters_year
+    , ROUND(baseline_annual_liters * reduction_pct / 100 / 10000.0, 1)        AS tank_trucks_equivalent
+    , ROUND(baseline_annual_liters * reduction_pct / 100 / 15000.0, 1)        AS family_months_equivalent
+FROM staging_scenario;
 
 GRANT USAGE ON SCHEMA stage, silver, gold, dw TO sys_data_engineer;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA stage, silver, gold TO sys_data_engineer;

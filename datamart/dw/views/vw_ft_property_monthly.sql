@@ -63,6 +63,8 @@ SELECT
       END                                                                            AS variation_pct
     , monthly_target_liters
     , goal_pct
+    , ROUND(monthly_target_liters / EXTRACT(DAY FROM (reference_month + INTERVAL '1 month' - INTERVAL '1 day')), 0) AS daily_limit_liters
+    , GREATEST(monthly_target_liters - total_liters, 0)                                                              AS remaining_liters
     , CASE
           WHEN goal_pct IS NULL THEN 'SEM_META'
           WHEN goal_pct <= 85   THEN 'OK'

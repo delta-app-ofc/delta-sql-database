@@ -11,5 +11,6 @@ SELECT
     , k.units_on_target
     , k.avg_goal_pct
     , k.estimated_savings_value
+    , k.is_complete_month
 FROM dw.vw_ft_organization_monthly_kpi k;
 

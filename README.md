@@ -21,6 +21,8 @@ Toda métrica analítica da plataforma web vem de uma view `dw.vw_*`; o front e 
 4. Rode `python setup_db.py` em um Postgres 16 e confira com `SELECT` nas views.
 
 ### Banco já publicado (migração)
+Use o `migrate_db.py` (lê o mesmo `.env` do `setup_db.py`): `python migrate_db.py --dry-run` mostra o banco alvo e o plano, `python migrate_db.py` aplica a migração e recarrega silver/gold, e `--seed-swift` carrega também a demonstração. Ele não apaga dados e recusa bancos sem as camadas (rode antes o `setup_db.py`). O que ele executa:
+
 Para quem já tem as camadas criadas por uma versão anterior, rode `script-migration-indicadores.sql` (idempotente): cria `tb_property_goal`, `stage.device_status`, as tabelas/colunas novas de silver e gold, recria as procedures e as views `dw`. Depois execute `CALL silver.sp_load(); CALL gold.sp_load();`. O `script-datamart.sql` continua sendo o script de criação do zero; a migração é gerada a partir dele.
 
 ### Dados de demonstração

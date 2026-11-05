@@ -20,10 +20,8 @@ Toda métrica analítica da plataforma web vem de uma view `dw.vw_*`; o front e 
 3. Documente as colunas em `script-catalogo-datamart.sql` e a regra de negócio (limiares, fórmulas) em comentário acima da view.
 4. Rode `python setup_db.py` em um Postgres 16 e confira com `SELECT` nas views.
 
-### Banco já publicado (migração)
-Use o `migrate_db.py` (lê o mesmo `.env` do `setup_db.py`): `python migrate_db.py --dry-run` mostra o banco alvo e o plano, `python migrate_db.py` aplica a migração e recarrega silver/gold, e `--seed-swift` carrega também a demonstração. Ele não apaga dados e recusa bancos sem as camadas (rode antes o `setup_db.py`). O que ele executa:
-
-Para quem já tem as camadas criadas por uma versão anterior, rode `script-migration-indicadores.sql` (idempotente): cria `tb_property_goal`, `stage.device_status`, as tabelas/colunas novas de silver e gold, recria as procedures e as views `dw`. Depois execute `CALL silver.sp_load(); CALL gold.sp_load();`. O `script-datamart.sql` continua sendo o script de criação do zero; a migração é gerada a partir dele.
+### Atualização de um banco já existente
+Para quem já tem as camadas criadas por uma versão anterior, execute manualmente `script-migration-indicadores.sql` (idempotente): cria `tb_property_goal`, `stage.device_status`, as tabelas/colunas novas de silver e gold, recria as procedures e as views `dw`. Depois execute `CALL silver.sp_load(); CALL gold.sp_load();`. O `script-datamart.sql` continua sendo o script de criação do zero; a migração é gerada a partir dele. Confira o banco alvo antes de aplicar a migração.
 
 ### Dados de demonstração
 `script-dataload-swift.sql` completa a organização Swift (10 unidades, metas, dispositivos, ~3 meses de consumo, status de dispositivos e alertas) escrevendo no `stage` o que o ETL traria do Mongo, e roda `silver.sp_load()` / `gold.sp_load()`. É idempotente.

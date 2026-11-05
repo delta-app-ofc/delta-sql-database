@@ -419,6 +419,7 @@ INSERT INTO tb_property_classification (name, group_name) VALUES
     ('COMERCIAL_ENTIDADE_ASSISTENCIA_SOCIAL', 'COMERCIAL'),
     ('PUBLICA_COM_CONTRATO', 'COMERCIAL');
 
+-- Dias da semana (ids 1-7), usados por hábitos e dias de operação.
 INSERT INTO tb_day_of_week (name) VALUES
     ('SEGUNDA'),
     ('TERÇA'),
@@ -428,6 +429,7 @@ INSERT INTO tb_day_of_week (name) VALUES
     ('SÁBADO'),
     ('DOMINGO');
 
+-- Catálogo de hábitos de consumo de água, agrupados por categoria.
 INSERT INTO tb_habit (name, category, description) VALUES
     ('BANHO LONGO',   'HIGIENE E CUIDADOS', 'HÁBITO DE TOMAR BANHOS COM DURAÇÃO SUPERIOR A 15 MINUTOS'),
     ('LAVAR QUINTAL', 'LIMPEZA',            'LAVAGEM DE ÁREAS EXTERNAS COMO QUINTAL E CALÇADA COM MANGUEIRA'),
@@ -444,195 +446,169 @@ INSERT INTO tb_water_usage_type (name, description) VALUES
     ('PROCESSO_PRODUTIVO',  'USO DA ÁGUA COMO INSUMO DIRETO NO PROCESSO PRODUTIVO DA INSTALAÇÃO'),
     ('IRRIGACAO',           'USO DA ÁGUA PARA IRRIGAÇÃO DE ÁREAS VERDES DA INSTALAÇÃO');
 
-INSERT INTO tb_address (region_id, cep, city, state) VALUES
-(1, '01000000', 'São Paulo', 'SP'),
-(1, '01000001', 'São Paulo', 'SP'),
-(1, '01000002', 'São Paulo', 'SP'),
-(1, '01000003', 'São Paulo', 'SP'),
-(1, '01000004', 'São Paulo', 'SP'),
-(1, '01000005', 'São Paulo', 'SP'),
-(1, '01000006', 'São Paulo', 'SP'),
-(1, '01000007', 'São Paulo', 'SP'),
-(1, '01000008', 'São Paulo', 'SP'),
-(1, '01000009', 'São Paulo', 'SP'),
-(1, '01000010', 'São Paulo', 'SP'),
-(1, '01000011', 'São Paulo', 'SP'),
-(1, '01000012', 'São Paulo', 'SP'),
-(1, '01000013', 'São Paulo', 'SP'),
-(1, '01000014', 'São Paulo', 'SP'),
-(1, '01000015', 'São Paulo', 'SP'),
-(1, '01000016', 'São Paulo', 'SP'),
-(1, '01000017', 'São Paulo', 'SP'),
-(1, '01000018', 'São Paulo', 'SP'),
-(1, '01000019', 'São Paulo', 'SP'),
-(2, '02000000', 'Lins', 'SP'),
-(2, '02000001', 'Lins', 'SP'),
-(2, '02000002', 'Lins', 'SP'),
-(2, '02000003', 'Lins', 'SP'),
-(2, '02000004', 'Lins', 'SP'),
-(2, '02000005', 'Lins', 'SP'),
-(2, '02000006', 'Lins', 'SP'),
-(2, '02000007', 'Lins', 'SP'),
-(2, '02000008', 'Lins', 'SP'),
-(2, '02000009', 'Lins', 'SP'),
-(2, '02000010', 'Lins', 'SP'),
-(2, '02000011', 'Lins', 'SP'),
-(2, '02000012', 'Lins', 'SP'),
-(2, '02000013', 'Lins', 'SP'),
-(2, '02000014', 'Lins', 'SP'),
-(2, '02000015', 'Lins', 'SP'),
-(2, '02000016', 'Lins', 'SP'),
-(2, '02000017', 'Lins', 'SP'),
-(2, '02000018', 'Lins', 'SP'),
-(2, '02000019', 'Lins', 'SP'),
-(3, '03000000', 'Presidente Prudente', 'SP'),
-(3, '03000001', 'Presidente Prudente', 'SP'),
-(3, '03000002', 'Presidente Prudente', 'SP'),
-(3, '03000003', 'Presidente Prudente', 'SP'),
-(3, '03000004', 'Presidente Prudente', 'SP'),
-(3, '03000005', 'Presidente Prudente', 'SP'),
-(3, '03000006', 'Presidente Prudente', 'SP'),
-(3, '03000007', 'Presidente Prudente', 'SP'),
-(3, '03000008', 'Presidente Prudente', 'SP'),
-(3, '03000009', 'Presidente Prudente', 'SP'),
-(3, '03000010', 'Presidente Prudente', 'SP'),
-(3, '03000011', 'Presidente Prudente', 'SP'),
-(3, '03000012', 'Presidente Prudente', 'SP'),
-(3, '03000013', 'Presidente Prudente', 'SP'),
-(3, '03000014', 'Presidente Prudente', 'SP'),
-(3, '03000015', 'Presidente Prudente', 'SP'),
-(3, '03000016', 'Presidente Prudente', 'SP'),
-(3, '03000017', 'Presidente Prudente', 'SP'),
-(3, '03000018', 'Presidente Prudente', 'SP'),
-(3, '03000019', 'Presidente Prudente', 'SP'),
-(4, '04000000', 'Adamantina', 'SP'),
-(4, '04000001', 'Adamantina', 'SP'),
-(4, '04000002', 'Adamantina', 'SP'),
-(4, '04000003', 'Adamantina', 'SP'),
-(4, '04000004', 'Adamantina', 'SP'),
-(4, '04000005', 'Adamantina', 'SP'),
-(4, '04000006', 'Adamantina', 'SP'),
-(4, '04000007', 'Adamantina', 'SP'),
-(4, '04000008', 'Adamantina', 'SP'),
-(4, '04000009', 'Adamantina', 'SP'),
-(4, '04000010', 'Adamantina', 'SP'),
-(4, '04000011', 'Adamantina', 'SP'),
-(4, '04000012', 'Adamantina', 'SP'),
-(4, '04000013', 'Adamantina', 'SP'),
-(4, '04000014', 'Adamantina', 'SP'),
-(4, '04000015', 'Adamantina', 'SP'),
-(4, '04000016', 'Adamantina', 'SP'),
-(4, '04000017', 'Adamantina', 'SP'),
-(4, '04000018', 'Adamantina', 'SP'),
-(4, '04000019', 'Adamantina', 'SP'),
-(5, '05000000', 'Bragança Paulista', 'SP'),
-(5, '05000001', 'Bragança Paulista', 'SP'),
-(5, '05000002', 'Bragança Paulista', 'SP'),
-(5, '05000003', 'Bragança Paulista', 'SP'),
-(5, '05000004', 'Bragança Paulista', 'SP'),
-(5, '05000005', 'Bragança Paulista', 'SP'),
-(5, '05000006', 'Bragança Paulista', 'SP'),
-(5, '05000007', 'Bragança Paulista', 'SP'),
-(5, '05000008', 'Bragança Paulista', 'SP'),
-(5, '05000009', 'Bragança Paulista', 'SP'),
-(5, '05000010', 'Bragança Paulista', 'SP'),
-(5, '05000011', 'Bragança Paulista', 'SP'),
-(5, '05000012', 'Bragança Paulista', 'SP'),
-(5, '05000013', 'Bragança Paulista', 'SP'),
-(5, '05000014', 'Bragança Paulista', 'SP'),
-(5, '05000015', 'Bragança Paulista', 'SP'),
-(5, '05000016', 'Bragança Paulista', 'SP'),
-(5, '05000017', 'Bragança Paulista', 'SP'),
-(5, '05000018', 'Bragança Paulista', 'SP'),
-(5, '05000019', 'Bragança Paulista', 'SP'),
-(1, '01000020', 'São Paulo', 'SP'),
-(1, '01000021', 'São Paulo', 'SP'),
-(1, '01000022', 'São Paulo', 'SP'),
-(1, '01000023', 'São Paulo', 'SP'),
-(1, '01000024', 'São Paulo', 'SP'),
-(1, '01000025', 'São Paulo', 'SP'),
-(1, '01000026', 'São Paulo', 'SP'),
-(1, '01000027', 'São Paulo', 'SP'),
-(1, '01000028', 'São Paulo', 'SP'),
-(1, '01000029', 'São Paulo', 'SP'),
-(2, '02000020', 'Lins', 'SP'),
-(2, '02000021', 'Lins', 'SP'),
-(2, '02000022', 'Lins', 'SP'),
-(2, '02000023', 'Lins', 'SP'),
-(2, '02000024', 'Lins', 'SP'),
-(2, '02000025', 'Lins', 'SP'),
-(2, '02000026', 'Lins', 'SP'),
-(2, '02000027', 'Lins', 'SP'),
-(2, '02000028', 'Lins', 'SP'),
-(2, '02000029', 'Lins', 'SP'),
-(3, '03000020', 'Presidente Prudente', 'SP'),
-(3, '03000021', 'Presidente Prudente', 'SP'),
-(3, '03000022', 'Presidente Prudente', 'SP'),
-(3, '03000023', 'Presidente Prudente', 'SP'),
-(3, '03000024', 'Presidente Prudente', 'SP'),
-(3, '03000025', 'Presidente Prudente', 'SP'),
-(3, '03000026', 'Presidente Prudente', 'SP'),
-(3, '03000027', 'Presidente Prudente', 'SP'),
-(3, '03000028', 'Presidente Prudente', 'SP'),
-(3, '03000029', 'Presidente Prudente', 'SP'),
-(4, '04000020', 'Adamantina', 'SP'),
-(4, '04000021', 'Adamantina', 'SP'),
-(4, '04000022', 'Adamantina', 'SP'),
-(4, '04000023', 'Adamantina', 'SP'),
-(4, '04000024', 'Adamantina', 'SP'),
-(4, '04000025', 'Adamantina', 'SP'),
-(4, '04000026', 'Adamantina', 'SP'),
-(4, '04000027', 'Adamantina', 'SP'),
-(4, '04000028', 'Adamantina', 'SP'),
-(4, '04000029', 'Adamantina', 'SP'),
-(5, '05000020', 'Bragança Paulista', 'SP'),
-(5, '05000021', 'Bragança Paulista', 'SP'),
-(5, '05000022', 'Bragança Paulista', 'SP'),
-(5, '05000023', 'Bragança Paulista', 'SP'),
-(5, '05000024', 'Bragança Paulista', 'SP'),
-(5, '05000025', 'Bragança Paulista', 'SP'),
-(5, '05000026', 'Bragança Paulista', 'SP'),
-(5, '05000027', 'Bragança Paulista', 'SP'),
-(5, '05000028', 'Bragança Paulista', 'SP'),
-(5, '05000029', 'Bragança Paulista', 'SP');
+-- Endereços das propriedades base (1-150), com um CEP plausível por região.
+INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
+(1, '01000000', 'São Paulo', 'SP', -23.566500, -46.641300),
+(1, '01000001', 'São Paulo', 'SP', -23.562500, -46.637300),
+(1, '01000002', 'São Paulo', 'SP', -23.558500, -46.633300),
+(1, '01000003', 'São Paulo', 'SP', -23.554500, -46.629300),
+(1, '01000004', 'São Paulo', 'SP', -23.550500, -46.625300),
+(1, '01000005', 'São Paulo', 'SP', -23.546500, -46.621300),
+(1, '01000006', 'São Paulo', 'SP', -23.542500, -46.645300),
+(1, '01000007', 'São Paulo', 'SP', -23.538500, -46.641300),
+(1, '01000008', 'São Paulo', 'SP', -23.534500, -46.637300),
+(1, '01000009', 'São Paulo', 'SP', -23.570500, -46.633300),
+(1, '01000010', 'São Paulo', 'SP', -23.566500, -46.629300),
+(1, '01000011', 'São Paulo', 'SP', -23.562500, -46.625300),
+(1, '01000012', 'São Paulo', 'SP', -23.558500, -46.621300),
+(1, '01000013', 'São Paulo', 'SP', -23.554500, -46.645300),
+(1, '01000014', 'São Paulo', 'SP', -23.550500, -46.641300),
+(1, '01000015', 'São Paulo', 'SP', -23.546500, -46.637300),
+(1, '01000016', 'São Paulo', 'SP', -23.542500, -46.633300),
+(1, '01000017', 'São Paulo', 'SP', -23.538500, -46.629300),
+(1, '01000018', 'São Paulo', 'SP', -23.534500, -46.625300),
+(1, '01000019', 'São Paulo', 'SP', -23.570500, -46.621300),
+(2, '02000000', 'Lins', 'SP', -21.694600, -49.754400),
+(2, '02000001', 'Lins', 'SP', -21.690600, -49.750400),
+(2, '02000002', 'Lins', 'SP', -21.686600, -49.746400),
+(2, '02000003', 'Lins', 'SP', -21.682600, -49.742400),
+(2, '02000004', 'Lins', 'SP', -21.678600, -49.738400),
+(2, '02000005', 'Lins', 'SP', -21.674600, -49.734400),
+(2, '02000006', 'Lins', 'SP', -21.670600, -49.730400),
+(2, '02000007', 'Lins', 'SP', -21.666600, -49.754400),
+(2, '02000008', 'Lins', 'SP', -21.662600, -49.750400),
+(2, '02000009', 'Lins', 'SP', -21.698600, -49.746400),
+(2, '02000010', 'Lins', 'SP', -21.694600, -49.742400),
+(2, '02000011', 'Lins', 'SP', -21.690600, -49.738400),
+(2, '02000012', 'Lins', 'SP', -21.686600, -49.734400),
+(2, '02000013', 'Lins', 'SP', -21.682600, -49.730400),
+(2, '02000014', 'Lins', 'SP', -21.678600, -49.754400),
+(2, '02000015', 'Lins', 'SP', -21.674600, -49.750400),
+(2, '02000016', 'Lins', 'SP', -21.670600, -49.746400),
+(2, '02000017', 'Lins', 'SP', -21.666600, -49.742400),
+(2, '02000018', 'Lins', 'SP', -21.662600, -49.738400),
+(2, '02000019', 'Lins', 'SP', -21.698600, -49.734400),
+(3, '03000000', 'Presidente Prudente', 'SP', -22.136700, -51.380500),
+(3, '03000001', 'Presidente Prudente', 'SP', -22.132700, -51.404500),
+(3, '03000002', 'Presidente Prudente', 'SP', -22.128700, -51.400500),
+(3, '03000003', 'Presidente Prudente', 'SP', -22.124700, -51.396500),
+(3, '03000004', 'Presidente Prudente', 'SP', -22.120700, -51.392500),
+(3, '03000005', 'Presidente Prudente', 'SP', -22.116700, -51.388500),
+(3, '03000006', 'Presidente Prudente', 'SP', -22.112700, -51.384500),
+(3, '03000007', 'Presidente Prudente', 'SP', -22.108700, -51.380500),
+(3, '03000008', 'Presidente Prudente', 'SP', -22.104700, -51.404500),
+(3, '03000009', 'Presidente Prudente', 'SP', -22.140700, -51.400500),
+(3, '03000010', 'Presidente Prudente', 'SP', -22.136700, -51.396500),
+(3, '03000011', 'Presidente Prudente', 'SP', -22.132700, -51.392500),
+(3, '03000012', 'Presidente Prudente', 'SP', -22.128700, -51.388500),
+(3, '03000013', 'Presidente Prudente', 'SP', -22.124700, -51.384500),
+(3, '03000014', 'Presidente Prudente', 'SP', -22.120700, -51.380500),
+(3, '03000015', 'Presidente Prudente', 'SP', -22.116700, -51.404500),
+(3, '03000016', 'Presidente Prudente', 'SP', -22.112700, -51.400500),
+(3, '03000017', 'Presidente Prudente', 'SP', -22.108700, -51.396500),
+(3, '03000018', 'Presidente Prudente', 'SP', -22.104700, -51.392500),
+(3, '03000019', 'Presidente Prudente', 'SP', -22.140700, -51.388500),
+(4, '04000000', 'Adamantina', 'SP', -21.698000, -51.060900),
+(4, '04000001', 'Adamantina', 'SP', -21.694000, -51.056900),
+(4, '04000002', 'Adamantina', 'SP', -21.690000, -51.080900),
+(4, '04000003', 'Adamantina', 'SP', -21.686000, -51.076900),
+(4, '04000004', 'Adamantina', 'SP', -21.682000, -51.072900),
+(4, '04000005', 'Adamantina', 'SP', -21.678000, -51.068900),
+(4, '04000006', 'Adamantina', 'SP', -21.674000, -51.064900),
+(4, '04000007', 'Adamantina', 'SP', -21.670000, -51.060900),
+(4, '04000008', 'Adamantina', 'SP', -21.666000, -51.056900),
+(4, '04000009', 'Adamantina', 'SP', -21.702000, -51.080900),
+(4, '04000010', 'Adamantina', 'SP', -21.698000, -51.076900),
+(4, '04000011', 'Adamantina', 'SP', -21.694000, -51.072900),
+(4, '04000012', 'Adamantina', 'SP', -21.690000, -51.068900),
+(4, '04000013', 'Adamantina', 'SP', -21.686000, -51.064900),
+(4, '04000014', 'Adamantina', 'SP', -21.682000, -51.060900),
+(4, '04000015', 'Adamantina', 'SP', -21.678000, -51.056900),
+(4, '04000016', 'Adamantina', 'SP', -21.674000, -51.080900),
+(4, '04000017', 'Adamantina', 'SP', -21.670000, -51.076900),
+(4, '04000018', 'Adamantina', 'SP', -21.666000, -51.072900),
+(4, '04000019', 'Adamantina', 'SP', -21.702000, -51.068900),
+(5, '05000000', 'Bragança Paulista', 'SP', -22.968700, -46.537900),
+(5, '05000001', 'Bragança Paulista', 'SP', -22.964700, -46.533900),
+(5, '05000002', 'Bragança Paulista', 'SP', -22.960700, -46.529900),
+(5, '05000003', 'Bragança Paulista', 'SP', -22.956700, -46.553900),
+(5, '05000004', 'Bragança Paulista', 'SP', -22.952700, -46.549900),
+(5, '05000005', 'Bragança Paulista', 'SP', -22.948700, -46.545900),
+(5, '05000006', 'Bragança Paulista', 'SP', -22.944700, -46.541900),
+(5, '05000007', 'Bragança Paulista', 'SP', -22.940700, -46.537900),
+(5, '05000008', 'Bragança Paulista', 'SP', -22.936700, -46.533900),
+(5, '05000009', 'Bragança Paulista', 'SP', -22.972700, -46.529900),
+(5, '05000010', 'Bragança Paulista', 'SP', -22.968700, -46.553900),
+(5, '05000011', 'Bragança Paulista', 'SP', -22.964700, -46.549900),
+(5, '05000012', 'Bragança Paulista', 'SP', -22.960700, -46.545900),
+(5, '05000013', 'Bragança Paulista', 'SP', -22.956700, -46.541900),
+(5, '05000014', 'Bragança Paulista', 'SP', -22.952700, -46.537900),
+(5, '05000015', 'Bragança Paulista', 'SP', -22.948700, -46.533900),
+(5, '05000016', 'Bragança Paulista', 'SP', -22.944700, -46.529900),
+(5, '05000017', 'Bragança Paulista', 'SP', -22.940700, -46.553900),
+(5, '05000018', 'Bragança Paulista', 'SP', -22.936700, -46.549900),
+(5, '05000019', 'Bragança Paulista', 'SP', -22.972700, -46.545900),
+(1, '01000020', 'São Paulo', 'SP', -23.566500, -46.633300),
+(1, '01000021', 'São Paulo', 'SP', -23.562500, -46.629300),
+(1, '01000022', 'São Paulo', 'SP', -23.558500, -46.625300),
+(1, '01000023', 'São Paulo', 'SP', -23.554500, -46.621300),
+(1, '01000024', 'São Paulo', 'SP', -23.550500, -46.645300),
+(1, '01000025', 'São Paulo', 'SP', -23.546500, -46.641300),
+(1, '01000026', 'São Paulo', 'SP', -23.542500, -46.637300),
+(1, '01000027', 'São Paulo', 'SP', -23.538500, -46.633300),
+(1, '01000028', 'São Paulo', 'SP', -23.534500, -46.629300),
+(1, '01000029', 'São Paulo', 'SP', -23.570500, -46.625300),
+(2, '02000020', 'Lins', 'SP', -21.694600, -49.730400),
+(2, '02000021', 'Lins', 'SP', -21.690600, -49.754400),
+(2, '02000022', 'Lins', 'SP', -21.686600, -49.750400),
+(2, '02000023', 'Lins', 'SP', -21.682600, -49.746400),
+(2, '02000024', 'Lins', 'SP', -21.678600, -49.742400),
+(2, '02000025', 'Lins', 'SP', -21.674600, -49.738400),
+(2, '02000026', 'Lins', 'SP', -21.670600, -49.734400),
+(2, '02000027', 'Lins', 'SP', -21.666600, -49.730400),
+(2, '02000028', 'Lins', 'SP', -21.662600, -49.754400),
+(2, '02000029', 'Lins', 'SP', -21.698600, -49.750400),
+(3, '03000020', 'Presidente Prudente', 'SP', -22.136700, -51.396500),
+(3, '03000021', 'Presidente Prudente', 'SP', -22.132700, -51.392500),
+(3, '03000022', 'Presidente Prudente', 'SP', -22.128700, -51.388500),
+(3, '03000023', 'Presidente Prudente', 'SP', -22.124700, -51.384500),
+(3, '03000024', 'Presidente Prudente', 'SP', -22.120700, -51.380500),
+(3, '03000025', 'Presidente Prudente', 'SP', -22.116700, -51.404500),
+(3, '03000026', 'Presidente Prudente', 'SP', -22.112700, -51.400500),
+(3, '03000027', 'Presidente Prudente', 'SP', -22.108700, -51.396500),
+(3, '03000028', 'Presidente Prudente', 'SP', -22.104700, -51.392500),
+(3, '03000029', 'Presidente Prudente', 'SP', -22.140700, -51.388500),
+(4, '04000020', 'Adamantina', 'SP', -21.698000, -51.060900),
+(4, '04000021', 'Adamantina', 'SP', -21.694000, -51.056900),
+(4, '04000022', 'Adamantina', 'SP', -21.690000, -51.080900),
+(4, '04000023', 'Adamantina', 'SP', -21.686000, -51.076900),
+(4, '04000024', 'Adamantina', 'SP', -21.682000, -51.072900),
+(4, '04000025', 'Adamantina', 'SP', -21.678000, -51.068900),
+(4, '04000026', 'Adamantina', 'SP', -21.674000, -51.064900),
+(4, '04000027', 'Adamantina', 'SP', -21.670000, -51.060900),
+(4, '04000028', 'Adamantina', 'SP', -21.666000, -51.056900),
+(4, '04000029', 'Adamantina', 'SP', -21.702000, -51.080900),
+(5, '05000020', 'Bragança Paulista', 'SP', -22.968700, -46.549900),
+(5, '05000021', 'Bragança Paulista', 'SP', -22.964700, -46.545900),
+(5, '05000022', 'Bragança Paulista', 'SP', -22.960700, -46.541900),
+(5, '05000023', 'Bragança Paulista', 'SP', -22.956700, -46.537900),
+(5, '05000024', 'Bragança Paulista', 'SP', -22.952700, -46.533900),
+(5, '05000025', 'Bragança Paulista', 'SP', -22.948700, -46.529900),
+(5, '05000026', 'Bragança Paulista', 'SP', -22.944700, -46.553900),
+(5, '05000027', 'Bragança Paulista', 'SP', -22.940700, -46.549900),
+(5, '05000028', 'Bragança Paulista', 'SP', -22.936700, -46.545900),
+(5, '05000029', 'Bragança Paulista', 'SP', -22.972700, -46.541900);
 
-INSERT INTO tb_address (region_id, cep, city, state) VALUES
-(1, '01100001', 'São Paulo', 'SP'),
-(1, '01100002', 'São Paulo', 'SP'),
-(1, '01100003', 'São Paulo', 'SP'),
-(1, '01100004', 'Osasco', 'SP'),
-(1, '01100005', 'Osasco', 'SP'),
-(1, '01100006', 'Guarulhos', 'SP');
+-- Seis endereços comerciais/industriais (as propriedades 151 a 155 usam os cinco primeiros).
+INSERT INTO tb_address (region_id, cep, city, state, latitude, longitude) VALUES
+(1, '01100001', 'São Paulo', 'SP', -23.566500, -46.629300),
+(1, '01100002', 'São Paulo', 'SP', -23.562500, -46.625300),
+(1, '01100003', 'São Paulo', 'SP', -23.558500, -46.621300),
+(1, '01100004', 'Osasco', 'SP', -23.536900, -46.803700),
+(1, '01100005', 'Osasco', 'SP', -23.532900, -46.799700),
+(1, '01100006', 'Guarulhos', 'SP', -23.449800, -46.537300);
 
--- Coordenadas de teste: centro de cada região, com pequeno deslocamento por id
--- para os endereços não ficarem todos no mesmo ponto. Osasco e Guarulhos usam o centro da própria cidade.
-UPDATE tb_address a
-SET latitude  = ROUND((c.lat  + ((a.id % 10) - 5) * 0.004)::NUMERIC, 6)
-  , longitude = ROUND((c.lon  + ((a.id % 7)  - 3) * 0.004)::NUMERIC, 6)
-FROM (
-    SELECT a2.id,
-           CASE
-               WHEN a2.city = 'Osasco'    THEN -23.5329
-               WHEN a2.city = 'Guarulhos' THEN -23.4538
-               WHEN a2.region_id = 1     THEN -23.5505
-               WHEN a2.region_id = 2     THEN -21.6786
-               WHEN a2.region_id = 3     THEN -22.1207
-               WHEN a2.region_id = 4     THEN -21.6820
-               ELSE                           -22.9527
-           END AS lat,
-           CASE
-               WHEN a2.city = 'Osasco'    THEN -46.7917
-               WHEN a2.city = 'Guarulhos' THEN -46.5333
-               WHEN a2.region_id = 1     THEN -46.6333
-               WHEN a2.region_id = 2     THEN -49.7424
-               WHEN a2.region_id = 3     THEN -51.3925
-               WHEN a2.region_id = 4     THEN -51.0689
-               ELSE                           -46.5419
-           END AS lon
-    FROM tb_address a2
-) c
-WHERE c.id = a.id;
-
+-- 200 usuários de teste. A senha é um hash Argon2id, nunca texto puro.
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager) VALUES
 ('BRUNO SANTOS 1', 'BRUNO.SANTOS1@HOTMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91001-1001', '1985-01-02', '2022-01-02', TRUE, FALSE, FALSE),
 ('CARLA OLIVEIRA 2', 'CARLA.OLIVEIRA2@OUTLOOK.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91002-1002', '1985-01-03', '2022-01-03', TRUE, FALSE, TRUE),
@@ -835,6 +811,7 @@ INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date
 ('WAGNER CARDOSO 199', 'WAGNER.CARDOSO199@UOL.COM.BR', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91199-1199', '1985-07-19', '2022-07-19', TRUE, FALSE, FALSE),
 ('CAMILA SILVA 200', 'CAMILA.SILVA200@GMAIL.COM', '$argon2id$v=19$m=19456,t=2,p=1$F2C3QLt8Gi2BY4W6St9HRw$QARv/hXWbdzjcGNyBQjV20ppo3Qxx+rOAV6RUtKgWq0', '(11) 91200-1200', '1985-07-20', '2022-07-20', TRUE, FALSE, FALSE);
 
+-- Administrador fixo do sistema.
 INSERT INTO tb_user (name, email, password, phone, birth_date, registration_date, is_active, is_admin, is_manager)
 VALUES (
     'ADMINISTRADOR DO SISTEMA',
@@ -847,11 +824,13 @@ VALUES (
     TRUE,
     FALSE
 );
+-- Organizações: varejo, indústria e condomínio.
 INSERT INTO tb_organization (corporate_name, trade_name, cnpj, business_segment, declared_unit_count, registration_date) VALUES
 ('SWIFT DISTRIBUIDORA DE ALIMENTOS LTDA', 'SWIFT DISTRIBUIDORA', '12345678000190', 'VAREJO', 10, '2026-01-15'),
 ('INDUSTRIA METALURGICA VALE LTDA', 'METALVALE', '23456789000101', 'INDUSTRIA', 3, '2026-02-10'),
 ('CONDOMINIO RESIDENCIAL JARDIM DAS FLORES', 'JARDIM DAS FLORES', '34567890000112', 'CONDOMINIO', 1, '2026-03-05');
 
+-- 150 propriedades base (1-150).
 INSERT INTO tb_property (name, type, classification_id, address_id, registration_date) VALUES
 ('RESIDENCIA DA FAMILIA SANTOS 1', 'CASA', 1, 1, '2022-01-02'),
 ('EDIFICIO JARDIM DAS ACACIAS 2', 'PRÉDIO', 1, 2, '2022-01-03'),
@@ -1004,19 +983,23 @@ INSERT INTO tb_property (name, type, classification_id, address_id, registration
 ('RESIDENCIA DA FAMILIA LIMA 149', 'CASA', 1, 149, '2022-05-30'),
 ('EDIFICIO AURORA 150', 'PRÉDIO', 1, 150, '2022-05-31');
 
+-- Unidades comerciais da organização SWIFT.
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('LOJA SWIFT - VILA LEOPOLDINA', 'PRÉDIO', 5, 151, 1, 850.00, '2026-01-16'),
 ('LOJA SWIFT - VILA ROMANA', 'PRÉDIO', 5, 152, 1, 1200.00, '2026-01-17'),
 ('LOJA SWIFT - PERDIZES', 'PRÉDIO', 5, 153, 1, 950.00, '2026-01-18');
 
+-- Unidades industriais da organização METALVALE.
 INSERT INTO tb_property (name, type, classification_id, address_id, organization_id, built_area_m2, registration_date) VALUES
 ('FABRICA METALVALE - OSASCO', 'PRÉDIO', 5, 154, 2, 3200.00, '2026-02-11'),
 ('CENTRO DE DISTRIBUICAO METALVALE - GUARULHOS', 'PRÉDIO', 5, 155, 2, 1800.00, '2026-02-12');
 
+-- Perfil operacional das duas unidades industriais.
 INSERT INTO tb_property_operational_profile (property_id, main_water_source) VALUES
 (154, 'CONCESSIONARIA'),
 (155, 'POCO_ARTESIANO');
 
+-- Turnos de funcionamento das unidades 154 e 155.
 INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
 (154, '06:00', '14:00'),
 (154, '14:00', '22:00'),
@@ -1024,16 +1007,19 @@ INSERT INTO tb_property_shift (property_id, start_time, end_time) VALUES
 (155, '08:00', '16:00'),
 (155, '16:00', '23:59:59');
 
+-- Tipos de uso da água das propriedades 151 (comercial), 154 e 155 (industriais).
 INSERT INTO tb_property_water_usage (property_id, water_usage_type_id) VALUES
 (151, 1), (151, 2),
 (154, 1), (154, 2), (154, 3),
 (155, 1), (155, 2), (155, 3);
 
+-- Dias de operação das unidades 151, 154 e 155.
 INSERT INTO tb_property_operation_day (property_id, day_of_week_id) VALUES
 (151, 1), (151, 2), (151, 3), (151, 4), (151, 5),
 (154, 1), (154, 2), (154, 3), (154, 4), (154, 5),
 (155, 1), (155, 2), (155, 3), (155, 4), (155, 5), (155, 6);
 
+-- Vínculo entre usuário e propriedade (os gestores 2 e 15 não têm vínculo).
 INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (1, 1, '2022-01-02'),
 (3, 3, '2022-01-04'),
@@ -1185,10 +1171,12 @@ INSERT INTO tb_user_property (user_id, property_id, association_date) VALUES
 (150, 150, '2022-01-01');
 
 
+-- Gestores vinculados às organizações.
 INSERT INTO tb_user_organization (user_id, organization_id, association_date) VALUES
 (2, 1, '2026-01-15'),
 (15, 2, '2026-02-10');
 
+-- Dispositivos das propriedades 1-150.
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP32-SP-0001', 1, TRUE, '2022-01-02'),
 ('ESP32-SP-0002', 2, TRUE, '2022-01-03'),
@@ -1341,6 +1329,7 @@ INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VAL
 ('ESP32-SP-0149', 149, TRUE, '2022-01-30'),
 ('ESP32-SP-0150', 150, FALSE, '2022-01-31');
 
+-- Dispositivos das unidades comerciais e industriais.
 INSERT INTO tb_device (device_id, property_id, is_active, installation_date) VALUES
 ('ESP32-SP-1000', 151, TRUE, '2026-01-16'),
 ('ESP32-SP-1001', 152, TRUE, '2026-01-17'),
@@ -1436,9 +1425,11 @@ INSERT INTO tb_region_rate (region_id, classification_id, m3_value, initial_vali
 (9, 7, 8.13,  '2026-01-01', NULL),
 (9, 8, 12.09, '2026-01-01', NULL);
 
+-- Dois reajustes na tarifa 5, para gerar a cadeia de auditoria lida por dw.vw_audit_history_chain.
 UPDATE tb_region_rate SET m3_value = 30.62 WHERE id = 5;
 UPDATE tb_region_rate SET m3_value = 30.57 WHERE id = 5;
 
+-- Hábitos cadastrados por usuário, com frequência semanal de 1 a 7.
 INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (1, 1, 1),
 (2, 2, 2),
@@ -1841,6 +1832,7 @@ INSERT INTO tb_user_habit (user_id, habit_id, frequency) VALUES
 (199, 3, 7),
 (200, 4, 1);
 
+-- Horário e volume estimado de cada hábito.
 UPDATE tb_user_habit SET start_time = '07:00', end_time = '07:20', estimated_liters = 45.00 WHERE habit_id = 1;
 UPDATE tb_user_habit SET start_time = '09:15', end_time = '09:45', estimated_liters = 80.00 WHERE habit_id = 2;
 UPDATE tb_user_habit SET start_time = '11:15', end_time = '12:15', estimated_liters = 100.00 WHERE habit_id = 3;
@@ -1848,6 +1840,7 @@ UPDATE tb_user_habit SET start_time = '08:30', end_time = '08:45', estimated_lit
 UPDATE tb_user_habit SET start_time = '09:00', end_time = '09:45', estimated_liters = 60.00 WHERE habit_id = 5;
 UPDATE tb_user_habit SET start_time = '10:00', end_time = '10:20', estimated_liters = 25.00 WHERE habit_id = 6;
 
+-- Um dia da semana para cada hábito de usuário.
 INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (1, 2),
 (2, 4),
@@ -2250,6 +2243,7 @@ INSERT INTO tb_user_habit_day (user_habit_id, day_of_week_id) VALUES
 (399, 7),
 (400, 2);
 
+-- Uma conta de água por usuário de teste, de JAN a JUN/2025.
 INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (1, '2025-01-01', 97.50, 13.00),
 (2, '2025-02-01', 150.00, 20.00),
@@ -2452,12 +2446,15 @@ INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 (199, '2025-01-01', 142.50, 19.00),
 (200, '2025-02-01', 45.00, 6.00);
 
+-- Cenários de investimento com valores pesquisados (ver pesquisa-cenarios-investimento.md).
 INSERT INTO tb_investment_scenario (organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months, description) VALUES
 (NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'Troca de torneiras e registros por modelos de fechamento automático e baixo fluxo em todas as unidades da rede.'),
 (NULL, 'REÚSO DE ÁGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'Estação de tratamento e reaproveitamento de água cinza para limpeza e descarga sanitária.'),
 (NULL, 'CAPTAÇÃO DE ÁGUA DE CHUVA', 70000.00, 18.00, 14000.00, 60.0, 'Captação e reservação de água de chuva para uso não potável (limpeza externa, irrigação).');
 
+-- Conferência da contagem de registros por tabela.
 SELECT 'tb_region'          AS tabela, COUNT(*) AS registros FROM tb_region
+UNION ALL SELECT 'tb_municipality',     COUNT(*) FROM tb_municipality
 UNION ALL SELECT 'tb_day_of_week',      COUNT(*) FROM tb_day_of_week
 UNION ALL SELECT 'tb_habit',            COUNT(*) FROM tb_habit
 UNION ALL SELECT 'tb_water_usage_type', COUNT(*) FROM tb_water_usage_type

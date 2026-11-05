@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION fn_user_can_estimate(
-    p_user_id INTEGER
+    p_user_id INTEGER,
+    p_reference_date DATE
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -21,6 +22,7 @@ BEGIN
       INTO v_property_id
       FROM tb_user_property
      WHERE user_id = p_user_id
+     ORDER BY id
      LIMIT 1;
 
 
@@ -63,10 +65,10 @@ BEGIN
           FROM tb_region_rate
          WHERE region_id = v_region_id
            AND classification_id = v_classification_id
-           AND initial_validity <= CURRENT_DATE
+           AND initial_validity <= p_reference_date
            AND (
                 final_validity IS NULL
-                OR final_validity >= CURRENT_DATE
+                OR final_validity >= p_reference_date
            )
     )
     THEN
@@ -77,5 +79,13 @@ BEGIN
     RETURN TRUE;
 
 END;
+$$;
+
+-- Mantém compatibilidade com as chamadas que informam somente o usuário.
+CREATE OR REPLACE FUNCTION fn_user_can_estimate(p_user_id INTEGER)
+RETURNS BOOLEAN
+LANGUAGE sql
+AS $$
+    SELECT fn_user_can_estimate(p_user_id, CURRENT_DATE);
 $$;
 

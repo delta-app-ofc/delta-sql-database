@@ -148,7 +148,8 @@ BEGIN
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_user_can_estimate(
-    p_user_id INTEGER
+    p_user_id INTEGER,
+    p_reference_date DATE
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -170,6 +171,7 @@ BEGIN
       INTO v_property_id
       FROM tb_user_property
      WHERE user_id = p_user_id
+     ORDER BY id
      LIMIT 1;
 
 
@@ -212,10 +214,10 @@ BEGIN
           FROM tb_region_rate
          WHERE region_id = v_region_id
            AND classification_id = v_classification_id
-           AND initial_validity <= CURRENT_DATE
+           AND initial_validity <= p_reference_date
            AND (
                 final_validity IS NULL
-                OR final_validity >= CURRENT_DATE
+                OR final_validity >= p_reference_date
            )
     )
     THEN
@@ -226,6 +228,14 @@ BEGIN
     RETURN TRUE;
 
 END;
+$$;
+
+-- Mantém compatibilidade com as chamadas que informam somente o usuário.
+CREATE OR REPLACE FUNCTION fn_user_can_estimate(p_user_id INTEGER)
+RETURNS BOOLEAN
+LANGUAGE sql
+AS $$
+    SELECT fn_user_can_estimate(p_user_id, CURRENT_DATE);
 $$;
 
 
@@ -746,12 +756,21 @@ BEGIN
 
 
     RETURN QUERY
+    WITH latest_closed_month AS (
+        SELECT DATE_TRUNC('month', MAX(v.full_date))::DATE AS reference_month
+        FROM dw.vw_ft_consumption_daily v
+        WHERE v.property_id = ANY(v_property_ids)
+          AND v.full_date < DATE_TRUNC('month', p_today)
+    )
     SELECT
-          DATE_TRUNC('month', MAX(v.full_date))::DATE
+          m.reference_month
         , SUM(v.total_liters)
         , SUM(v.cost_value)
       FROM dw.vw_ft_consumption_daily v
+      JOIN latest_closed_month m
+        ON DATE_TRUNC('month', v.full_date)::DATE = m.reference_month
      WHERE v.property_id = ANY(v_property_ids)
+     GROUP BY m.reference_month
     HAVING SUM(v.total_liters) IS NOT NULL;
 
 END;
@@ -1005,7 +1024,7 @@ DECLARE
     v_last_bill_m3_value    NUMERIC;
 BEGIN
 
-    v_can_estimate := fn_user_can_estimate(p_user_id);
+    v_can_estimate := fn_user_can_estimate(p_user_id, p_today);
 
 
     SELECT c.region_id, c.classification_id

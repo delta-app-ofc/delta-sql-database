@@ -169,6 +169,43 @@ def _load_alerts_history(connection, mongo_client: MongoClient, mongo_db_name: s
     return len(rows)
 
 
+def _load_device_status(connection, mongo_client: MongoClient, mongo_db_name: str) -> int:
+    # Um documento por dispositivo (estado mais recente): le tudo e atualiza pelo mongo_id.
+    rows = []
+    for doc in mongo_client[mongo_db_name]["device_status"].find():
+        rows.append((
+            str(doc["_id"]),
+            doc["device_id"],
+            doc.get("last_ping_at"),
+            doc.get("wifi_signal_rssi"),
+            doc.get("firmware_version"),
+            doc["connectivity_status"],
+            doc.get("battery_level"),
+            doc.get("unavailability_reason"),
+        ))
+
+    if rows:
+        with connection.cursor() as cursor:
+            cursor.executemany(
+                """
+                INSERT INTO stage.device_status
+                    (mongo_id, device_id, last_ping_at, wifi_signal_rssi, firmware_version, connectivity_status, battery_level, unavailability_reason)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (mongo_id) DO UPDATE
+                    SET last_ping_at          = EXCLUDED.last_ping_at
+                      , wifi_signal_rssi      = EXCLUDED.wifi_signal_rssi
+                      , firmware_version      = EXCLUDED.firmware_version
+                      , connectivity_status   = EXCLUDED.connectivity_status
+                      , battery_level         = EXCLUDED.battery_level
+                      , unavailability_reason = EXCLUDED.unavailability_reason;
+                """,
+                rows,
+            )
+        connection.commit()
+
+    return len(rows)
+
+
 def _run_load_chain(connection) -> None:
     with connection.cursor() as cursor:
         cursor.execute("CALL silver.sp_load();")
@@ -196,7 +233,11 @@ def main() -> None:
 
     pg_connection = psycopg2.connect(**_pg_connection_params())
     mongo_client = _mongo_client("MONGODB_TELEMETRY_URI")
-    mongo_app_client = _mongo_client("MONGODB_APP_URI")
+    mongo_app_client = None
+    if os.getenv("MONGODB_APP_URI"):
+        mongo_app_client = _mongo_client("MONGODB_APP_URI")
+    else:
+        print("MONGODB_APP_URI ausente; carga das colecoes do Mongo de aplicacao ignorada.")
 
     try:
         watermark = _get_watermark(pg_connection)
@@ -224,17 +265,24 @@ def main() -> None:
         print(f"Documentos encontrados no Mongo: {total_found}")
         print(f"Linhas inseridas em stage.consumption_summary: {total_inserted}")
 
-        total_preferences = _load_user_preferences(pg_connection, mongo_app_client, mongo_app_db_name)
-        print(f"Linhas gravadas em stage.user_preferences: {total_preferences}")
+        if mongo_app_client is not None:
+            total_preferences = _load_user_preferences(pg_connection, mongo_app_client, mongo_app_db_name)
+            print(f"Linhas gravadas em stage.user_preferences: {total_preferences}")
 
-        total_alerts = _load_alerts_history(pg_connection, mongo_app_client, mongo_app_db_name)
-        print(f"Linhas gravadas em stage.alerts_history: {total_alerts}")
+            total_alerts = _load_alerts_history(pg_connection, mongo_app_client, mongo_app_db_name)
+            print(f"Linhas gravadas em stage.alerts_history: {total_alerts}")
+        else:
+            print("Preferencias e historico de alertas nao foram sincronizados nesta execucao.")
+
+        total_devices = _load_device_status(pg_connection, mongo_client, mongo_db_name)
+        print(f"Linhas gravadas em stage.device_status: {total_devices}")
 
         _run_load_chain(pg_connection)
         print("silver.sp_load() e gold.sp_load() executados com sucesso.")
 
     finally:
-        mongo_app_client.close()
+        if mongo_app_client is not None:
+            mongo_app_client.close()
         mongo_client.close()
         pg_connection.close()
 

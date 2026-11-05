@@ -365,9 +365,49 @@ def test_load_chain_failure_does_not_commit_partial_chain():
     assert connection.commits == 0
 
 
-def main_clients(consumption_docs=(), preference_docs=(), alert_docs=()):
+def test_device_status_upsert_maps_fields_and_keeps_optional_ones_null():
+    collection = FakeCollection(
+        [
+            {"_id": "dev-1", "device_id": "d1", "last_ping_at": "t1", "wifi_signal_rssi": "-60",
+             "firmware_version": "1.4.2", "connectivity_status": "online", "battery_level": 82},
+            {"_id": "dev-2", "device_id": "d2", "connectivity_status": "offline",
+             "unavailability_reason": "SEM_COMUNICACAO"},
+        ]
+    )
+    client = FakeMongoClient({"telemetry": FakeDatabase({"device_status": collection})})
+    connection = FakeConnection()
+
+    assert bi_etl._load_device_status(connection, client, "telemetry") == 2
+
+    sql, rows = connection.batches[0]
+    assert rows == [
+        ("dev-1", "d1", "t1", "-60", "1.4.2", "online", 82, None),
+        ("dev-2", "d2", None, None, None, "offline", None, "SEM_COMUNICACAO"),
+    ]
+    assert "ON CONFLICT (mongo_id) DO UPDATE" in sql
+    assert "battery_level = EXCLUDED.battery_level" in sql
+    assert connection.commits == 1
+
+
+def test_device_status_empty_collection_does_not_commit():
+    client = FakeMongoClient({"telemetry": FakeDatabase({"device_status": FakeCollection()})})
+    connection = FakeConnection()
+
+    assert bi_etl._load_device_status(connection, client, "telemetry") == 0
+    assert connection.batches == []
+    assert connection.commits == 0
+
+
+def main_clients(consumption_docs=(), preference_docs=(), alert_docs=(), device_docs=()):
     telemetry = FakeMongoClient(
-        {"db_delta_telemetry": FakeDatabase({"consumption_summary": FakeCollection(consumption_docs)})}
+        {
+            "db_delta_telemetry": FakeDatabase(
+                {
+                    "consumption_summary": FakeCollection(consumption_docs),
+                    "device_status": FakeCollection(device_docs),
+                }
+            )
+        }
     )
     app = FakeMongoClient(
         {
@@ -410,7 +450,8 @@ def test_main_loads_fixture_documents_and_closes_all_connections(monkeypatch, ca
     preferences = {"_id": "pref-1", "user_id": 10, "dark_mode_enabled": True}
     alerts = {"_id": "alert-1", "device_id": "d1", "user_id": 10, "alert_type": "leak", "triggered_at": "t1"}
     connection = FakeConnection(watermark=None)
-    clients = main_clients([consumption], [preferences], [alerts])
+    devices = {"_id": "dev-1", "device_id": "d1", "connectivity_status": "online"}
+    clients = main_clients([consumption], [preferences], [alerts], [devices])
     opened = configure_main(monkeypatch, connection, clients)
     dotenv_files = []
     monkeypatch.setattr(bi_etl, "_find_env_file", lambda here, given: given)
@@ -421,10 +462,10 @@ def test_main_loads_fixture_documents_and_closes_all_connections(monkeypatch, ca
 
     assert dotenv_files == ["synthetic.env"]
     assert opened == ["MONGODB_TELEMETRY_URI", "MONGODB_APP_URI"]
-    assert clients[0].requested_databases == ["db_delta_telemetry"]
+    assert clients[0].requested_databases == ["db_delta_telemetry", "db_delta_telemetry"]
     assert clients[1].requested_databases == ["db_delta_app", "db_delta_app"]
-    assert len(connection.batches) == 3
-    assert connection.commits == 4
+    assert len(connection.batches) == 4
+    assert connection.commits == 5
     assert connection.closed is True
     assert all(client.closed for client in clients)
     assert "buscando todo o historico" in capsys.readouterr().out
@@ -444,3 +485,20 @@ def test_main_closes_connections_and_leaves_failed_batch_uncommitted(monkeypatch
     assert connection.rolled_back_on_close is True
     assert connection.closed is True
     assert all(client.closed for client in clients)
+
+
+def test_main_skips_app_mongo_when_uri_is_not_configured(monkeypatch, capsys):
+    connection = FakeConnection(watermark=None)
+    telemetry = main_clients([sample_consumption()])[0]
+    configure_main(monkeypatch, connection, [telemetry])
+    monkeypatch.delenv("MONGODB_APP_URI")
+    monkeypatch.setattr(bi_etl, "_find_env_file", lambda here, given: None)
+    monkeypatch.setattr(bi_etl, "load_dotenv", lambda path: pytest.fail(".env não deve ser carregado"))
+
+    bi_etl.main()
+
+    output = capsys.readouterr().out
+    assert "MONGODB_APP_URI ausente" in output
+    assert "nao foram sincronizados" in output
+    assert telemetry.closed is True
+    assert connection.closed is True

@@ -2448,9 +2448,9 @@ INSERT INTO tb_last_water_bill (user_id, month, total_value, m3_value) VALUES
 
 -- Cenários de investimento com valores pesquisados (ver pesquisa-cenarios-investimento.md).
 INSERT INTO tb_investment_scenario (organization_id, name, investment_value, reduction_pct, annual_savings_value, payback_months, description) VALUES
-(NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'TROCA DE TORNEIRAS E REGISTROS POR MODELOS DE FECHAMENTO AUTOMATICO E BAIXO FLUXO EM TODAS AS UNIDADES DA REDE.'),
-(NULL, 'REUSO DE AGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'ESTACAO DE TRATAMENTO E REAPROVEITAMENTO DE AGUA CINZA PARA LIMPEZA E DESCARGA SANITARIA.'),
-(NULL, 'CAPTACAO DE AGUA DE CHUVA', 70000.00, 18.00, 14000.00, 60.0, 'CAPTACAO E RESERVACAO DE AGUA DE CHUVA PARA USO NAO POTAVEL (LIMPEZA EXTERNA, IRRIGACAO).');
+(NULL, 'AERADORES E REGISTROS ECONOMIZADORES', 15000.00, 12.00, 22500.00, 8.0, 'Troca de torneiras e registros por modelos de fechamento automático e baixo fluxo em todas as unidades da rede.'),
+(NULL, 'REÚSO DE ÁGUA CINZA', 90000.00, 22.00, 11250.00, 96.0, 'Estação de tratamento e reaproveitamento de água cinza para limpeza e descarga sanitária.'),
+(NULL, 'CAPTAÇÃO DE ÁGUA DE CHUVA', 70000.00, 18.00, 14000.00, 60.0, 'Captação e reservação de água de chuva para uso não potável (limpeza externa, irrigação).');
 
 -- Conferência da contagem de registros por tabela.
 SELECT 'tb_region'          AS tabela, COUNT(*) AS registros FROM tb_region

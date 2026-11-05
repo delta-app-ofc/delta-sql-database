@@ -2,12 +2,16 @@ name: BI ETL
 
 on:
   schedule:
-    - cron: "0 * * * *"  # todo hora (00 min de cada hora UTC)
+    - cron: "*/5 * * * *"  # a cada 5 minutos (UTC)
   workflow_dispatch:
 
 jobs:
   etl:
     runs-on: ubuntu-latest
+    timeout-minutes: 4
+    concurrency:
+      group: bi-etl
+      cancel-in-progress: false
 
     env:
       DB_HOST: ${{ secrets.DB_HOST }}
@@ -18,6 +22,8 @@ jobs:
       DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
       MONGODB_TELEMETRY_URI: ${{ secrets.MONGODB_TELEMETRY_URI }}
       MONGO_DB_TELEMETRY: ${{ secrets.MONGO_DB_TELEMETRY }}
+      MONGODB_APP_URI: ${{ secrets.MONGODB_APP_URI }}
+      MONGO_DB_APP: ${{ secrets.MONGO_DB_APP }}
 
     steps:
       - name: Checkout
@@ -33,12 +39,3 @@ jobs:
 
       - name: Rodar ETL
         run: python bi_etl.py
-
-      - name: Disparar sync Redis
-        if: success()
-        run: |
-          gh api repos/delta-app-ofc/delta-redis-database/dispatches \
-            --method POST \
-            --field event_type=etl-completed
-        env:
-          GH_TOKEN: ${{ secrets.DELTA_ORG_AUTOMATION_TOKEN }}

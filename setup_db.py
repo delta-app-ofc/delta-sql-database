@@ -29,6 +29,7 @@ SCRIPTS = [
     "script-datamart.sql",
     "script-indexes.sql",
     "script-datamart-dataload.sql",
+    "script-dataload-swift.sql",
     "script-catalogo-datamart.sql",
 ]
 
